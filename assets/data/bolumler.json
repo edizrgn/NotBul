@@ -1,0 +1,3194 @@
+{
+  "lisans": [
+    {
+      "id": "11685",
+      "name": "ABAZA DİLİ VE EDEBİYATI"
+    },
+    {
+      "id": "11693",
+      "name": "ACİL YARDIM VE AFET YÖNETİMİ"
+    },
+    {
+      "id": "11701",
+      "name": "ADLİ BİLİMLER"
+    },
+    {
+      "id": "11703",
+      "name": "ADLİ BİLİŞİM MÜHENDİSLİĞİ"
+    },
+    {
+      "id": "11724",
+      "name": "AĞAÇ İŞLERİ ENDÜSTRİ MÜHENDİSLİĞİ"
+    },
+    {
+      "id": "11746",
+      "name": "AİLE VE TÜKETİCİ BİLİMLERİ"
+    },
+    {
+      "id": "11754",
+      "name": "AKSESUAR TASARIMI"
+    },
+    {
+      "id": "11758",
+      "name": "AKTÜERYA BİLİMLERİ"
+    },
+    {
+      "id": "11768",
+      "name": "ALMAN DİLİ VE EDEBİYATI"
+    },
+    {
+      "id": "120033",
+      "name": "ALMANCA MÜTERCİM VE TERCÜMANLIK"
+    },
+    {
+      "id": "11771",
+      "name": "ALMANCA ÖĞRETMENLİĞİ"
+    },
+    {
+      "id": "11783",
+      "name": "AMERİKAN KÜLTÜRÜ VE EDEBİYATI"
+    },
+    {
+      "id": "17952",
+      "name": "ANİMASYON VE OYUN TASARIMI"
+    },
+    {
+      "id": "11814",
+      "name": "ANTRENÖRLÜK EĞİTİMİ"
+    },
+    {
+      "id": "11815",
+      "name": "ANTROPOLOJİ"
+    },
+    {
+      "id": "11821",
+      "name": "ARAP DİLİ VE EDEBİYATI"
+    },
+    {
+      "id": "120036",
+      "name": "ARAPÇA MÜTERCİM VE TERCÜMANLIK"
+    },
+    {
+      "id": "17587",
+      "name": "ARAPÇA ÖĞRETMENLİĞİ"
+    },
+    {
+      "id": "11835",
+      "name": "ARKEOLOJİ"
+    },
+    {
+      "id": "11836",
+      "name": "ARKEOLOJİ VE SANAT TARİHİ"
+    },
+    {
+      "id": "11839",
+      "name": "ARNAVUT DİLİ VE EDEBİYATI"
+    },
+    {
+      "id": "21842",
+      "name": "ARP"
+    },
+    {
+      "id": "11848",
+      "name": "ASTRONOMİ VE UZAY BİLİMLERİ"
+    },
+    {
+      "id": "11870",
+      "name": "AVRUPA BİRLİĞİ İLİŞKİLERİ"
+    },
+    {
+      "id": "120078",
+      "name": "AYAKKABI TASARIMI VE ÜRETİMİ"
+    },
+    {
+      "id": "11888",
+      "name": "AZERBAYCAN TÜRKÇESİ VE EDEBİYATI"
+    },
+    {
+      "id": "11892",
+      "name": "BAHÇE BİTKİLERİ"
+    },
+    {
+      "id": "21899",
+      "name": "BALE"
+    },
+    {
+      "id": "11904",
+      "name": "BALIKÇILIK TEKNOLOJİSİ MÜHENDİSLİĞİ"
+    },
+    {
+      "id": "21912",
+      "name": "BANDO ŞEFLİĞİ"
+    },
+    {
+      "id": "11914",
+      "name": "BANKACILIK"
+    },
+    {
+      "id": "11918",
+      "name": "BANKACILIK VE FİNANS"
+    },
+    {
+      "id": "11921",
+      "name": "BANKACILIK VE SİGORTACILIK"
+    },
+    {
+      "id": "11926",
+      "name": "BASIM TEKNOLOJİLERİ"
+    },
+    {
+      "id": "11935",
+      "name": "BASIN VE YAYIN"
+    },
+    {
+      "id": "11941",
+      "name": "BASKI SANATLARI"
+    },
+    {
+      "id": "11951",
+      "name": "BEDEN EĞİTİMİ VE SPOR ÖĞRETMENLİĞİ"
+    },
+    {
+      "id": "11966",
+      "name": "BESLENME VE DİYETETİK"
+    },
+    {
+      "id": "11970",
+      "name": "BESTECİLİK"
+    },
+    {
+      "id": "220037",
+      "name": "BESTECİLİK VE MÜZİK TEORİSİ"
+    },
+    {
+      "id": "120038",
+      "name": "BESTECİLİK VE ORKESTRA ŞEFLİĞİ"
+    },
+    {
+      "id": "11976",
+      "name": "BİLEŞİK SANATLAR"
+    },
+    {
+      "id": "11979",
+      "name": "BİLGİ GÜVENLİĞİ MÜHENDİSLİĞİ"
+    },
+    {
+      "id": "11980",
+      "name": "BİLGİ GÜVENLİĞİ TEKNOLOJİSİ"
+    },
+    {
+      "id": "11988",
+      "name": "BİLGİ VE BELGE YÖNETİMİ"
+    },
+    {
+      "id": "11995",
+      "name": "BİLGİSAYAR BİLİMLERİ"
+    },
+    {
+      "id": "12010",
+      "name": "BİLGİSAYAR MÜHENDİSLİĞİ"
+    },
+    {
+      "id": "12028",
+      "name": "BİLGİSAYAR TEKNOLOJİSİ VE BİLİŞİM SİSTEMLERİ"
+    },
+    {
+      "id": "22034",
+      "name": "BİLGİSAYAR VE ENFORMASYON SİSTEMLERİ"
+    },
+    {
+      "id": "12037",
+      "name": "BİLGİSAYAR VE ÖĞRETİM TEKNOLOJİLERİ ÖĞRETMENLİĞİ"
+    },
+    {
+      "id": "12046",
+      "name": "BİLİM TARİHİ"
+    },
+    {
+      "id": "12059",
+      "name": "BİLİŞİM SİSTEMLERİ MÜHENDİSLİĞİ"
+    },
+    {
+      "id": "12060",
+      "name": "BİLİŞİM SİSTEMLERİ VE TEKNOLOJİLERİ"
+    },
+    {
+      "id": "22061",
+      "name": "BİLİŞİM TEKNOLOJİLERİ"
+    },
+    {
+      "id": "12079",
+      "name": "BİTKİ KORUMA"
+    },
+    {
+      "id": "12085",
+      "name": "BİTKİSEL ÜRETİM VE TEKNOLOJİLERİ"
+    },
+    {
+      "id": "12116",
+      "name": "BİYOKİMYA"
+    },
+    {
+      "id": "12124",
+      "name": "BİYOLOJİ"
+    },
+    {
+      "id": "12126",
+      "name": "BİYOLOJİ ÖĞRETMENLİĞİ"
+    },
+    {
+      "id": "12135",
+      "name": "BİYOMEDİKAL MÜHENDİSLİĞİ"
+    },
+    {
+      "id": "12144",
+      "name": "BİYOMÜHENDİSLİK"
+    },
+    {
+      "id": "12148",
+      "name": "BİYOSİSTEM MÜHENDİSLİĞİ"
+    },
+    {
+      "id": "12150",
+      "name": "BİYOTEKNOLOJİ"
+    },
+    {
+      "id": "12160",
+      "name": "BOŞNAK DİLİ VE EDEBİYATI"
+    },
+    {
+      "id": "12171",
+      "name": "BULGAR DİLİ VE EDEBİYATI"
+    },
+    {
+      "id": "120039",
+      "name": "BULGARCA MÜTERCİM VE TERCÜMANLIK"
+    },
+    {
+      "id": "12184",
+      "name": "CAM"
+    },
+    {
+      "id": "22192",
+      "name": "CAZ"
+    },
+    {
+      "id": "120863",
+      "name": "CAZ VE POPÜLER MÜZİK"
+    },
+    {
+      "id": "17232",
+      "name": "CEVHER HAZIRLAMA MÜHENDİSLİĞİ"
+    },
+    {
+      "id": "12213",
+      "name": "COĞRAFYA"
+    },
+    {
+      "id": "12214",
+      "name": "COĞRAFYA ÖĞRETMENLİĞİ"
+    },
+    {
+      "id": "12223",
+      "name": "ÇAĞDAŞ TÜRK LEHÇELERİ VE EDEBİYATLARI"
+    },
+    {
+      "id": "12224",
+      "name": "ÇAĞDAŞ YUNAN DİLİ VE EDEBİYATI"
+    },
+    {
+      "id": "12227",
+      "name": "ÇALGI EĞİTİMİ"
+    },
+    {
+      "id": "19443",
+      "name": "ÇALGI TEKNOLOJİLERİ"
+    },
+    {
+      "id": "220040",
+      "name": "ÇALGI YAPIMI VE ONARIMI"
+    },
+    {
+      "id": "12231",
+      "name": "ÇALIŞMA EKONOMİSİ VE ENDÜSTRİ İLİŞKİLERİ"
+    },
+    {
+      "id": "12246",
+      "name": "ÇERKEZ DİLİ VE EDEBİYATI"
+    },
+    {
+      "id": "12247",
+      "name": "ÇERKEZ DİLİ VE KÜLTÜRÜ"
+    },
+    {
+      "id": "120377",
+      "name": "ÇEVİRİBİLİMİ"
+    },
+    {
+      "id": "12270",
+      "name": "ÇEVRE MÜHENDİSLİĞİ"
+    },
+    {
+      "id": "12295",
+      "name": "ÇİN DİLİ VE EDEBİYATI"
+    },
+    {
+      "id": "120041",
+      "name": "ÇİNCE MÜTERCİM VE TERCÜMANLIK"
+    },
+    {
+      "id": "120042",
+      "name": "ÇİNİ TASARIMI VE ONARIMI"
+    },
+    {
+      "id": "12302",
+      "name": "ÇİZGİ FİLM VE ANİMASYON"
+    },
+    {
+      "id": "12315",
+      "name": "ÇOCUK GELİŞİMİ"
+    },
+    {
+      "id": "12411",
+      "name": "DENİZ ULAŞTIRMA İŞLETME MÜHENDİSLİĞİ"
+    },
+    {
+      "id": "12420",
+      "name": "DENİZCİLİK İŞLETMELERİ YÖNETİMİ"
+    },
+    {
+      "id": "12438",
+      "name": "DERİ MÜHENDİSLİĞİ"
+    },
+    {
+      "id": "19615",
+      "name": "DİJİTAL MEDYA VE PAZARLAMA"
+    },
+    {
+      "id": "17203",
+      "name": "DİJİTAL OYUN TASARIMI"
+    },
+    {
+      "id": "19601",
+      "name": "DİJİTAL PAZARLAMA"
+    },
+    {
+      "id": "12463",
+      "name": "DİL VE KONUŞMA TERAPİSİ"
+    },
+    {
+      "id": "12461",
+      "name": "DİLBİLİMİ"
+    },
+    {
+      "id": "12490",
+      "name": "DİŞ HEKİMLİĞİ"
+    },
+    {
+      "id": "120919",
+      "name": "DOĞA KORUMA VE BİYOÇEŞİTLİLİK YÖNETİMİ"
+    },
+    {
+      "id": "12534",
+      "name": "DRAMA VE OYUNCULUK"
+    },
+    {
+      "id": "120043",
+      "name": "DRAMA YAZARLIĞI VE DRAMATURJİ"
+    },
+    {
+      "id": "12543",
+      "name": "EBELİK"
+    },
+    {
+      "id": "12544",
+      "name": "ECZACILIK"
+    },
+    {
+      "id": "120772",
+      "name": "ECZACILIK DOKTORU - PHARMD"
+    },
+    {
+      "id": "17028",
+      "name": "EGZERSİZ VE SPOR BİLİMLERİ"
+    },
+    {
+      "id": "12604",
+      "name": "EKONOMETRİ"
+    },
+    {
+      "id": "12606",
+      "name": "EKONOMİ"
+    },
+    {
+      "id": "12609",
+      "name": "EKONOMİ VE FİNANS"
+    },
+    {
+      "id": "12621",
+      "name": "EL SANATLARI"
+    },
+    {
+      "id": "12637",
+      "name": "ELEKTRİK MÜHENDİSLİĞİ"
+    },
+    {
+      "id": "111061",
+      "name": "ELEKTRİK VE ELEKTRONİK MÜHENDİSLİĞİ"
+    },
+    {
+      "id": "12644",
+      "name": "ELEKTRİK-ELEKTRONİK MÜHENDİSLİĞİ"
+    },
+    {
+      "id": "12664",
+      "name": "ELEKTRONİK MÜHENDİSLİĞİ"
+    },
+    {
+      "id": "120044",
+      "name": "ELEKTRONİK TİCARET VE YÖNETİMİ"
+    },
+    {
+      "id": "12675",
+      "name": "ELEKTRONİK VE HABERLEŞME MÜHENDİSLİĞİ"
+    },
+    {
+      "id": "22688",
+      "name": "EMLAK VE EMLAK YÖNETİMİ"
+    },
+    {
+      "id": "12704",
+      "name": "ENDÜSTRİ MÜHENDİSLİĞİ"
+    },
+    {
+      "id": "22713",
+      "name": "ENDÜSTRİ ÜRÜNLERİ TASARIMI"
+    },
+    {
+      "id": "17494",
+      "name": "ENDÜSTRİYEL TASARIM"
+    },
+    {
+      "id": "12735",
+      "name": "ENDÜSTRİYEL TASARIM MÜHENDİSLİĞİ"
+    },
+    {
+      "id": "12742",
+      "name": "ENERJİ BİLİMİ VE TEKNOLOJİLERİ"
+    },
+    {
+      "id": "12751",
+      "name": "ENERJİ SİSTEMLERİ MÜHENDİSLİĞİ"
+    },
+    {
+      "id": "12760",
+      "name": "ENERJİ YÖNETİMİ"
+    },
+    {
+      "id": "12775",
+      "name": "ENGELLİLERDE BEDEN EĞİTİMİ VE SPOR ÖĞRETMENLİĞİ"
+    },
+    {
+      "id": "19812",
+      "name": "ENGELLİLERDE EGZERSİZ VE SPOR BİLİMLERİ"
+    },
+    {
+      "id": "12785",
+      "name": "ERGOTERAPİ"
+    },
+    {
+      "id": "12790",
+      "name": "ERMENİ DİLİ VE KÜLTÜRÜ"
+    },
+    {
+      "id": "12799",
+      "name": "ESKİ YUNAN DİLİ VE EDEBİYATI"
+    },
+    {
+      "id": "28812",
+      "name": "ETNOMÜZİKOLOJİ"
+    },
+    {
+      "id": "22823",
+      "name": "FAGOT"
+    },
+    {
+      "id": "12853",
+      "name": "FARS DİLİ VE EDEBİYATI"
+    },
+    {
+      "id": "120045",
+      "name": "FARSÇA MÜTERCİM VE TERCÜMANLIK"
+    },
+    {
+      "id": "12856",
+      "name": "FELSEFE"
+    },
+    {
+      "id": "12858",
+      "name": "FELSEFE GRUBU ÖĞRETMENLİĞİ"
+    },
+    {
+      "id": "12862",
+      "name": "FEN BİLGİSİ ÖĞRETMENLİĞİ"
+    },
+    {
+      "id": "120074",
+      "name": "FİLM TASARIMI VE YAZARLIĞI"
+    },
+    {
+      "id": "120046",
+      "name": "FİLM TASARIMI VE YÖNETİMİ"
+    },
+    {
+      "id": "120075",
+      "name": "FİLM TASARIMI VE YÖNETMENLİĞİ"
+    },
+    {
+      "id": "120770",
+      "name": "FİLM YAPIMI VE YAYINCILIK"
+    },
+    {
+      "id": "120047",
+      "name": "FİNANS VE BANKACILIK"
+    },
+    {
+      "id": "12903",
+      "name": "FİZİK"
+    },
+    {
+      "id": "12906",
+      "name": "FİZİK MÜHENDİSLİĞİ"
+    },
+    {
+      "id": "12904",
+      "name": "FİZİK ÖĞRETMENLİĞİ"
+    },
+    {
+      "id": "12927",
+      "name": "FİZYOTERAPİ VE REHABİLİTASYON"
+    },
+    {
+      "id": "22928",
+      "name": "FLÜT"
+    },
+    {
+      "id": "12936",
+      "name": "FOTOĞRAF"
+    },
+    {
+      "id": "12938",
+      "name": "FOTOĞRAF VE VİDEO"
+    },
+    {
+      "id": "17142",
+      "name": "FOTONİK"
+    },
+    {
+      "id": "12944",
+      "name": "FRANSIZ DİLİ VE EDEBİYATI"
+    },
+    {
+      "id": "120048",
+      "name": "FRANSIZCA MÜTERCİM VE TERCÜMANLIK"
+    },
+    {
+      "id": "12946",
+      "name": "FRANSIZCA ÖĞRETMENLİĞİ"
+    },
+    {
+      "id": "12955",
+      "name": "GASTRONOMİ VE MUTFAK SANATLARI"
+    },
+    {
+      "id": "17143",
+      "name": "GAYRİMENKUL GELİŞTİRME VE YÖNETİMİ"
+    },
+    {
+      "id": "12963",
+      "name": "GAZETECİLİK"
+    },
+    {
+      "id": "27243",
+      "name": "GELENEKSEL ÇALGILAR"
+    },
+    {
+      "id": "220378",
+      "name": "GELENEKSEL TÜRK MÜZİĞİ"
+    },
+    {
+      "id": "12981",
+      "name": "GELENEKSEL TÜRK SANATLARI"
+    },
+    {
+      "id": "12995",
+      "name": "GEMİ İNŞAATI VE GEMİ MAKİNELERİ MÜHENDİSLİĞİ"
+    },
+    {
+      "id": "12999",
+      "name": "GEMİ MAKİNELERİ İŞLETME MÜHENDİSLİĞİ"
+    },
+    {
+      "id": "13002",
+      "name": "GEMİ VE DENİZ TEKNOLOJİSİ MÜHENDİSLİĞİ"
+    },
+    {
+      "id": "13003",
+      "name": "GEMİ VE YAT TASARIMI"
+    },
+    {
+      "id": "13047",
+      "name": "GENETİK VE BİYOMÜHENDİSLİK"
+    },
+    {
+      "id": "13060",
+      "name": "GERONTOLOJİ"
+    },
+    {
+      "id": "13080",
+      "name": "GIDA MÜHENDİSLİĞİ"
+    },
+    {
+      "id": "13086",
+      "name": "GIDA TEKNOLOJİSİ"
+    },
+    {
+      "id": "13091",
+      "name": "GİRİŞİMCİLİK"
+    },
+    {
+      "id": "23098",
+      "name": "GİTAR"
+    },
+    {
+      "id": "13118",
+      "name": "GÖRSEL İLETİŞİM TASARIMI"
+    },
+    {
+      "id": "13121",
+      "name": "GÖRSEL SANATLAR"
+    },
+    {
+      "id": "19387",
+      "name": "GÖRSEL SANATLAR ÖĞRETMENLİĞİ"
+    },
+    {
+      "id": "13123",
+      "name": "GÖRSEL SANATLAR VE GÖRSEL İLETİŞİM TASARIMI"
+    },
+    {
+      "id": "13132",
+      "name": "GRAFİK"
+    },
+    {
+      "id": "120049",
+      "name": "GRAFİK SANATLAR"
+    },
+    {
+      "id": "13137",
+      "name": "GRAFİK TASARIMI"
+    },
+    {
+      "id": "17245",
+      "name": "GÜMRÜK İŞLETME"
+    },
+    {
+      "id": "13146",
+      "name": "GÜRCÜ DİLİ VE EDEBİYATI"
+    },
+    {
+      "id": "13154",
+      "name": "GÜVERTE"
+    },
+    {
+      "id": "120396",
+      "name": "HALI TASARIMI"
+    },
+    {
+      "id": "120050",
+      "name": "HALI, KİLİM VE GELENEKSEL KUMAŞ DESENLERİ"
+    },
+    {
+      "id": "120051",
+      "name": "HALKBİLİMİ"
+    },
+    {
+      "id": "13183",
+      "name": "HALKLA İLİŞKİLER"
+    },
+    {
+      "id": "13186",
+      "name": "HALKLA İLİŞKİLER VE REKLAMCILIK"
+    },
+    {
+      "id": "13187",
+      "name": "HALKLA İLİŞKİLER VE TANITIM"
+    },
+    {
+      "id": "13191",
+      "name": "HARİTA MÜHENDİSLİĞİ"
+    },
+    {
+      "id": "120889",
+      "name": "HASSAS TARIM VE TARIMSAL ROBOTLAR"
+    },
+    {
+      "id": "111053",
+      "name": "HAT SANATI"
+    },
+    {
+      "id": "120053",
+      "name": "HAVA TRAFİK KONTROLÜ"
+    },
+    {
+      "id": "13217",
+      "name": "HAVACILIK ELEKTRİK VE ELEKTRONİĞİ"
+    },
+    {
+      "id": "13220",
+      "name": "HAVACILIK VE UZAY MÜHENDİSLİĞİ"
+    },
+    {
+      "id": "13221",
+      "name": "HAVACILIK YÖNETİMİ"
+    },
+    {
+      "id": "13245",
+      "name": "HAYVANSAL ÜRETİM VE TEKNOLOJİLERİ"
+    },
+    {
+      "id": "13264",
+      "name": "HEMŞİRELİK"
+    },
+    {
+      "id": "13279",
+      "name": "HEYKEL"
+    },
+    {
+      "id": "13288",
+      "name": "HİDROJEOLOJİ MÜHENDİSLİĞİ"
+    },
+    {
+      "id": "13290",
+      "name": "HİDROLİK VE SU KAYNAKLARI MÜHENDİSLİĞİ"
+    },
+    {
+      "id": "13297",
+      "name": "HİNDOLOJİ"
+    },
+    {
+      "id": "13305",
+      "name": "HİTİTOLOJİ"
+    },
+    {
+      "id": "13309",
+      "name": "HUKUK"
+    },
+    {
+      "id": "13314",
+      "name": "HUNGAROLOJİ"
+    },
+    {
+      "id": "120054",
+      "name": "İBRANİ DİLİ VE KÜLTÜRÜ"
+    },
+    {
+      "id": "13338",
+      "name": "İÇ MİMARLIK"
+    },
+    {
+      "id": "13339",
+      "name": "İÇ MİMARLIK VE ÇEVRE TASARIMI"
+    },
+    {
+      "id": "120716",
+      "name": "İKLİM BİLİMİ VE METEOROLOJİ MÜHENDİSLİĞİ"
+    },
+    {
+      "id": "17521",
+      "name": "İKTİSADİ VE İDARİ BİLİMLER PROGRAMLARI"
+    },
+    {
+      "id": "13353",
+      "name": "İKTİSAT"
+    },
+    {
+      "id": "13367",
+      "name": "İLAHİYAT"
+    },
+    {
+      "id": "13379",
+      "name": "İLETİŞİM"
+    },
+    {
+      "id": "13381",
+      "name": "İLETİŞİM BİLİMLERİ"
+    },
+    {
+      "id": "13396",
+      "name": "İLETİŞİM TASARIMI VE YÖNETİMİ"
+    },
+    {
+      "id": "120019",
+      "name": "İLETİŞİM VE TASARIMI"
+    },
+    {
+      "id": "13410",
+      "name": "İLKÖĞRETİM MATEMATİK ÖĞRETMENLİĞİ"
+    },
+    {
+      "id": "13419",
+      "name": "İMALAT MÜHENDİSLİĞİ"
+    },
+    {
+      "id": "13430",
+      "name": "İNGİLİZ DİLBİLİMİ"
+    },
+    {
+      "id": "13431",
+      "name": "İNGİLİZ DİLİ VE EDEBİYATI"
+    },
+    {
+      "id": "19976",
+      "name": "İNGİLİZ VE RUS DİLLERİ VE EDEBİYATLARI ÖĞRETMENLİGİ"
+    },
+    {
+      "id": "120056",
+      "name": "İNGİLİZCE MÜTERCİM VE TERCÜMANLIK"
+    },
+    {
+      "id": "13441",
+      "name": "İNGİLİZCE ÖĞRETMENLİĞİ"
+    },
+    {
+      "id": "120057",
+      "name": "İNGİLİZCE, FRANSIZCA MÜTERCİM VE TERCÜMANLIK"
+    },
+    {
+      "id": "13461",
+      "name": "İNSAN KAYNAKLARI YÖNETİMİ"
+    },
+    {
+      "id": "13468",
+      "name": "İNŞAAT MÜHENDİSLİĞİ"
+    },
+    {
+      "id": "17449",
+      "name": "İSLAM BİLİMLERİ"
+    },
+    {
+      "id": "120058",
+      "name": "İSLAM İKTİSADI VE FİNANS"
+    },
+    {
+      "id": "13510",
+      "name": "İSLAMİ İLİMLER"
+    },
+    {
+      "id": "13512",
+      "name": "İSPANYOL DİLİ VE EDEBİYATI"
+    },
+    {
+      "id": "120720",
+      "name": "İSPANYOLCA MÜTERCİM VE TERCÜMANLIK"
+    },
+    {
+      "id": "13519",
+      "name": "İSTATİSTİK"
+    },
+    {
+      "id": "13522",
+      "name": "İSTATİSTİK VE BİLGİSAYAR BİLİMLERİ"
+    },
+    {
+      "id": "13528",
+      "name": "İŞ SAĞLIĞI VE GÜVENLİĞİ"
+    },
+    {
+      "id": "13549",
+      "name": "İŞLETME"
+    },
+    {
+      "id": "13559",
+      "name": "İŞLETME MÜHENDİSLİĞİ"
+    },
+    {
+      "id": "13568",
+      "name": "İŞLETME YÖNETİMİ"
+    },
+    {
+      "id": "13575",
+      "name": "İTALYAN DİLİ VE EDEBİYATI"
+    },
+    {
+      "id": "13581",
+      "name": "JAPON DİLİ VE EDEBİYATI"
+    },
+    {
+      "id": "120414",
+      "name": "JAPONCA MÜTERCİM VE TERCÜMANLIK"
+    },
+    {
+      "id": "13580",
+      "name": "JAPONCA ÖĞRETMENLİĞİ"
+    },
+    {
+      "id": "13592",
+      "name": "JEOFİZİK MÜHENDİSLİĞİ"
+    },
+    {
+      "id": "13594",
+      "name": "JEOLOJİ MÜHENDİSLİĞİ"
+    },
+    {
+      "id": "13638",
+      "name": "KAMU YÖNETİMİ"
+    },
+    {
+      "id": "13645",
+      "name": "KANATLI HAYVAN YETİŞTİRİCİLİĞİ"
+    },
+    {
+      "id": "13675",
+      "name": "KARŞILAŞTIRMALI EDEBİYAT"
+    },
+    {
+      "id": "19038",
+      "name": "KAZAK DİLİ VE EDEBİYATI"
+    },
+    {
+      "id": "23703",
+      "name": "KEMAN"
+    },
+    {
+      "id": "13725",
+      "name": "KENTSEL TASARIM VE PEYZAJ MİMARLIĞI"
+    },
+    {
+      "id": "13743",
+      "name": "KİMYA"
+    },
+    {
+      "id": "13749",
+      "name": "KİMYA MÜHENDİSLİĞİ"
+    },
+    {
+      "id": "13747",
+      "name": "KİMYA ÖĞRETMENLİĞİ"
+    },
+    {
+      "id": "13754",
+      "name": "KİMYA-BİYOLOJİ MÜHENDİSLİĞİ"
+    },
+    {
+      "id": "23764",
+      "name": "KLARNET"
+    },
+    {
+      "id": "13765",
+      "name": "KLASİK ARKEOLOJİ"
+    },
+    {
+      "id": "23822",
+      "name": "KONTRBAS"
+    },
+    {
+      "id": "13834",
+      "name": "KONTROL VE OTOMASYON MÜHENDİSLİĞİ"
+    },
+    {
+      "id": "13841",
+      "name": "KORE DİLİ VE EDEBİYATI"
+    },
+    {
+      "id": "23845",
+      "name": "KORNO"
+    },
+    {
+      "id": "23846",
+      "name": "KORO"
+    },
+    {
+      "id": "120061",
+      "name": "KURGU, SES VE GÖRÜNTÜ YÖNETİMİ"
+    },
+    {
+      "id": "120076",
+      "name": "KUYUMCULUK VE MÜCEVHER TASARIMI"
+    },
+    {
+      "id": "13895",
+      "name": "KÜLTÜR VARLIKLARINI KORUMA VE ONARIM"
+    },
+    {
+      "id": "13897",
+      "name": "KÜLTÜR VE İLETİŞİM BİLİMLERİ"
+    },
+    {
+      "id": "13915",
+      "name": "KÜRESEL SİYASET VE ULUSLARARASI İLİŞKİLER"
+    },
+    {
+      "id": "13920",
+      "name": "KÜRT DİLİ VE EDEBİYATI"
+    },
+    {
+      "id": "13934",
+      "name": "LATİN DİLİ VE EDEBİYATI"
+    },
+    {
+      "id": "13937",
+      "name": "LEH DİLİ VE EDEBİYATI"
+    },
+    {
+      "id": "17917",
+      "name": "LİDERLİK"
+    },
+    {
+      "id": "13943",
+      "name": "LOJİSTİK"
+    },
+    {
+      "id": "13951",
+      "name": "LOJİSTİK YÖNETİMİ"
+    },
+    {
+      "id": "13961",
+      "name": "MADEN MÜHENDİSLİĞİ"
+    },
+    {
+      "id": "13987",
+      "name": "MAKİNE MÜHENDİSLİĞİ"
+    },
+    {
+      "id": "14018",
+      "name": "MALİYE"
+    },
+    {
+      "id": "14028",
+      "name": "MALZEME BİLİMİ VE MÜHENDİSLİĞİ"
+    },
+    {
+      "id": "14029",
+      "name": "MALZEME BİLİMİ VE NANOTEKNOLOJİ MÜHENDİSLİĞİ"
+    },
+    {
+      "id": "17586",
+      "name": "MALZEME BİLİMİ VE TEKNOLOJİLERİ"
+    },
+    {
+      "id": "14051",
+      "name": "MATEMATİK"
+    },
+    {
+      "id": "14053",
+      "name": "MATEMATİK MÜHENDİSLİĞİ"
+    },
+    {
+      "id": "14052",
+      "name": "MATEMATİK ÖĞRETMENLİĞİ"
+    },
+    {
+      "id": "14054",
+      "name": "MATEMATİK VE BİLGİSAYAR BİLİMLERİ"
+    },
+    {
+      "id": "14075",
+      "name": "MEDYA VE GÖRSEL SANATLAR"
+    },
+    {
+      "id": "14076",
+      "name": "MEDYA VE İLETİŞİM"
+    },
+    {
+      "id": "14095",
+      "name": "MEKATRONİK MÜHENDİSLİĞİ"
+    },
+    {
+      "id": "14118",
+      "name": "METALURJİ VE MALZEME MÜHENDİSLİĞİ"
+    },
+    {
+      "id": "14156",
+      "name": "MİMARLIK"
+    },
+    {
+      "id": "14186",
+      "name": "MODA TASARIMI"
+    },
+    {
+      "id": "220379",
+      "name": "MODA VE TEKSTİL TASARIMI"
+    },
+    {
+      "id": "14198",
+      "name": "MODERN DANS"
+    },
+    {
+      "id": "14207",
+      "name": "MOLEKÜLER BİYOLOJİ VE GENETİK"
+    },
+    {
+      "id": "14209",
+      "name": "MOLEKÜLER BİYOTEKNOLOJİ"
+    },
+    {
+      "id": "14229",
+      "name": "MUHASEBE VE DENETİM"
+    },
+    {
+      "id": "17248",
+      "name": "MUHASEBE VE FİNANS"
+    },
+    {
+      "id": "14230",
+      "name": "MUHASEBE VE FİNANS YÖNETİMİ"
+    },
+    {
+      "id": "18428",
+      "name": "MUHASEBE, FİNANS VE BANKACILIK"
+    },
+    {
+      "id": "14256",
+      "name": "MÜHENDİSLİK VE DOĞA BİLİMLERİ PROGRAMLARI"
+    },
+    {
+      "id": "120063",
+      "name": "MÜTERCİM VE TERCÜMANLIK"
+    },
+    {
+      "id": "14271",
+      "name": "MÜZECİLİK"
+    },
+    {
+      "id": "14274",
+      "name": "MÜZİK"
+    },
+    {
+      "id": "14278",
+      "name": "MÜZİK ÖĞRETMENLİĞİ"
+    },
+    {
+      "id": "18657",
+      "name": "MÜZİK PERFORMANSLARI"
+    },
+    {
+      "id": "19901",
+      "name": "MÜZİK SANATI"
+    },
+    {
+      "id": "14282",
+      "name": "MÜZİK TEKNOLOJİSİ"
+    },
+    {
+      "id": "14283",
+      "name": "MÜZİK TEORİSİ"
+    },
+    {
+      "id": "14285",
+      "name": "MÜZİK TOPLULUKLARI"
+    },
+    {
+      "id": "28402",
+      "name": "MÜZİKAL TİYATRO"
+    },
+    {
+      "id": "14289",
+      "name": "MÜZİKOLOJİ"
+    },
+    {
+      "id": "14297",
+      "name": "NANOBİLİM VE NANOTEKNOLOJİ"
+    },
+    {
+      "id": "14300",
+      "name": "NANOTEKNOLOJİ MÜHENDİSLİĞİ"
+    },
+    {
+      "id": "19902",
+      "name": "NEFESLİ ALETLERİ"
+    },
+    {
+      "id": "14333",
+      "name": "NÜKLEER ENERJİ MÜHENDİSLİĞİ"
+    },
+    {
+      "id": "24342",
+      "name": "OBUA"
+    },
+    {
+      "id": "14346",
+      "name": "ODYOLOJİ"
+    },
+    {
+      "id": "14352",
+      "name": "OKUL ÖNCESİ ÖĞRETMENLİĞİ"
+    },
+    {
+      "id": "14366",
+      "name": "OPERA"
+    },
+    {
+      "id": "14372",
+      "name": "OPTİK VE AKUSTİK MÜHENDİSLİĞİ"
+    },
+    {
+      "id": "14392",
+      "name": "ORGANİK TARIM İŞLETMECİLİĞİ"
+    },
+    {
+      "id": "14395",
+      "name": "ORKESTRA VE KORO ŞEFLİĞİ"
+    },
+    {
+      "id": "14401",
+      "name": "ORMAN ENDÜSTRİSİ MÜHENDİSLİĞİ"
+    },
+    {
+      "id": "14409",
+      "name": "ORMAN MÜHENDİSLİĞİ"
+    },
+    {
+      "id": "120064",
+      "name": "ORTEZ VE PROTEZ"
+    },
+    {
+      "id": "24472",
+      "name": "OSMANLI DÖNEMİ KARŞILAŞTIRMALI MÜZİK"
+    },
+    {
+      "id": "14480",
+      "name": "OTEL YÖNETİCİLİĞİ"
+    },
+    {
+      "id": "14498",
+      "name": "OTOMOTİV MÜHENDİSLİĞİ"
+    },
+    {
+      "id": "14507",
+      "name": "OYUNCULUK"
+    },
+    {
+      "id": "18660",
+      "name": "ÖZEL EĞİTİM ÖĞRETMENLİĞİ"
+    },
+    {
+      "id": "14551",
+      "name": "PAZARLAMA"
+    },
+    {
+      "id": "14553",
+      "name": "PAZARLAMA İLETİŞİMİ"
+    },
+    {
+      "id": "14602",
+      "name": "PERFORMANS"
+    },
+    {
+      "id": "14604",
+      "name": "PERFÜZYON"
+    },
+    {
+      "id": "14617",
+      "name": "PETROL VE DOĞALGAZ MÜHENDİSLİĞİ"
+    },
+    {
+      "id": "14621",
+      "name": "PEYZAJ MİMARLIĞI"
+    },
+    {
+      "id": "14630",
+      "name": "PİLOTAJ"
+    },
+    {
+      "id": "14632",
+      "name": "PİYANO"
+    },
+    {
+      "id": "120081",
+      "name": "PİYANO, ARP VE GİTAR"
+    },
+    {
+      "id": "14639",
+      "name": "PLASTİK SANATLAR"
+    },
+    {
+      "id": "18723",
+      "name": "PLASTİK SANATLAR VE RESİM"
+    },
+    {
+      "id": "120065",
+      "name": "POLİMER MALZEME MÜHENDİSLİĞİ"
+    },
+    {
+      "id": "19625",
+      "name": "POLİTİKA VE EKONOMİ"
+    },
+    {
+      "id": "14659",
+      "name": "PROTOHİSTORYA VE ÖN ASYA ARKEOLOJİSİ"
+    },
+    {
+      "id": "14679",
+      "name": "PSİKOLOJİ"
+    },
+    {
+      "id": "19870",
+      "name": "PSİKOLOJİK DANIŞMANLIK VE REHBERLİK ÖĞRETMENLİĞİ"
+    },
+    {
+      "id": "17668",
+      "name": "RADYO, TELEVİZYON VE SİNEMA"
+    },
+    {
+      "id": "14719",
+      "name": "RAYLI SİSTEMLER MÜHENDİSLİĞİ"
+    },
+    {
+      "id": "14727",
+      "name": "REHBERLİK VE PSİKOLOJİK DANIŞMANLIK"
+    },
+    {
+      "id": "14733",
+      "name": "REKLAM TASARIMI VE İLETİŞİMİ"
+    },
+    {
+      "id": "14734",
+      "name": "REKLAMCILIK"
+    },
+    {
+      "id": "14738",
+      "name": "REKREASYON"
+    },
+    {
+      "id": "14740",
+      "name": "REKREASYON YÖNETİMİ"
+    },
+    {
+      "id": "14745",
+      "name": "RESİM"
+    },
+    {
+      "id": "17326",
+      "name": "RESİM ÖĞRETMENLİĞİ"
+    },
+    {
+      "id": "14746",
+      "name": "RESİM-İŞ ÖĞRETMENLİĞİ"
+    },
+    {
+      "id": "14775",
+      "name": "RUS DİLİ VE EDEBİYATI"
+    },
+    {
+      "id": "17327",
+      "name": "RUS DİLİ VE EDEBİYATI ÖĞRETMENLİĞİ"
+    },
+    {
+      "id": "120066",
+      "name": "RUSÇA MÜTERCİM VE TERCÜMANLIK"
+    },
+    {
+      "id": "17566",
+      "name": "SAÇ VE GÜZELLİK UYGULAMALARI"
+    },
+    {
+      "id": "14805",
+      "name": "SAĞLIK KURUMLARI YÖNETİCİLİĞİ"
+    },
+    {
+      "id": "14818",
+      "name": "SAĞLIK YÖNETİMİ"
+    },
+    {
+      "id": "120067",
+      "name": "SAHNE DEKORU VE KOSTÜMÜ"
+    },
+    {
+      "id": "14826",
+      "name": "SAHNE SANATLARI"
+    },
+    {
+      "id": "14827",
+      "name": "SAHNE TASARIMI"
+    },
+    {
+      "id": "14833",
+      "name": "SAHNE VE GÖSTERİ SANATLARI YÖNETİMİ"
+    },
+    {
+      "id": "24836",
+      "name": "SAKSAFON"
+    },
+    {
+      "id": "24840",
+      "name": "SANAT ESERLERİ KONSERVASYONU VE RESTORASYONU"
+    },
+    {
+      "id": "14846",
+      "name": "SANAT TARİHİ"
+    },
+    {
+      "id": "14849",
+      "name": "SANAT VE KÜLTÜR YÖNETİMİ"
+    },
+    {
+      "id": "14850",
+      "name": "SANAT VE SOSYAL BİLİMLER PROGRAMLARI"
+    },
+    {
+      "id": "14884",
+      "name": "SERAMİK"
+    },
+    {
+      "id": "120080",
+      "name": "SERAMİK VE CAM"
+    },
+    {
+      "id": "14899",
+      "name": "SERMAYE PİYASASI"
+    },
+    {
+      "id": "24904",
+      "name": "SES EĞİTİMİ"
+    },
+    {
+      "id": "120068",
+      "name": "SES SANATLARI TASARIMI"
+    },
+    {
+      "id": "14907",
+      "name": "SEYAHAT İŞLETMECİLİĞİ"
+    },
+    {
+      "id": "14908",
+      "name": "SEYAHAT İŞLETMECİLİĞİ VE TURİZM REHBERLİĞİ"
+    },
+    {
+      "id": "14915",
+      "name": "SINIF ÖĞRETMENLİĞİ"
+    },
+    {
+      "id": "14917",
+      "name": "SIRP DİLİ VE EDEBİYATI"
+    },
+    {
+      "id": "120510",
+      "name": "SİBER GÜVENLİK MÜHENDİSLİĞİ"
+    },
+    {
+      "id": "14920",
+      "name": "SİGORTACILIK"
+    },
+    {
+      "id": "17345",
+      "name": "SİGORTACILIK VE AKTÜERYA BİLİMLERİ"
+    },
+    {
+      "id": "14922",
+      "name": "SİGORTACILIK VE RİSK YÖNETİMİ"
+    },
+    {
+      "id": "14923",
+      "name": "SİGORTACILIK VE SOSYAL GÜVENLİK"
+    },
+    {
+      "id": "14928",
+      "name": "SİNEMA VE DİJİTAL MEDYA"
+    },
+    {
+      "id": "19332",
+      "name": "SİNEMA VE TELEVİZYON"
+    },
+    {
+      "id": "14934",
+      "name": "SİNOLOJİ"
+    },
+    {
+      "id": "14953",
+      "name": "SİVİL HAVA ULAŞTIRMA İŞLETMECİLİĞİ"
+    },
+    {
+      "id": "18873",
+      "name": "SİYASAL BİLİMLER"
+    },
+    {
+      "id": "14963",
+      "name": "SİYASAL VE SOSYAL BİLİMLER"
+    },
+    {
+      "id": "14966",
+      "name": "SİYASET BİLİMİ"
+    },
+    {
+      "id": "14967",
+      "name": "SİYASET BİLİMİ VE KAMU YÖNETİMİ"
+    },
+    {
+      "id": "14968",
+      "name": "SİYASET BİLİMİ VE ULUSLARARASI İLİŞKİLER"
+    },
+    {
+      "id": "14990",
+      "name": "SOSYAL BİLGİLER ÖĞRETMENLİĞİ"
+    },
+    {
+      "id": "15004",
+      "name": "SOSYAL HİZMET"
+    },
+    {
+      "id": "15023",
+      "name": "SOSYOLOJİ"
+    },
+    {
+      "id": "25029",
+      "name": "SPOR BİLİMLERİ"
+    },
+    {
+      "id": "15042",
+      "name": "SPOR YÖNETİCİLİĞİ"
+    },
+    {
+      "id": "18935",
+      "name": "SU BİLİMLERİ VE MÜHENDİSLİĞİ"
+    },
+    {
+      "id": "120586",
+      "name": "SU ÜRÜNLERİ ENDÜSTRİSİ MÜHENDİSLİĞİ"
+    },
+    {
+      "id": "15074",
+      "name": "SU ÜRÜNLERİ MÜHENDİSLİĞİ"
+    },
+    {
+      "id": "15086",
+      "name": "SÜMEROLOJİ"
+    },
+    {
+      "id": "17191",
+      "name": "SÜRYANİ DİLİ VE EDEBİYATI"
+    },
+    {
+      "id": "15099",
+      "name": "SÜT TEKNOLOJİSİ"
+    },
+    {
+      "id": "15103",
+      "name": "ŞAN"
+    },
+    {
+      "id": "15109",
+      "name": "ŞEHİR VE BÖLGE PLANLAMA"
+    },
+    {
+      "id": "15119",
+      "name": "TAKI TASARIMI"
+    },
+    {
+      "id": "18409",
+      "name": "TAKI TASARIMI VE İMALATI"
+    },
+    {
+      "id": "220086",
+      "name": "TAPU KADASTRO"
+    },
+    {
+      "id": "15130",
+      "name": "TARIM EKONOMİSİ"
+    },
+    {
+      "id": "15135",
+      "name": "TARIM MAKİNELERİ VE TEKNOLOJİLERİ MÜHENDİSLİĞİ"
+    },
+    {
+      "id": "19624",
+      "name": "TARIM TİCARETİ VE İŞLETMECİLİĞİ"
+    },
+    {
+      "id": "15145",
+      "name": "TARIMSAL BİYOTEKNOLOJİ"
+    },
+    {
+      "id": "15148",
+      "name": "TARIMSAL GENETİK MÜHENDİSLİĞİ"
+    },
+    {
+      "id": "15161",
+      "name": "TARIMSAL YAPILAR VE SULAMA"
+    },
+    {
+      "id": "15163",
+      "name": "TARİH"
+    },
+    {
+      "id": "15164",
+      "name": "TARİH ÖĞRETMENLİĞİ"
+    },
+    {
+      "id": "15165",
+      "name": "TARİH ÖNCESİ ARKEOLOJİSİ"
+    },
+    {
+      "id": "15169",
+      "name": "TARLA BİTKİLERİ"
+    },
+    {
+      "id": "120751",
+      "name": "TEKNOLOJİ GİRİŞİMCİLİĞİ"
+    },
+    {
+      "id": "15211",
+      "name": "TEKNOLOJİ VE BİLGİ YÖNETİMİ"
+    },
+    {
+      "id": "15214",
+      "name": "TEKSTİL"
+    },
+    {
+      "id": "15220",
+      "name": "TEKSTİL GELİŞTİRME VE PAZARLAMA"
+    },
+    {
+      "id": "15224",
+      "name": "TEKSTİL MÜHENDİSLİĞİ"
+    },
+    {
+      "id": "15225",
+      "name": "TEKSTİL TASARIMI"
+    },
+    {
+      "id": "14191",
+      "name": "TEKSTİL VE MODA TASARIMI"
+    },
+    {
+      "id": "15241",
+      "name": "TELEVİZYON HABERCİLİĞİ VE PROGRAMCILIĞI"
+    },
+    {
+      "id": "120069",
+      "name": "TEZHİP SANATI"
+    },
+    {
+      "id": "15306",
+      "name": "TEZHİP-MİNYATÜR VE EBRU"
+    },
+    {
+      "id": "15370",
+      "name": "TIP"
+    },
+    {
+      "id": "15382",
+      "name": "TIP MÜHENDİSLİĞİ"
+    },
+    {
+      "id": "15393",
+      "name": "TİYATRO"
+    },
+    {
+      "id": "15395",
+      "name": "TİYATRO ELEŞTİRMENLİĞİ VE DRAMATURJİ"
+    },
+    {
+      "id": "15400",
+      "name": "TOHUM BİLİMİ VE TEKNOLOJİSİ"
+    },
+    {
+      "id": "15426",
+      "name": "TOPRAK BİLİMİ VE BİTKİ BESLEME"
+    },
+    {
+      "id": "25438",
+      "name": "TROMBON"
+    },
+    {
+      "id": "25439",
+      "name": "TROMPET"
+    },
+    {
+      "id": "25440",
+      "name": "TUBA"
+    },
+    {
+      "id": "15446",
+      "name": "TURİZM İŞLETMECİLİĞİ"
+    },
+    {
+      "id": "17257",
+      "name": "TURİZM İŞLETMECİLİĞİ VE OTELCİLİK"
+    },
+    {
+      "id": "15448",
+      "name": "TURİZM REHBERLİĞİ"
+    },
+    {
+      "id": "120929",
+      "name": "TURİZM VE GASTRONOMİ YÖNETİMİ PROGRAMLARI"
+    },
+    {
+      "id": "120757",
+      "name": "TURİZM VE KONAKLAMA İŞLETMECİLİĞİ"
+    },
+    {
+      "id": "17256",
+      "name": "TURİZM VE OTEL İŞLETMECİLİĞİ"
+    },
+    {
+      "id": "15452",
+      "name": "TURİZM VE OTELCİLİK"
+    },
+    {
+      "id": "15468",
+      "name": "TÜRK DİLİ VE EDEBİYATI"
+    },
+    {
+      "id": "15469",
+      "name": "TÜRK DİLİ VE EDEBİYATI ÖĞRETMENLİĞİ"
+    },
+    {
+      "id": "15472",
+      "name": "TÜRK DİN MUSİKİSİ"
+    },
+    {
+      "id": "15485",
+      "name": "TÜRK HALK MÜZİĞİ"
+    },
+    {
+      "id": "15486",
+      "name": "TÜRK HALK MÜZİĞİ ÇALGI EĞİTİMİ"
+    },
+    {
+      "id": "15488",
+      "name": "TÜRK HALK MÜZİĞİ SES EĞİTİMİ"
+    },
+    {
+      "id": "15490",
+      "name": "TÜRK HALK OYUNLARI"
+    },
+    {
+      "id": "15483",
+      "name": "TÜRK HALKBİLİMİ"
+    },
+    {
+      "id": "15523",
+      "name": "TÜRK İSLAM ARKEOLOJİSİ"
+    },
+    {
+      "id": "17259",
+      "name": "TÜRK MUSİKİSİ"
+    },
+    {
+      "id": "15503",
+      "name": "TÜRK MÜZİĞİ"
+    },
+    {
+      "id": "15505",
+      "name": "TÜRK SANAT MÜZİĞİ"
+    },
+    {
+      "id": "120860",
+      "name": "TÜRK SANAT MÜZİĞİ ÇALGI EĞİTİMİ"
+    },
+    {
+      "id": "15506",
+      "name": "TÜRK SANAT MÜZİĞİ SES EĞİTİMİ"
+    },
+    {
+      "id": "15518",
+      "name": "TÜRKÇE ÖĞRETMENLİĞİ"
+    },
+    {
+      "id": "19882",
+      "name": "TÜRKÇE, RUSÇA MÜTERCİM TERCÜMANLIK"
+    },
+    {
+      "id": "17167",
+      "name": "TÜRKOLOJİ"
+    },
+    {
+      "id": "25533",
+      "name": "TÜTÜN EKSPERLİĞİ"
+    },
+    {
+      "id": "18367",
+      "name": "UÇAK BAKIM VE ONARIM"
+    },
+    {
+      "id": "220077",
+      "name": "UÇAK ELEKTRİK VE ELEKTRONİĞİ"
+    },
+    {
+      "id": "120073",
+      "name": "UÇAK GÖVDE VE MOTOR BAKIMI"
+    },
+    {
+      "id": "15548",
+      "name": "UÇAK MÜHENDİSLİĞİ"
+    },
+    {
+      "id": "15554",
+      "name": "UKRAYNA DİLİ VE EDEBİYATI"
+    },
+    {
+      "id": "120784",
+      "name": "ULAŞTIRMA VE TRAFİK MÜHENDİSLİĞİ"
+    },
+    {
+      "id": "18237",
+      "name": "ULUSLARARASI EKONOMİK İLİŞKİLER"
+    },
+    {
+      "id": "15568",
+      "name": "ULUSLARARASI FİNANS"
+    },
+    {
+      "id": "15569",
+      "name": "ULUSLARARASI FİNANS VE BANKACILIK"
+    },
+    {
+      "id": "15573",
+      "name": "ULUSLARARASI GİRİŞİMCİLİK"
+    },
+    {
+      "id": "15575",
+      "name": "ULUSLARARASI HUKUK"
+    },
+    {
+      "id": "15581",
+      "name": "ULUSLARARASI İLİŞKİLER"
+    },
+    {
+      "id": "15582",
+      "name": "ULUSLARARASI İLİŞKİLER VE AVRUPA BİRLİĞİ"
+    },
+    {
+      "id": "17356",
+      "name": "ULUSLARARASI İŞLETME"
+    },
+    {
+      "id": "15590",
+      "name": "ULUSLARARASI İŞLETME YÖNETİMİ"
+    },
+    {
+      "id": "15591",
+      "name": "ULUSLARARASI İŞLETMECİLİK VE TİCARET"
+    },
+    {
+      "id": "17255",
+      "name": "ULUSLARARASI KONAKLAMA VE TURİZM"
+    },
+    {
+      "id": "25595",
+      "name": "ULUSLARARASI LOJİSTİK VE TAŞIMACILIK"
+    },
+    {
+      "id": "15607",
+      "name": "ULUSLARARASI TİCARET"
+    },
+    {
+      "id": "17358",
+      "name": "ULUSLARARASI TİCARET VE FİNANS"
+    },
+    {
+      "id": "15612",
+      "name": "ULUSLARARASI TİCARET VE FİNANSMAN"
+    },
+    {
+      "id": "15614",
+      "name": "ULUSLARARASI TİCARET VE İŞLETMECİLİK"
+    },
+    {
+      "id": "15615",
+      "name": "ULUSLARARASI TİCARET VE LOJİSTİK"
+    },
+    {
+      "id": "15623",
+      "name": "URDU DİLİ VE EDEBİYATI"
+    },
+    {
+      "id": "15670",
+      "name": "UZAY BİLİMLERİ VE TEKNOLOJİLERİ"
+    },
+    {
+      "id": "15673",
+      "name": "UZAY MÜHENDİSLİĞİ"
+    },
+    {
+      "id": "15680",
+      "name": "ÜFLEMELİ VE VURMALI ÇALGILAR"
+    },
+    {
+      "id": "120912",
+      "name": "VERİ ANALİZİ MÜHENDİSLİĞİ"
+    },
+    {
+      "id": "19237",
+      "name": "VERİ BİLİMİ"
+    },
+    {
+      "id": "120529",
+      "name": "VERİ BİLİMİ VE ANALİTİĞİ"
+    },
+    {
+      "id": "17371",
+      "name": "VETERİNER"
+    },
+    {
+      "id": "15719",
+      "name": "VETERİNERLİK"
+    },
+    {
+      "id": "25736",
+      "name": "VİYOLA"
+    },
+    {
+      "id": "25737",
+      "name": "VİYOLONSEL"
+    },
+    {
+      "id": "25740",
+      "name": "VURMALI ÇALGILAR"
+    },
+    {
+      "id": "15744",
+      "name": "YABAN HAYATI EKOLOJİSİ VE YÖNETİMİ"
+    },
+    {
+      "id": "19731",
+      "name": "YAPAY ZEKA MÜHENDİSLİĞİ"
+    },
+    {
+      "id": "120722",
+      "name": "YAPAY ZEKA VE MAKİNE ÖĞRENMESİ"
+    },
+    {
+      "id": "120020",
+      "name": "YAPAY ZEKA VE VERİ MÜHENDİSLİĞİ"
+    },
+    {
+      "id": "15815",
+      "name": "YAYLI ÇALGILAR"
+    },
+    {
+      "id": "19623",
+      "name": "YAZILIM GELİŞTİRME"
+    },
+    {
+      "id": "15821",
+      "name": "YAZILIM MÜHENDİSLİĞİ"
+    },
+    {
+      "id": "15835",
+      "name": "YENİ MEDYA"
+    },
+    {
+      "id": "15836",
+      "name": "YENİ MEDYA VE GAZETECİLİK"
+    },
+    {
+      "id": "18314",
+      "name": "YENİ MEDYA VE İLETİŞİM"
+    },
+    {
+      "id": "15853",
+      "name": "YEREL YÖNETİMLER"
+    },
+    {
+      "id": "15861",
+      "name": "YİYECEK VE İÇECEK İŞLETMECİLİĞİ"
+    },
+    {
+      "id": "19640",
+      "name": "YÖNETİM BİLİMLERİ PROGRAMLARI"
+    },
+    {
+      "id": "15874",
+      "name": "YÖNETİM BİLİŞİM SİSTEMLERİ"
+    },
+    {
+      "id": "15888",
+      "name": "YUNAN DİLİ VE EDEBİYATI"
+    },
+    {
+      "id": "15897",
+      "name": "ZAZA DİLİ VE EDEBİYATI"
+    },
+    {
+      "id": "19641",
+      "name": "ZİRAAT MÜHENDİSLİĞİ PROGRAMLARI"
+    },
+    {
+      "id": "15906",
+      "name": "ZOOTEKNİ"
+    }
+  ],
+  "onlisans": [
+    {
+      "id": "31686",
+      "name": "ACİL DURUM VE AFET YÖNETİMİ"
+    },
+    {
+      "id": "320519",
+      "name": "AÇIK DENİZ SONDAJ TEKNOLOJİSİ"
+    },
+    {
+      "id": "320521",
+      "name": "AÇIK DENİZ TABANI UYGULAMALARI TEKNOLOJİSİ"
+    },
+    {
+      "id": "31697",
+      "name": "ADALET"
+    },
+    {
+      "id": "31734",
+      "name": "AĞIZ VE DİŞ SAĞLIĞI"
+    },
+    {
+      "id": "320900",
+      "name": "AKILLI ALTYAPILAR TEKNİKERLİĞİ"
+    },
+    {
+      "id": "320888",
+      "name": "AKILLI SERA TEKNOLOJİLERİ"
+    },
+    {
+      "id": "320854",
+      "name": "AKILLI TARIM VE GIDA YÖNETİMİ"
+    },
+    {
+      "id": "31774",
+      "name": "ALTERNATİF ENERJİ KAYNAKLARI TEKNOLOJİSİ"
+    },
+    {
+      "id": "320012",
+      "name": "AMBALAJ TASARIMI"
+    },
+    {
+      "id": "31780",
+      "name": "AMELİYATHANE HİZMETLERİ"
+    },
+    {
+      "id": "31799",
+      "name": "ANESTEZİ"
+    },
+    {
+      "id": "31834",
+      "name": "ARICILIK"
+    },
+    {
+      "id": "320729",
+      "name": "ARKA-YÜZ YAZILIM GELİŞTİRME"
+    },
+    {
+      "id": "31850",
+      "name": "AŞÇILIK"
+    },
+    {
+      "id": "31854",
+      "name": "ATÇILIK VE ANTRENÖRLÜĞÜ"
+    },
+    {
+      "id": "31861",
+      "name": "AVCILIK VE YABAN HAYATI"
+    },
+    {
+      "id": "31883",
+      "name": "AYAKKABI TASARIM VE ÜRETİMİ"
+    },
+    {
+      "id": "31890",
+      "name": "BAĞCILIK"
+    },
+    {
+      "id": "320468",
+      "name": "BAĞCILIK VE BAĞ ÜRÜNLERİ TEKNOLOJİSİ"
+    },
+    {
+      "id": "31895",
+      "name": "BAHÇE TARIMI"
+    },
+    {
+      "id": "31921",
+      "name": "BANKACILIK VE SİGORTACILIK"
+    },
+    {
+      "id": "37225",
+      "name": "BASIM VE YAYIM TEKNOLOJİLERİ"
+    },
+    {
+      "id": "320525",
+      "name": "BIÇAKÇILIK VE EL ALETLERİ ÜRETİM TEKNOLOJİSİ"
+    },
+    {
+      "id": "31990",
+      "name": "BİLGİ YÖNETİMİ"
+    },
+    {
+      "id": "32000",
+      "name": "BİLGİSAYAR DESTEKLİ TASARIM VE ANİMASYON"
+    },
+    {
+      "id": "32012",
+      "name": "BİLGİSAYAR OPERATÖRLÜĞÜ"
+    },
+    {
+      "id": "32020",
+      "name": "BİLGİSAYAR PROGRAMCILIĞI"
+    },
+    {
+      "id": "32027",
+      "name": "BİLGİSAYAR TEKNOLOJİSİ"
+    },
+    {
+      "id": "32030",
+      "name": "BİLGİSAYAR TEKNOLOJİSİ VE PROGRAMLAMA"
+    },
+    {
+      "id": "320018",
+      "name": "BİLİŞİM GÜVENLİĞİ TEKNOLOJİSİ"
+    },
+    {
+      "id": "32079",
+      "name": "BİTKİ KORUMA"
+    },
+    {
+      "id": "32118",
+      "name": "BİYOKİMYA"
+    },
+    {
+      "id": "32133",
+      "name": "BİYOMEDİKAL CİHAZ TEKNOLOJİSİ"
+    },
+    {
+      "id": "320808",
+      "name": "BİYOMEDİKAL CİHAZ TEKNOLOJİSİ TEKNİKERLİĞİ"
+    },
+    {
+      "id": "32163",
+      "name": "BOYA TEKNOLOJİSİ"
+    },
+    {
+      "id": "320735",
+      "name": "BULUT BİLİŞİM OPERATÖRLÜĞÜ"
+    },
+    {
+      "id": "37228",
+      "name": "BÜRO YÖNETİMİ VE YÖNETİCİ ASİSTANLIĞI"
+    },
+    {
+      "id": "320736",
+      "name": "BÜYÜK VERİ ANALİSTLİĞİ"
+    },
+    {
+      "id": "38576",
+      "name": "CEZA İNFAZ VE GÜVENLİK HİZMETLERİ"
+    },
+    {
+      "id": "320539",
+      "name": "CNC PROGRAMLAMA VE OPERATÖRLÜĞÜ"
+    },
+    {
+      "id": "32210",
+      "name": "COĞRAFİ BİLGİ SİSTEMLERİ"
+    },
+    {
+      "id": "32225",
+      "name": "ÇAĞRI MERKEZİ HİZMETLERİ"
+    },
+    {
+      "id": "32237",
+      "name": "ÇAY TARIMI VE İŞLEME TEKNOLOJİSİ"
+    },
+    {
+      "id": "32269",
+      "name": "ÇEVRE KORUMA VE KONTROL"
+    },
+    {
+      "id": "32273",
+      "name": "ÇEVRE SAĞLIĞI"
+    },
+    {
+      "id": "320903",
+      "name": "ÇEVRE SAĞLIĞI VE ÇEVRESEL RİSK YÖNETİMİ TEKNİKERLİĞİ"
+    },
+    {
+      "id": "320899",
+      "name": "ÇEVRESEL ÖLÇÜM VE İZLEME SİSTEMLERİ TEKNİKERLİĞİ"
+    },
+    {
+      "id": "32292",
+      "name": "ÇİM ALAN TESİSİ VE YÖNETİMİ"
+    },
+    {
+      "id": "39635",
+      "name": "ÇİNİ SANATI VE TASARIMI"
+    },
+    {
+      "id": "32315",
+      "name": "ÇOCUK GELİŞİMİ"
+    },
+    {
+      "id": "37202",
+      "name": "ÇOCUK KORUMA VE BAKIM HİZMETLERİ"
+    },
+    {
+      "id": "320032",
+      "name": "ÇOK BOYUTLU MODELLEME VE ANİMASYON"
+    },
+    {
+      "id": "38025",
+      "name": "DENİZ BROKERLİĞİ"
+    },
+    {
+      "id": "32410",
+      "name": "DENİZ ULAŞTIRMA VE İŞLETME"
+    },
+    {
+      "id": "37239",
+      "name": "DENİZ VE LİMAN İŞLETMECİLİĞİ"
+    },
+    {
+      "id": "32439",
+      "name": "DERİ TEKNOLOJİSİ"
+    },
+    {
+      "id": "320017",
+      "name": "DEZENFEKSİYON, STERİLİZASYON VE ANTİSEPSİ TEKNİKERLİĞİ"
+    },
+    {
+      "id": "32450",
+      "name": "DIŞ TİCARET"
+    },
+    {
+      "id": "320731",
+      "name": "DİJİTAL DÖNÜŞÜM ELEKTRONİĞİ"
+    },
+    {
+      "id": "320014",
+      "name": "DİJİTAL FABRİKA TEKNOLOJİLERİ"
+    },
+    {
+      "id": "320884",
+      "name": "DİJİTAL SAĞLIK SİSTEMLERİ TEKNİKERLİĞİ"
+    },
+    {
+      "id": "320886",
+      "name": "DİJİTAL TARIM TEKNOLOJİLERİ"
+    },
+    {
+      "id": "320787",
+      "name": "DİŞ PROTEZ TEKNİSYENLİĞİ"
+    },
+    {
+      "id": "32495",
+      "name": "DİŞ PROTEZ TEKNOLOJİSİ"
+    },
+    {
+      "id": "32498",
+      "name": "DİYALİZ"
+    },
+    {
+      "id": "32504",
+      "name": "DOĞAL YAPI TAŞLARI TEKNOLOJİSİ"
+    },
+    {
+      "id": "32508",
+      "name": "DOĞALGAZ VE TESİSATI TEKNOLOJİSİ"
+    },
+    {
+      "id": "32528",
+      "name": "DÖKÜM"
+    },
+    {
+      "id": "310024",
+      "name": "E-TİCARET VE PAZARLAMA"
+    },
+    {
+      "id": "32543",
+      "name": "EBELİK"
+    },
+    {
+      "id": "32555",
+      "name": "ECZANE HİZMETLERİ"
+    },
+    {
+      "id": "32628",
+      "name": "ELEKTRİK"
+    },
+    {
+      "id": "32630",
+      "name": "ELEKTRİK ENERJİSİ ÜRETİM, İLETİM VE DAĞITIMI"
+    },
+    {
+      "id": "38168",
+      "name": "ELEKTRİK MAKİNELERİ BAKIM VE ONARIMI"
+    },
+    {
+      "id": "32648",
+      "name": "ELEKTRİK VE ELEKTRONİK TEKNOLOJİSİ"
+    },
+    {
+      "id": "32651",
+      "name": "ELEKTRİKLİ CİHAZ TEKNOLOJİSİ"
+    },
+    {
+      "id": "32661",
+      "name": "ELEKTRONİK HABERLEŞME TEKNOLOJİSİ"
+    },
+    {
+      "id": "32667",
+      "name": "ELEKTRONİK TEKNOLOJİSİ"
+    },
+    {
+      "id": "32677",
+      "name": "ELEKTRONÖROFİZYOLOJİ"
+    },
+    {
+      "id": "320022",
+      "name": "EMLAK YÖNETİMİ"
+    },
+    {
+      "id": "32713",
+      "name": "ENDÜSTRİ ÜRÜNLERİ TASARIMI"
+    },
+    {
+      "id": "32720",
+      "name": "ENDÜSTRİYEL CAM VE SERAMİK"
+    },
+    {
+      "id": "32727",
+      "name": "ENDÜSTRİYEL HAMMADDELER İŞLEME TEKNOLOJİSİ"
+    },
+    {
+      "id": "32729",
+      "name": "ENDÜSTRİYEL KALIPÇILIK"
+    },
+    {
+      "id": "32756",
+      "name": "ENERJİ TESİSLERİ İŞLETMECİLİĞİ"
+    },
+    {
+      "id": "32773",
+      "name": "ENGELLİ BAKIMI VE REHABİLİTASYON"
+    },
+    {
+      "id": "320376",
+      "name": "ENGELLİLER İÇİN GÖLGE ÖĞRETİCİLİK"
+    },
+    {
+      "id": "32791",
+      "name": "ESER KORUMA"
+    },
+    {
+      "id": "32806",
+      "name": "ET VE ÜRÜNLERİ TEKNOLOJİSİ"
+    },
+    {
+      "id": "32820",
+      "name": "EVDE HASTA BAKIMI"
+    },
+    {
+      "id": "32877",
+      "name": "FINDIK EKSPERLİĞİ"
+    },
+    {
+      "id": "320852",
+      "name": "FİBER TEKNE İMALATI VE KOMPOZİT KALIP TEKNOLOJİLERİ"
+    },
+    {
+      "id": "32879",
+      "name": "FİDAN YETİŞTİRİCİLİĞİ"
+    },
+    {
+      "id": "32887",
+      "name": "FİNANS"
+    },
+    {
+      "id": "32888",
+      "name": "FİNANS, BANKACILIK VE SİGORTACILIK"
+    },
+    {
+      "id": "32925",
+      "name": "FİZYOTERAPİ"
+    },
+    {
+      "id": "32941",
+      "name": "FOTOĞRAFÇILIK VE KAMERAMANLIK"
+    },
+    {
+      "id": "32968",
+      "name": "GELENEKSEL EL SANATLARI"
+    },
+    {
+      "id": "320373",
+      "name": "GELENEKSEL TEKSTİLLERİN KORUNMASI VE RESTORASYONU"
+    },
+    {
+      "id": "32992",
+      "name": "GEMİ İNŞAATI"
+    },
+    {
+      "id": "320023",
+      "name": "GEMİ MAKİNELERİ İŞLETMECİLİĞİ"
+    },
+    {
+      "id": "33054",
+      "name": "GEOTEKNİK"
+    },
+    {
+      "id": "33076",
+      "name": "GIDA KALİTE KONTROLÜ VE ANALİZİ"
+    },
+    {
+      "id": "33084",
+      "name": "GIDA TEKNOLOJİSİ"
+    },
+    {
+      "id": "33107",
+      "name": "GİYİM ÜRETİM TEKNOLOJİSİ"
+    },
+    {
+      "id": "33117",
+      "name": "GÖRSEL İLETİŞİM"
+    },
+    {
+      "id": "33137",
+      "name": "GRAFİK TASARIMI"
+    },
+    {
+      "id": "33170",
+      "name": "HALICILIK VE KİLİMCİLİK"
+    },
+    {
+      "id": "33186",
+      "name": "HALKLA İLİŞKİLER VE REKLAMCILIK"
+    },
+    {
+      "id": "33187",
+      "name": "HALKLA İLİŞKİLER VE TANITIM"
+    },
+    {
+      "id": "33192",
+      "name": "HARİTA VE KADASTRO"
+    },
+    {
+      "id": "320421",
+      "name": "HASTA BAKIMI"
+    },
+    {
+      "id": "320719",
+      "name": "HAVA ARACI İMALAT TEKNOLOJİLERİ"
+    },
+    {
+      "id": "33210",
+      "name": "HAVA LOJİSTİĞİ"
+    },
+    {
+      "id": "320710",
+      "name": "HAVACILIK ELEKTRONİĞİ TEKNOLOJİLERİ"
+    },
+    {
+      "id": "33284",
+      "name": "HİBRİD VE ELEKTRİKLİ TAŞITLAR TEKNOLOJİSİ"
+    },
+    {
+      "id": "320901",
+      "name": "HİDROJEN VE ENERJİ DEPOLAMA TEKNİKERLİĞİ"
+    },
+    {
+      "id": "320938",
+      "name": "HİDROLİK VE PNÖMATİK TEKNİKERLİĞİ"
+    },
+    {
+      "id": "33336",
+      "name": "İÇ MEKAN TASARIMI"
+    },
+    {
+      "id": "33347",
+      "name": "İKLİMLENDİRME VE SOĞUTMA TEKNOLOJİSİ"
+    },
+    {
+      "id": "33348",
+      "name": "İKRAM HİZMETLERİ"
+    },
+    {
+      "id": "83367",
+      "name": "İLAHİYAT"
+    },
+    {
+      "id": "33402",
+      "name": "İLK VE ACİL YARDIM"
+    },
+    {
+      "id": "320726",
+      "name": "İMALAT YÜRÜTME SİSTEMLERİ OPERATÖRLÜĞÜ"
+    },
+    {
+      "id": "33461",
+      "name": "İNSAN KAYNAKLARI YÖNETİMİ"
+    },
+    {
+      "id": "320732",
+      "name": "İNSANSIZ ARAÇ TEKNİKERLİĞİ"
+    },
+    {
+      "id": "320072",
+      "name": "İNSANSIZ HAVA ARACI TEKNOLOJİSİ VE OPERATÖRLÜĞÜ"
+    },
+    {
+      "id": "33477",
+      "name": "İNŞAAT TEKNOLOJİSİ"
+    },
+    {
+      "id": "33479",
+      "name": "İNŞAAT VE TEKNİK ÇİZİM TEKNOLOJİLERİ"
+    },
+    {
+      "id": "33485",
+      "name": "İNTERNET VE AĞ TEKNOLOJİLERİ"
+    },
+    {
+      "id": "83510",
+      "name": "İSLAMİ İLİMLER"
+    },
+    {
+      "id": "33533",
+      "name": "İŞ MAKİNELERİ OPERATÖRLÜĞÜ"
+    },
+    {
+      "id": "33528",
+      "name": "İŞ SAĞLIĞI VE GÜVENLİĞİ"
+    },
+    {
+      "id": "33541",
+      "name": "İŞ VE UĞRAŞI TERAPİSİ"
+    },
+    {
+      "id": "33568",
+      "name": "İŞLETME YÖNETİMİ"
+    },
+    {
+      "id": "320717",
+      "name": "KARAYOLU YÜK TAŞITI SÜRÜCÜLÜĞÜ"
+    },
+    {
+      "id": "320897",
+      "name": "KARBON YÖNETİMİ TEKNİKERLİĞİ"
+    },
+    {
+      "id": "33692",
+      "name": "KAYNAK TEKNOLOJİSİ"
+    },
+    {
+      "id": "320739",
+      "name": "KENEVİR DOKUMACILIĞI"
+    },
+    {
+      "id": "33752",
+      "name": "KİMYA TEKNOLOJİSİ"
+    },
+    {
+      "id": "33835",
+      "name": "KONTROL VE OTOMASYON TEKNOLOJİSİ"
+    },
+    {
+      "id": "33839",
+      "name": "KOOPERATİFÇİLİK"
+    },
+    {
+      "id": "33853",
+      "name": "KOZMETİK TEKNOLOJİSİ"
+    },
+    {
+      "id": "320805",
+      "name": "KOZMETOLOJİ TEKNİKERLİĞİ"
+    },
+    {
+      "id": "320730",
+      "name": "KURUMSAL BİLİŞİM UZMANLIĞI"
+    },
+    {
+      "id": "37320",
+      "name": "KUYUMCULUK VE TAKI TASARIMI"
+    },
+    {
+      "id": "33905",
+      "name": "KÜLTÜREL MİRAS VE TURİZM"
+    },
+    {
+      "id": "33910",
+      "name": "KÜMES HAYVANLARI YETİŞTİRİCİLİĞİ"
+    },
+    {
+      "id": "33923",
+      "name": "LABORANT VE VETERİNER SAĞLIK"
+    },
+    {
+      "id": "33925",
+      "name": "LABORATUVAR TEKNOLOJİSİ"
+    },
+    {
+      "id": "33943",
+      "name": "LOJİSTİK"
+    },
+    {
+      "id": "320024",
+      "name": "MADENCİLİK TEKNOLOJİSİ"
+    },
+    {
+      "id": "320674",
+      "name": "MAHKEME BÜRO HİZMETLERİ"
+    },
+    {
+      "id": "33977",
+      "name": "MAKİNE"
+    },
+    {
+      "id": "320025",
+      "name": "MAKİNE RESİM VE KONSTRÜKSİYONU"
+    },
+    {
+      "id": "34018",
+      "name": "MALİYE"
+    },
+    {
+      "id": "34040",
+      "name": "MANTARCILIK"
+    },
+    {
+      "id": "34042",
+      "name": "MARİNA VE YAT İŞLETMECİLİĞİ"
+    },
+    {
+      "id": "84043",
+      "name": "MARKA İLETİŞİMİ"
+    },
+    {
+      "id": "34076",
+      "name": "MEDYA VE İLETİŞİM"
+    },
+    {
+      "id": "34093",
+      "name": "MEKATRONİK"
+    },
+    {
+      "id": "34099",
+      "name": "MENKUL KIYMETLER VE SERMAYE PİYASASI"
+    },
+    {
+      "id": "34102",
+      "name": "MERMER TEKNOLOJİSİ"
+    },
+    {
+      "id": "34114",
+      "name": "METALURJİ"
+    },
+    {
+      "id": "34122",
+      "name": "MEYVE VE SEBZE İŞLEME TEKNOLOJİSİ"
+    },
+    {
+      "id": "34147",
+      "name": "MİMARİ DEKORATİF SANATLAR"
+    },
+    {
+      "id": "34151",
+      "name": "MİMARİ RESTORASYON"
+    },
+    {
+      "id": "34176",
+      "name": "MOBİL TEKNOLOJİLERİ"
+    },
+    {
+      "id": "34180",
+      "name": "MOBİLYA VE DEKORASYON"
+    },
+    {
+      "id": "34186",
+      "name": "MODA TASARIMI"
+    },
+    {
+      "id": "34193",
+      "name": "MODA YÖNETİMİ"
+    },
+    {
+      "id": "34224",
+      "name": "MUHASEBE"
+    },
+    {
+      "id": "34235",
+      "name": "MUHASEBE VE VERGİ UYGULAMALARI"
+    },
+    {
+      "id": "39530",
+      "name": "NÜFUS VE VATANDAŞLIK"
+    },
+    {
+      "id": "34337",
+      "name": "NÜKLEER TEKNOLOJİ VE RADYASYON GÜVENLİĞİ"
+    },
+    {
+      "id": "34339",
+      "name": "NÜKLEER TIP TEKNİKLERİ"
+    },
+    {
+      "id": "34348",
+      "name": "ODYOMETRİ"
+    },
+    {
+      "id": "320862",
+      "name": "OFİS TEKNOLOJİLERİ VE VERİ YÖNETİMİ"
+    },
+    {
+      "id": "34373",
+      "name": "OPTİSYENLİK"
+    },
+    {
+      "id": "320709",
+      "name": "OPTOELEKTRONİK VE ELEKTRO OPTİK TEKNOLOJİLERİ"
+    },
+    {
+      "id": "34391",
+      "name": "ORGANİK TARIM"
+    },
+    {
+      "id": "34418",
+      "name": "ORMANCILIK VE ORMAN ÜRÜNLERİ"
+    },
+    {
+      "id": "34468",
+      "name": "ORTOPEDİK PROTEZ VE ORTEZ"
+    },
+    {
+      "id": "34487",
+      "name": "OTOBÜS KAPTANLIĞI"
+    },
+    {
+      "id": "310025",
+      "name": "OTOMOTİV GÖVDE VE YÜZEY İŞLEM TEKNOLOJİLERİ"
+    },
+    {
+      "id": "34502",
+      "name": "OTOMOTİV TEKNOLOJİSİ"
+    },
+    {
+      "id": "320724",
+      "name": "OTONOM SİSTEMLER TEKNİKERLİĞİ"
+    },
+    {
+      "id": "34504",
+      "name": "OTOPSİ YARDIMCILIĞI"
+    },
+    {
+      "id": "320723",
+      "name": "OYUN GELİŞTİRME VE PROGRAMLAMA"
+    },
+    {
+      "id": "320725",
+      "name": "ÖN-YÜZ YAZILIM GELİŞTİRME"
+    },
+    {
+      "id": "34524",
+      "name": "ÖZEL GÜVENLİK VE KORUMA"
+    },
+    {
+      "id": "39504",
+      "name": "PASTACILIK VE EKMEKÇİLİK"
+    },
+    {
+      "id": "34548",
+      "name": "PATOLOJİ LABORATUVAR TEKNİKLERİ"
+    },
+    {
+      "id": "34551",
+      "name": "PAZARLAMA"
+    },
+    {
+      "id": "34600",
+      "name": "PERAKENDE SATIŞ VE MAĞAZA YÖNETİMİ"
+    },
+    {
+      "id": "34604",
+      "name": "PERFÜZYON"
+    },
+    {
+      "id": "320027",
+      "name": "PEYZAJ VE SÜS BİTKİLERİ YETİŞTİRİCİLİĞİ"
+    },
+    {
+      "id": "34643",
+      "name": "PODOLOJİ"
+    },
+    {
+      "id": "37922",
+      "name": "POLİMER TEKNOLOJİSİ"
+    },
+    {
+      "id": "34656",
+      "name": "POSTA HİZMETLERİ"
+    },
+    {
+      "id": "34694",
+      "name": "RADYO VE TELEVİZYON PROGRAMCILIĞI"
+    },
+    {
+      "id": "34696",
+      "name": "RADYO VE TELEVİZYON TEKNOLOJİSİ"
+    },
+    {
+      "id": "34710",
+      "name": "RADYOTERAPİ"
+    },
+    {
+      "id": "34714",
+      "name": "RAFİNERİ VE PETRO-KİMYA TEKNOLOJİSİ"
+    },
+    {
+      "id": "37322",
+      "name": "RAYLI SİSTEMLER ELEKTRİK VE ELEKTRONİK"
+    },
+    {
+      "id": "34716",
+      "name": "RAYLI SİSTEMLER İŞLETMECİLİĞİ"
+    },
+    {
+      "id": "34717",
+      "name": "RAYLI SİSTEMLER MAKİNE TEKNOLOJİSİ"
+    },
+    {
+      "id": "320028",
+      "name": "RAYLI SİSTEMLER MAKİNİSTLİĞİ"
+    },
+    {
+      "id": "34722",
+      "name": "RAYLI SİSTEMLER YOL TEKNOLOJİSİ"
+    },
+    {
+      "id": "34734",
+      "name": "REKLAMCILIK"
+    },
+    {
+      "id": "320727",
+      "name": "ROBOTİK VE YAPAY ZEKA"
+    },
+    {
+      "id": "34779",
+      "name": "SAÇ BAKIMI VE GÜZELLİK HİZMETLERİ"
+    },
+    {
+      "id": "34782",
+      "name": "SAĞLIK BİLGİ SİSTEMLERİ TEKNİKERLİĞİ"
+    },
+    {
+      "id": "34802",
+      "name": "SAĞLIK KURUMLARI İŞLETMECİLİĞİ"
+    },
+    {
+      "id": "36060",
+      "name": "SAĞLIK TURİZMİ İŞLETMECİLİĞİ"
+    },
+    {
+      "id": "320029",
+      "name": "SAHNE IŞIK VE SES TEKNOLOJİLERİ"
+    },
+    {
+      "id": "34828",
+      "name": "SAHNE VE DEKOR TASARIMI"
+    },
+    {
+      "id": "39575",
+      "name": "SANAL VE ARTIRILMIŞ GERÇEKLİK"
+    },
+    {
+      "id": "34882",
+      "name": "SERACILIK"
+    },
+    {
+      "id": "34892",
+      "name": "SERAMİK VE CAM TASARIMI"
+    },
+    {
+      "id": "34831",
+      "name": "SERAMİK, CAM VE ÇİNİCİLİK"
+    },
+    {
+      "id": "34918",
+      "name": "SİBER GÜVENLİK"
+    },
+    {
+      "id": "320630",
+      "name": "SİBER GÜVENLİK ANALİSTLİĞİ VE OPERATÖRLÜĞÜ"
+    },
+    {
+      "id": "38724",
+      "name": "SİLAH SANAYİ TEKNİKERLİĞİ"
+    },
+    {
+      "id": "34953",
+      "name": "SİVİL HAVA ULAŞTIRMA İŞLETMECİLİĞİ"
+    },
+    {
+      "id": "34956",
+      "name": "SİVİL HAVACILIK KABİN HİZMETLERİ"
+    },
+    {
+      "id": "311062",
+      "name": "SİVİL HAVACILIK VE KABİN HİZMETLERİ"
+    },
+    {
+      "id": "34959",
+      "name": "SİVİL SAVUNMA VE İTFAİYECİLİK"
+    },
+    {
+      "id": "34983",
+      "name": "SONDAJ TEKNOLOJİSİ"
+    },
+    {
+      "id": "34999",
+      "name": "SOSYAL GÜVENLİK"
+    },
+    {
+      "id": "320011",
+      "name": "SOSYAL HİZMETLER"
+    },
+    {
+      "id": "89839",
+      "name": "SOSYAL MEDYA YÖNETİCİLİĞİ"
+    },
+    {
+      "id": "37254",
+      "name": "SPOR YÖNETİMİ"
+    },
+    {
+      "id": "320703",
+      "name": "SU ALTI KAYNAK TEKNOLOJİSİ"
+    },
+    {
+      "id": "35060",
+      "name": "SU ALTI TEKNOLOJİSİ"
+    },
+    {
+      "id": "35072",
+      "name": "SU ÜRÜNLERİ İŞLEME TEKNOLOJİSİ"
+    },
+    {
+      "id": "320905",
+      "name": "SU VE ATIK YÖNETİMİ TEKNİKERLİĞİ"
+    },
+    {
+      "id": "35085",
+      "name": "SULAMA TEKNOLOJİSİ"
+    },
+    {
+      "id": "35094",
+      "name": "SÜS BİTKİLERİ YETİŞTİRİCİLİĞİ"
+    },
+    {
+      "id": "35100",
+      "name": "SÜT VE BESİ HAYVANCILIĞI"
+    },
+    {
+      "id": "35102",
+      "name": "SÜT VE ÜRÜNLERİ TEKNOLOJİSİ"
+    },
+    {
+      "id": "35104",
+      "name": "ŞARAP ÜRETİM TEKNOLOJİSİ"
+    },
+    {
+      "id": "35117",
+      "name": "TAHRİBATSIZ MUAYENE"
+    },
+    {
+      "id": "320895",
+      "name": "TALAŞLI ÜRETİM TEKNİKERLİĞİ"
+    },
+    {
+      "id": "35127",
+      "name": "TAPU VE KADASTRO"
+    },
+    {
+      "id": "35134",
+      "name": "TARIM MAKİNELERİ"
+    },
+    {
+      "id": "37346",
+      "name": "TARIM MAKİNELERİ VE TEKNOLOJİLERİ"
+    },
+    {
+      "id": "35138",
+      "name": "TARIM TEKNOLOJİSİ"
+    },
+    {
+      "id": "320846",
+      "name": "TARIM VE HAYVANCILIK"
+    },
+    {
+      "id": "35149",
+      "name": "TARIMSAL İŞLETMECİLİK"
+    },
+    {
+      "id": "35169",
+      "name": "TARLA BİTKİLERİ"
+    },
+    {
+      "id": "35228",
+      "name": "TEKSTİL TEKNOLOJİSİ"
+    },
+    {
+      "id": "37349",
+      "name": "TEKSTİL VE HALI MAKİNELERİ"
+    },
+    {
+      "id": "320885",
+      "name": "TELE-SAĞLIK TEKNİKERLİĞİ"
+    },
+    {
+      "id": "35324",
+      "name": "TIBBİ DOKÜMANTASYON VE SEKRETERLİK"
+    },
+    {
+      "id": "320776",
+      "name": "TIBBİ DÖKÜMANTASYON YÖNETİMİ TEKNİKERLİĞİ"
+    },
+    {
+      "id": "35338",
+      "name": "TIBBİ GÖRÜNTÜLEME TEKNİKLERİ"
+    },
+    {
+      "id": "35346",
+      "name": "TIBBİ LABORATUVAR TEKNİKLERİ"
+    },
+    {
+      "id": "35364",
+      "name": "TIBBİ TANITIM VE PAZARLAMA"
+    },
+    {
+      "id": "35367",
+      "name": "TIBBİ VE AROMATİK BİTKİLER"
+    },
+    {
+      "id": "320883",
+      "name": "TIBBİ VERİ İŞLEME TEKNİKERLİĞİ"
+    },
+    {
+      "id": "38729",
+      "name": "TOHUMCULUK TEKNOLOJİSİ"
+    },
+    {
+      "id": "35441",
+      "name": "TURİST REHBERLİĞİ"
+    },
+    {
+      "id": "35444",
+      "name": "TURİZM ANİMASYONU"
+    },
+    {
+      "id": "37256",
+      "name": "TURİZM VE OTEL İŞLETMECİLİĞİ"
+    },
+    {
+      "id": "35452",
+      "name": "TURİZM VE OTELCİLİK"
+    },
+    {
+      "id": "35454",
+      "name": "TURİZM VE SEYAHAT HİZMETLERİ"
+    },
+    {
+      "id": "820879",
+      "name": "TÜRK DİLİ VE KÜLTÜRÜ"
+    },
+    {
+      "id": "35551",
+      "name": "UÇAK TEKNOLOJİSİ"
+    },
+    {
+      "id": "37204",
+      "name": "UÇUŞ HAREKAT YÖNETİCİLİĞİ"
+    },
+    {
+      "id": "35560",
+      "name": "ULAŞTIRMA VE TRAFİK HİZMETLERİ"
+    },
+    {
+      "id": "35622",
+      "name": "UN VE UNLU MAMULLER TEKNOLOJİSİ"
+    },
+    {
+      "id": "320071",
+      "name": "UYGULAMALI İNGİLİZCE ÇEVİRMENLİK"
+    },
+    {
+      "id": "320031",
+      "name": "UYGULAMALI İSPANYOLCA ÇEVİRMENLİK"
+    },
+    {
+      "id": "35665",
+      "name": "UZAKTAN ALGILAMA VE COĞRAFİ BİLGİ SİSTEMLERİ"
+    },
+    {
+      "id": "35702",
+      "name": "ÜRETİMDE KALİTE KONTROL"
+    },
+    {
+      "id": "38036",
+      "name": "WEB TASARIMI VE KODLAMA"
+    },
+    {
+      "id": "35753",
+      "name": "YAĞ ENDÜSTRİSİ"
+    },
+    {
+      "id": "320734",
+      "name": "YAPAY ZEKA OPERATÖRLÜĞÜ"
+    },
+    {
+      "id": "35768",
+      "name": "YAPI DENETİMİ"
+    },
+    {
+      "id": "35781",
+      "name": "YAPI RESSAMLIĞI"
+    },
+    {
+      "id": "35784",
+      "name": "YAPI TESİSAT TEKNOLOJİSİ"
+    },
+    {
+      "id": "35787",
+      "name": "YAPI YALITIM TEKNOLOJİSİ"
+    },
+    {
+      "id": "320853",
+      "name": "YAPI YÜZEYİ TASARIM TEKNİKERLİĞİ"
+    },
+    {
+      "id": "37263",
+      "name": "YAŞLI BAKIMI"
+    },
+    {
+      "id": "35806",
+      "name": "YAT KAPTANLIĞI"
+    },
+    {
+      "id": "85836",
+      "name": "YENİ MEDYA VE GAZETECİLİK"
+    },
+    {
+      "id": "320898",
+      "name": "YENİLENEBİLİR ENERJİ TEKNİKERLİĞİ"
+    },
+    {
+      "id": "35853",
+      "name": "YEREL YÖNETİMLER"
+    },
+    {
+      "id": "320906",
+      "name": "YEŞİL VE EKOLOJİK BİNA TEKNİKERLİĞİ"
+    },
+    {
+      "id": "35901",
+      "name": "ZEYTİNCİLİK VE ZEYTİN İŞLEME TEKNOLOJİSİ"
+    }
+  ]
+}

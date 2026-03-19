@@ -12,25 +12,33 @@ require __DIR__ . '/includes/header.php';
             <p>Üniversite, sınıf, ders ve konu bazında filtreleyerek ihtiyacın olan içeriğe hızlıca ulaş.</p>
         </div>
 
-        <form id="homeFilterForm" class="glass-panel" data-hierarchy-group>
+        <form id="homeFilterForm" class="glass-panel" data-hierarchy-group data-filter-source="public">
             <div class="row g-3 align-items-end">
                 <div class="col-12">
                     <label class="form-label" for="homeQuery">Not Ara</label>
                     <input class="form-control form-control-lg" id="homeQuery" name="query" type="search" placeholder="Örn: Diferansiyel denklemler final notu">
                 </div>
-                <div class="col-6 col-lg-2">
+                <div class="col-6 col-lg">
                     <label class="form-label" for="homeUniversity">Üniversite</label>
                     <select class="form-select" id="homeUniversity" name="university_id" data-level="university" data-placeholder="Tüm üniversiteler"></select>
                 </div>
-                <div class="col-6 col-lg-2">
+                <div class="col-6 col-lg">
+                    <label class="form-label" for="homeDepartmentType">Program Türü</label>
+                    <select class="form-select" id="homeDepartmentType" name="department_type" data-level="department-type" data-placeholder="Program türü seç"></select>
+                </div>
+                <div class="col-6 col-lg">
+                    <label class="form-label" for="homeDepartment">Bölüm</label>
+                    <select class="form-select" id="homeDepartment" name="department_id" data-level="department" data-placeholder="Bölüm seç"></select>
+                </div>
+                <div class="col-6 col-lg">
                     <label class="form-label" for="homeClass">Sınıf</label>
                     <select class="form-select" id="homeClass" name="class_id" data-level="class" data-placeholder="Tüm sınıflar"></select>
                 </div>
-                <div class="col-6 col-lg-3">
+                <div class="col-6 col-lg">
                     <label class="form-label" for="homeCourse">Ders</label>
                     <select class="form-select" id="homeCourse" name="course_id" data-level="course" data-placeholder="Tüm dersler"></select>
                 </div>
-                <div class="col-6 col-lg-3">
+                <div class="col-6 col-lg">
                     <label class="form-label" for="homeTopic">Konu</label>
                     <select class="form-select" id="homeTopic" name="topic_id" data-level="topic" data-placeholder="Tüm konular"></select>
                 </div>

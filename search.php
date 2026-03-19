@@ -20,7 +20,7 @@ require __DIR__ . '/includes/header.php';
 
         <div class="row g-4 align-items-start">
             <aside class="col-lg-4 col-xl-3">
-                <form id="searchFilterForm" class="panel-card" data-hierarchy-group>
+                <form id="searchFilterForm" class="panel-card" data-hierarchy-group data-filter-source="public">
                     <h2 class="h5 mb-3">Detaylı Filtreler</h2>
 
                     <div class="mb-3">
@@ -28,8 +28,8 @@ require __DIR__ . '/includes/header.php';
                         <select class="form-select" id="searchUniversity" name="university_id" data-level="university" data-placeholder="Tüm üniversiteler"></select>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label" for="searchFaculty">Fakülte</label>
-                        <select class="form-select" id="searchFaculty" name="faculty_id" data-level="faculty" data-placeholder="Tüm fakülteler"></select>
+                        <label class="form-label" for="searchDepartmentType">Program Türü</label>
+                        <select class="form-select" id="searchDepartmentType" name="department_type" data-level="department-type" data-placeholder="Program türü seç"></select>
                     </div>
                     <div class="mb-3">
                         <label class="form-label" for="searchDepartment">Bölüm</label>

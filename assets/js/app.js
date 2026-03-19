@@ -27,13 +27,13 @@
             { id: '4', name: '4. Sınıf' }
         ],
         courses: [
-            { id: 'calc', departmentId: 'ytu-math', classId: '1', name: 'Calculus I' },
-            { id: 'prog', departmentId: 'itu-ceng', classId: '1', name: 'Programlamaya Giriş' },
-            { id: 'data', departmentId: 'itu-ceng', classId: '2', name: 'Veri Yapıları' },
-            { id: 'algo', departmentId: 'metu-ceng', classId: '2', name: 'Algorithms' },
-            { id: 'db', departmentId: 'ytu-ceng', classId: '3', name: 'Veritabanı Sistemleri' },
-            { id: 'signals', departmentId: 'itu-ee', classId: '3', name: 'Sayısal İşaret İşleme' },
-            { id: 'net', departmentId: 'ytu-ceng', classId: '4', name: 'Bilgisayar Ağları' }
+            { id: 'calc', departmentId: '14051', classId: '1', name: 'Calculus I' },
+            { id: 'prog', departmentId: '12010', classId: '1', name: 'Programlamaya Giriş' },
+            { id: 'data', departmentId: '12010', classId: '2', name: 'Veri Yapıları' },
+            { id: 'algo', departmentId: '12010', classId: '2', name: 'Algorithms' },
+            { id: 'db', departmentId: '12010', classId: '3', name: 'Veritabanı Sistemleri' },
+            { id: 'signals', departmentId: '12644', classId: '3', name: 'Sayısal İşaret İşleme' },
+            { id: 'net', departmentId: '12010', classId: '4', name: 'Bilgisayar Ağları' }
         ],
         topics: [
             { id: 'limits', courseId: 'calc', name: 'Limit ve Süreklilik' },
@@ -50,9 +50,10 @@
                 title: 'Veri Yapıları Final Özet',
                 description: 'Ağaçlar, hash tablolar ve sınavda çıkmış kritik soruların kısa özetleri.',
                 uploader: 'Ahmet Yılmaz',
-                universityId: 'itu',
+                universityId: '115069',
                 facultyId: 'itu-muh',
-                departmentId: 'itu-ceng',
+                departmentId: '12010',
+                departmentType: 'lisans',
                 classId: '2',
                 courseId: 'data',
                 topicId: 'trees',
@@ -67,9 +68,10 @@
                 title: 'Database Normalization Cheatsheet',
                 description: '1NF-3NF örnekleri ve tablo ilişki modelleme adımları.',
                 uploader: 'Elif C.',
-                universityId: 'ytu',
+                universityId: '126982',
                 facultyId: 'ytu-muh',
-                departmentId: 'ytu-ceng',
+                departmentId: '12010',
+                departmentType: 'lisans',
                 classId: '3',
                 courseId: 'db',
                 topicId: 'normalization',
@@ -84,9 +86,10 @@
                 title: 'Algorithms Midterm Practice',
                 description: 'Greedy, DP ve grafik problemleri için örnek çözüm seti.',
                 uploader: 'Merve D.',
-                universityId: 'metu',
+                universityId: '122571',
                 facultyId: 'metu-eng',
-                departmentId: 'metu-ceng',
+                departmentId: '12010',
+                departmentType: 'lisans',
                 classId: '2',
                 courseId: 'algo',
                 topicId: 'dp',
@@ -101,9 +104,10 @@
                 title: 'Programlamaya Giriş OOP Notları',
                 description: 'Sınıf, nesne, kapsülleme ve kalıtım anlatım notları.',
                 uploader: 'Sena K.',
-                universityId: 'itu',
+                universityId: '115069',
                 facultyId: 'itu-muh',
-                departmentId: 'itu-ceng',
+                departmentId: '12010',
+                departmentType: 'lisans',
                 classId: '1',
                 courseId: 'prog',
                 topicId: 'oop',
@@ -118,9 +122,10 @@
                 title: 'FFT Çıkış Soruları',
                 description: 'Sayısal İşaret İşleme dersinden çıkmış final soruları ve çözüm akışları.',
                 uploader: 'Burak T.',
-                universityId: 'itu',
+                universityId: '115069',
                 facultyId: 'itu-muh',
-                departmentId: 'itu-ee',
+                departmentId: '12644',
+                departmentType: 'lisans',
                 classId: '3',
                 courseId: 'signals',
                 topicId: 'fft',
@@ -135,9 +140,10 @@
                 title: 'Bilgisayar Ağları Routing Özet',
                 description: 'OSPF, BGP ve paket yönlendirme mantığını tek dokümanda toplayan not.',
                 uploader: 'Kaan U.',
-                universityId: 'ytu',
+                universityId: '126982',
                 facultyId: 'ytu-muh',
-                departmentId: 'ytu-ceng',
+                departmentId: '12010',
+                departmentType: 'lisans',
                 classId: '4',
                 courseId: 'net',
                 topicId: 'routing',
@@ -152,9 +158,10 @@
                 title: 'Calculus Limit Formülleri',
                 description: 'Limit, süreklilik ve türev geçişleri için hızlı tekrar kartları.',
                 uploader: 'Irmak S.',
-                universityId: 'ytu',
+                universityId: '126982',
                 facultyId: 'ytu-muh',
-                departmentId: 'ytu-math',
+                departmentId: '14051',
+                departmentType: 'lisans',
                 classId: '1',
                 courseId: 'calc',
                 topicId: 'limits',
@@ -169,9 +176,10 @@
                 title: 'Veri Yapıları Çıkış Soru Arşivi',
                 description: 'Son 5 yıl final soruları ve kısa cevap anahtarları.',
                 uploader: 'Nisa P.',
-                universityId: 'itu',
+                universityId: '115069',
                 facultyId: 'itu-muh',
-                departmentId: 'itu-ceng',
+                departmentId: '12010',
+                departmentType: 'lisans',
                 classId: '2',
                 courseId: 'data',
                 topicId: 'trees',
@@ -184,10 +192,56 @@
         ]
     };
 
+    const REMOTE = {
+        universities: [],
+        universitiesById: new Map(),
+        departmentsByType: {
+            lisans: [],
+            onlisans: []
+        },
+        departmentsById: new Map()
+    };
+
     const LOOKUP = {
         facultyById: new Map(DATA.faculties.map((item) => [item.id, item])),
         departmentById: new Map(DATA.departments.map((item) => [item.id, item]))
     };
+
+    async function loadRemoteFilterData() {
+        try {
+            const [universitiesResponse, departmentsResponse] = await Promise.all([
+                fetch('assets/data/universiteler.json'),
+                fetch('assets/data/bolumler.json')
+            ]);
+
+            if (!universitiesResponse.ok || !departmentsResponse.ok) {
+                throw new Error('Json dosyalari okunamadi');
+            }
+
+            const universities = await universitiesResponse.json();
+            const departments = await departmentsResponse.json();
+
+            REMOTE.universities = Array.isArray(universities) ? universities : [];
+            REMOTE.universitiesById = new Map(REMOTE.universities.map((item) => [item.id, item]));
+
+            REMOTE.departmentsByType = {
+                lisans: Array.isArray(departments.lisans) ? departments.lisans : [],
+                onlisans: Array.isArray(departments.onlisans) ? departments.onlisans : []
+            };
+            REMOTE.departmentsById = new Map(
+                [...REMOTE.departmentsByType.lisans, ...REMOTE.departmentsByType.onlisans].map((item) => [item.id, item])
+            );
+        } catch (error) {
+            // Fallback: mevcut demo verisiyle çalışmaya devam et.
+            REMOTE.universities = [...DATA.universities];
+            REMOTE.universitiesById = new Map(REMOTE.universities.map((item) => [item.id, item]));
+            REMOTE.departmentsByType = {
+                lisans: [...DATA.departments],
+                onlisans: []
+            };
+            REMOTE.departmentsById = new Map(REMOTE.departmentsByType.lisans.map((item) => [item.id, item]));
+        }
+    }
 
     function getUniversityByDepartmentId(departmentId) {
         const department = LOOKUP.departmentById.get(departmentId);
@@ -230,6 +284,22 @@
         return item ? item.name : '-';
     }
 
+    function resolveUniversityName(id) {
+        const remote = REMOTE.universitiesById.get(id);
+        if (remote) {
+            return remote.name;
+        }
+        return resolveLabel(DATA.universities, id);
+    }
+
+    function resolveDepartmentName(id) {
+        const remote = REMOTE.departmentsById.get(id);
+        if (remote) {
+            return remote.name;
+        }
+        return resolveLabel(DATA.departments, id);
+    }
+
     function populateSelect(select, items, placeholder, keepCurrent) {
         if (!select) {
             return;
@@ -252,6 +322,11 @@
     }
 
     function initHierarchyGroup(group) {
+        if (group.dataset.filterSource === 'public') {
+            initPublicFilterGroup(group);
+            return;
+        }
+
         const university = group.querySelector('select[data-level="university"]');
         const faculty = group.querySelector('select[data-level="faculty"]');
         const department = group.querySelector('select[data-level="department"]');
@@ -363,12 +438,109 @@
         });
     }
 
+    function initPublicFilterGroup(group) {
+        const university = group.querySelector('select[data-level="university"]');
+        const departmentType = group.querySelector('select[data-level="department-type"]');
+        const department = group.querySelector('select[data-level="department"]');
+        const classSelect = group.querySelector('select[data-level="class"]');
+        const course = group.querySelector('select[data-level="course"]');
+        const topic = group.querySelector('select[data-level="topic"]');
+
+        populateSelect(university, REMOTE.universities, university?.dataset.placeholder || 'Seçiniz', true);
+        populateSelect(classSelect, DATA.classes, classSelect?.dataset.placeholder || 'Seçiniz', true);
+        populateSelect(
+            departmentType,
+            [
+                { id: 'onlisans', name: 'Önlisans' },
+                { id: 'lisans', name: 'Lisans' }
+            ],
+            departmentType?.dataset.placeholder || 'Seçiniz',
+            true
+        );
+
+        const refreshDepartments = () => {
+            if (!department) {
+                return;
+            }
+
+            const selectedType = departmentType ? departmentType.value : '';
+            const list = selectedType
+                ? (REMOTE.departmentsByType[selectedType] || [])
+                : [];
+            const placeholder = selectedType
+                ? (department.dataset.placeholder || 'Seçiniz')
+                : 'Önce program türü seçiniz';
+
+            populateSelect(department, list, placeholder, true);
+        };
+
+        const refreshCourse = () => {
+            if (!course) {
+                return;
+            }
+
+            let list = DATA.courses;
+            if (department && department.value) {
+                const byDepartment = list.filter((item) => item.departmentId === department.value);
+                list = byDepartment.length ? byDepartment : list;
+            }
+
+            if (classSelect && classSelect.value) {
+                list = list.filter((item) => item.classId === classSelect.value);
+            }
+
+            populateSelect(course, list, course.dataset.placeholder || 'Seçiniz', true);
+        };
+
+        const refreshTopic = () => {
+            if (!topic) {
+                return;
+            }
+            const selectedCourse = course ? course.value : '';
+            const list = selectedCourse ? DATA.topics.filter((item) => item.courseId === selectedCourse) : DATA.topics;
+            populateSelect(topic, list, topic.dataset.placeholder || 'Seçiniz', true);
+        };
+
+        refreshDepartments();
+        refreshCourse();
+        refreshTopic();
+
+        departmentType?.addEventListener('change', () => {
+            refreshDepartments();
+            refreshCourse();
+            refreshTopic();
+            group.dispatchEvent(new Event('hierarchy:changed'));
+        });
+
+        department?.addEventListener('change', () => {
+            refreshCourse();
+            refreshTopic();
+            group.dispatchEvent(new Event('hierarchy:changed'));
+        });
+
+        classSelect?.addEventListener('change', () => {
+            refreshCourse();
+            refreshTopic();
+            group.dispatchEvent(new Event('hierarchy:changed'));
+        });
+
+        course?.addEventListener('change', () => {
+            refreshTopic();
+            group.dispatchEvent(new Event('hierarchy:changed'));
+        });
+
+        university?.addEventListener('change', () => {
+            group.dispatchEvent(new Event('hierarchy:changed'));
+        });
+    }
+
     function collectFilters(form) {
         const formData = new FormData(form);
         return {
             query: normalize(formData.get('query')),
             universityId: normalize(formData.get('university_id')),
             facultyId: normalize(formData.get('faculty_id')),
+            departmentType: normalize(formData.get('department_type')),
             departmentId: normalize(formData.get('department_id')),
             classId: normalize(formData.get('class_id')),
             courseId: normalize(formData.get('course_id')),
@@ -382,6 +554,9 @@
             return false;
         }
         if (filters.facultyId && note.facultyId !== filters.facultyId) {
+            return false;
+        }
+        if (filters.departmentType && note.departmentType !== filters.departmentType) {
             return false;
         }
         if (filters.departmentId && note.departmentId !== filters.departmentId) {
@@ -407,7 +582,8 @@
                 note.tags.join(' '),
                 resolveLabel(DATA.courses, note.courseId),
                 resolveLabel(DATA.topics, note.topicId),
-                resolveLabel(DATA.departments, note.departmentId)
+                resolveDepartmentName(note.departmentId),
+                resolveUniversityName(note.universityId)
             ].join(' ').toLowerCase();
 
             if (!searchable.includes(filters.query)) {
@@ -769,7 +945,7 @@
                         <p>${escapeHtml(note.description)}</p>
                         <div class="result-footer">
                             <div class="d-flex flex-wrap gap-2">
-                                <span class="note-tag">${escapeHtml(resolveLabel(DATA.universities, note.universityId))}</span>
+                                <span class="note-tag">${escapeHtml(resolveUniversityName(note.universityId))}</span>
                                 <span class="note-tag">${escapeHtml(resolveLabel(DATA.courses, note.courseId))}</span>
                                 <span class="note-tag">${escapeHtml(resolveLabel(DATA.topics, note.topicId))}</span>
                             </div>
@@ -820,7 +996,8 @@
         apply();
     }
 
-    document.addEventListener('DOMContentLoaded', () => {
+    document.addEventListener('DOMContentLoaded', async () => {
+        await loadRemoteFilterData();
         initHierarchyGroups();
         initTagInputs();
 
