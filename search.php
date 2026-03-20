@@ -41,11 +41,11 @@ require __DIR__ . '/includes/header.php';
                     </div>
                     <div class="mb-3">
                         <label class="form-label" for="searchCourse">Ders</label>
-                        <select class="form-select" id="searchCourse" name="course_id" data-level="course" data-placeholder="Tüm dersler"></select>
+                        <select class="form-select" id="searchCourse" name="course" data-level="course" data-placeholder="Tüm dersler"></select>
                     </div>
                     <div class="mb-3">
                         <label class="form-label" for="searchTopic">Konu</label>
-                        <select class="form-select" id="searchTopic" name="topic_id" data-level="topic" data-placeholder="Tüm konular"></select>
+                        <select class="form-select" id="searchTopic" name="topic" data-level="topic" data-placeholder="Tüm konular"></select>
                     </div>
                     <div class="mb-0">
                         <label class="form-label" for="searchFileType">Dosya Türü</label>

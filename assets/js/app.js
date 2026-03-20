@@ -202,6 +202,8 @@
         departmentsById: new Map()
     };
 
+    const STORED_NOTES_KEY = 'notbul.uploaded_notes.v1';
+
     const LOOKUP = {
         facultyById: new Map(DATA.faculties.map((item) => [item.id, item])),
         departmentById: new Map(DATA.departments.map((item) => [item.id, item]))
@@ -298,6 +300,55 @@
             return remote.name;
         }
         return resolveLabel(DATA.departments, id);
+    }
+
+    function resolveCourseName(note) {
+        if (note.course) {
+            return note.course;
+        }
+        return resolveLabel(DATA.courses, note.courseId);
+    }
+
+    function resolveTopicName(note) {
+        if (note.topic) {
+            return note.topic;
+        }
+        return resolveLabel(DATA.topics, note.topicId);
+    }
+
+    function readStoredNotes() {
+        try {
+            const raw = localStorage.getItem(STORED_NOTES_KEY);
+            if (!raw) {
+                return [];
+            }
+            const parsed = JSON.parse(raw);
+            if (!Array.isArray(parsed)) {
+                return [];
+            }
+            return parsed;
+        } catch (error) {
+            return [];
+        }
+    }
+
+    function writeStoredNotes(notes) {
+        localStorage.setItem(STORED_NOTES_KEY, JSON.stringify(notes));
+    }
+
+    function getAllNotes() {
+        return [...DATA.notes, ...readStoredNotes()];
+    }
+
+    function getUniqueOptions(values) {
+        return [...new Set(values.map((value) => value.trim()).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'tr'));
+    }
+
+    function populateDatalist(datalist, values) {
+        if (!datalist) {
+            return;
+        }
+        datalist.innerHTML = values.map((value) => `<option value="${escapeHtml(value)}"></option>`).join('');
     }
 
     function populateSelect(select, items, placeholder, keepCurrent) {
@@ -443,8 +494,12 @@
         const departmentType = group.querySelector('select[data-level="department-type"]');
         const department = group.querySelector('select[data-level="department"]');
         const classSelect = group.querySelector('select[data-level="class"]');
-        const course = group.querySelector('select[data-level="course"]');
-        const topic = group.querySelector('select[data-level="topic"]');
+        const courseSelect = group.querySelector('select[data-level="course"]');
+        const topicSelect = group.querySelector('select[data-level="topic"]');
+        const courseInput = group.querySelector('input[data-level="course-input"]');
+        const topicInput = group.querySelector('input[data-level="topic-input"]');
+        const courseDatalist = group.querySelector('#uploadCourseList');
+        const topicDatalist = group.querySelector('#uploadTopicList');
 
         populateSelect(university, REMOTE.universities, university?.dataset.placeholder || 'Seçiniz', true);
         populateSelect(classSelect, DATA.classes, classSelect?.dataset.placeholder || 'Seçiniz', true);
@@ -474,31 +529,66 @@
             populateSelect(department, list, placeholder, true);
         };
 
+        const getScopedNotes = () => {
+            const selectedUniversity = university ? university.value : '';
+            const selectedDepartmentType = departmentType ? departmentType.value : '';
+            const selectedDepartment = department ? department.value : '';
+            const selectedClass = classSelect ? classSelect.value : '';
+
+            return getAllNotes().filter((note) => {
+                if (selectedUniversity && note.universityId !== selectedUniversity) {
+                    return false;
+                }
+                if (selectedDepartmentType && note.departmentType !== selectedDepartmentType) {
+                    return false;
+                }
+                if (selectedDepartment && note.departmentId !== selectedDepartment) {
+                    return false;
+                }
+                if (selectedClass && note.classId !== selectedClass) {
+                    return false;
+                }
+                return true;
+            });
+        };
+
         const refreshCourse = () => {
-            if (!course) {
+            const notes = getScopedNotes();
+            const courseValues = getUniqueOptions(notes.map((note) => resolveCourseName(note)));
+
+            if (!courseSelect && !courseInput) {
                 return;
             }
 
-            let list = DATA.courses;
-            if (department && department.value) {
-                const byDepartment = list.filter((item) => item.departmentId === department.value);
-                list = byDepartment.length ? byDepartment : list;
+            if (courseSelect) {
+                const list = courseValues.map((value) => ({ id: value, name: value }));
+                populateSelect(courseSelect, list, courseSelect.dataset.placeholder || 'Seçiniz', true);
             }
-
-            if (classSelect && classSelect.value) {
-                list = list.filter((item) => item.classId === classSelect.value);
+            if (courseInput) {
+                populateDatalist(courseDatalist, courseValues);
             }
-
-            populateSelect(course, list, course.dataset.placeholder || 'Seçiniz', true);
         };
 
         const refreshTopic = () => {
-            if (!topic) {
+            const selectedCourse = courseSelect ? courseSelect.value : (courseInput ? courseInput.value : '');
+            let notes = getScopedNotes();
+
+            if (selectedCourse) {
+                notes = notes.filter((note) => normalize(resolveCourseName(note)) === normalize(selectedCourse));
+            }
+
+            const topicValues = getUniqueOptions(notes.map((note) => resolveTopicName(note)));
+            if (!topicSelect && !topicInput) {
                 return;
             }
-            const selectedCourse = course ? course.value : '';
-            const list = selectedCourse ? DATA.topics.filter((item) => item.courseId === selectedCourse) : DATA.topics;
-            populateSelect(topic, list, topic.dataset.placeholder || 'Seçiniz', true);
+
+            if (topicSelect) {
+                const list = topicValues.map((value) => ({ id: value, name: value }));
+                populateSelect(topicSelect, list, topicSelect.dataset.placeholder || 'Seçiniz', true);
+            }
+            if (topicInput) {
+                populateDatalist(topicDatalist, topicValues);
+            }
         };
 
         refreshDepartments();
@@ -512,11 +602,11 @@
             group.dispatchEvent(new Event('hierarchy:changed'));
         });
 
-        department?.addEventListener('change', () => {
+        [university, department].forEach((element) => element?.addEventListener('change', () => {
             refreshCourse();
             refreshTopic();
             group.dispatchEvent(new Event('hierarchy:changed'));
-        });
+        }));
 
         classSelect?.addEventListener('change', () => {
             refreshCourse();
@@ -524,12 +614,26 @@
             group.dispatchEvent(new Event('hierarchy:changed'));
         });
 
-        course?.addEventListener('change', () => {
+        courseSelect?.addEventListener('change', () => {
             refreshTopic();
             group.dispatchEvent(new Event('hierarchy:changed'));
         });
 
-        university?.addEventListener('change', () => {
+        courseInput?.addEventListener('input', () => {
+            refreshTopic();
+            group.dispatchEvent(new Event('hierarchy:changed'));
+        });
+
+        topicSelect?.addEventListener('change', () => {
+            group.dispatchEvent(new Event('hierarchy:changed'));
+        });
+        topicInput?.addEventListener('input', () => {
+            group.dispatchEvent(new Event('hierarchy:changed'));
+        });
+
+        window.addEventListener('notbul:notes-updated', () => {
+            refreshCourse();
+            refreshTopic();
             group.dispatchEvent(new Event('hierarchy:changed'));
         });
     }
@@ -543,8 +647,8 @@
             departmentType: normalize(formData.get('department_type')),
             departmentId: normalize(formData.get('department_id')),
             classId: normalize(formData.get('class_id')),
-            courseId: normalize(formData.get('course_id')),
-            topicId: normalize(formData.get('topic_id')),
+            course: normalize(formData.get('course') || formData.get('course_id')),
+            topic: normalize(formData.get('topic') || formData.get('topic_id')),
             fileType: normalize(formData.get('file_type'))
         };
     }
@@ -565,10 +669,10 @@
         if (filters.classId && note.classId !== filters.classId) {
             return false;
         }
-        if (filters.courseId && note.courseId !== filters.courseId) {
+        if (filters.course && normalize(resolveCourseName(note)) !== filters.course) {
             return false;
         }
-        if (filters.topicId && note.topicId !== filters.topicId) {
+        if (filters.topic && normalize(resolveTopicName(note)) !== filters.topic) {
             return false;
         }
         if (filters.fileType && note.fileType !== filters.fileType) {
@@ -579,9 +683,9 @@
             const searchable = [
                 note.title,
                 note.description,
-                note.tags.join(' '),
-                resolveLabel(DATA.courses, note.courseId),
-                resolveLabel(DATA.topics, note.topicId),
+                (note.tags || []).join(' '),
+                resolveCourseName(note),
+                resolveTopicName(note),
                 resolveDepartmentName(note.departmentId),
                 resolveUniversityName(note.universityId)
             ].join(' ').toLowerCase();
@@ -594,12 +698,12 @@
         return true;
     }
 
-    function filterNotes(filters) {
-        return DATA.notes.filter((note) => matchesFilters(note, filters));
+    function filterNotes(filters, notes = getAllNotes()) {
+        return notes.filter((note) => matchesFilters(note, filters));
     }
 
     function noteCardTemplate(note) {
-        const tagHtml = note.tags.slice(0, 3).map((tag) => `<span class="note-tag">#${escapeHtml(tag)}</span>`).join('');
+        const tagHtml = (note.tags || []).slice(0, 3).map((tag) => `<span class="note-tag">#${escapeHtml(tag)}</span>`).join('');
         return `
             <article class="col-sm-6 col-xl-4">
                 <div class="note-card card">
@@ -722,6 +826,12 @@
                 sync();
             });
 
+            container.addEventListener('tag:clear', () => {
+                tags = [];
+                textField.value = '';
+                sync();
+            });
+
             sync();
         });
     }
@@ -740,6 +850,13 @@
 
         const maxBytes = 25 * 1024 * 1024;
         const acceptedExtensions = new Set(['pdf', 'docx', 'pptx', 'png', 'jpg', 'jpeg', 'webp']);
+        const detectFileType = (fileName) => {
+            const extension = normalize(fileName.split('.').pop());
+            if (extension === 'pdf' || extension === 'docx' || extension === 'pptx') {
+                return extension;
+            }
+            return 'image';
+        };
 
         const showNotice = (message, type) => {
             if (!notice) {
@@ -849,10 +966,50 @@
                 return;
             }
 
-            showNotice('Yükleme isteği hazırlanıyor...', 'info');
-            setTimeout(() => {
-                showNotice('Frontend prototipinde doğrulama başarılı. Backend endpoint bağlantısı sonraki adımda eklenecek.', 'success');
-            }, 650);
+            const formData = new FormData(uploadForm);
+            const courseValue = (formData.get('course') || '').toString().trim();
+            if (!courseValue) {
+                showNotice('Ders alanı zorunludur. Lütfen ders bilgisini gir.', 'danger');
+                return;
+            }
+
+            const tagsRaw = (formData.get('tags') || '').toString();
+            const tags = tagsRaw
+                .split(',')
+                .map((item) => item.trim())
+                .filter(Boolean);
+
+            const newNote = {
+                id: Date.now(),
+                title: (formData.get('title') || '').toString().trim() || 'İsimsiz Not',
+                description: (formData.get('description') || '').toString().trim(),
+                uploader: 'Yeni Kullanıcı',
+                universityId: (formData.get('university_id') || '').toString(),
+                departmentType: (formData.get('department_type') || '').toString(),
+                departmentId: (formData.get('department_id') || '').toString(),
+                classId: (formData.get('class_id') || '').toString(),
+                course: courseValue,
+                topic: (formData.get('topic') || '').toString().trim(),
+                tags,
+                views: 0,
+                downloads: 0,
+                fileType: detectFileType(selectedFile.name),
+                createdAt: new Date().toISOString().slice(0, 10)
+            };
+
+            const storedNotes = readStoredNotes();
+            storedNotes.unshift(newNote);
+            writeStoredNotes(storedNotes);
+            window.dispatchEvent(new Event('notbul:notes-updated'));
+
+            showNotice('Not başarıyla kaydedildi. Ders ve konu seçenekleri güncellendi.', 'success');
+            uploadForm.reset();
+            if (fileList) {
+                fileList.innerHTML = '';
+            }
+            uploadForm.querySelectorAll('[data-tag-input]').forEach((element) => {
+                element.dispatchEvent(new Event('tag:clear'));
+            });
         });
     }
     function initNoteDetailPage() {
@@ -946,8 +1103,8 @@
                         <div class="result-footer">
                             <div class="d-flex flex-wrap gap-2">
                                 <span class="note-tag">${escapeHtml(resolveUniversityName(note.universityId))}</span>
-                                <span class="note-tag">${escapeHtml(resolveLabel(DATA.courses, note.courseId))}</span>
-                                <span class="note-tag">${escapeHtml(resolveLabel(DATA.topics, note.topicId))}</span>
+                                <span class="note-tag">${escapeHtml(resolveCourseName(note))}</span>
+                                <span class="note-tag">${escapeHtml(resolveTopicName(note))}</span>
                             </div>
                             <div class="text-secondary small">
                                 ${formatDate(note.createdAt)} | ${formatNumber(note.downloads)} indirme

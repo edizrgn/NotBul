@@ -17,7 +17,7 @@ require __DIR__ . '/includes/header.php';
                         <span class="badge bg-soft-info text-primary-emphasis">Frontend prototipi</span>
                     </div>
 
-                    <form id="uploadForm" class="mt-4" data-hierarchy-group>
+                    <form id="uploadForm" class="mt-4" data-hierarchy-group data-filter-source="public">
                         <div id="dropZone" class="drop-zone">
                             <input id="noteFile" name="note_file" type="file" accept=".pdf,.docx,.pptx,.png,.jpg,.jpeg,.webp" hidden>
                             <p class="drop-title mb-2">Dosyayı sürükle bırak veya seç</p>
@@ -43,8 +43,8 @@ require __DIR__ . '/includes/header.php';
                                 <select class="form-select" id="uploadUniversity" name="university_id" data-level="university" data-placeholder="Üniversite seç"></select>
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label" for="uploadFaculty">Fakülte</label>
-                                <select class="form-select" id="uploadFaculty" name="faculty_id" data-level="faculty" data-placeholder="Fakülte seç (opsiyonel)"></select>
+                                <label class="form-label" for="uploadDepartmentType">Program Türü</label>
+                                <select class="form-select" id="uploadDepartmentType" name="department_type" data-level="department-type" data-placeholder="Program türü seç"></select>
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label" for="uploadDepartment">Bölüm</label>
@@ -56,11 +56,13 @@ require __DIR__ . '/includes/header.php';
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label" for="uploadCourse">Ders</label>
-                                <select class="form-select" id="uploadCourse" name="course_id" data-level="course" data-placeholder="Ders seç (opsiyonel)"></select>
+                                <input class="form-control" id="uploadCourse" name="course" data-level="course-input" list="uploadCourseList" placeholder="Dersi yaz veya önerilerden seç" required>
+                                <datalist id="uploadCourseList"></datalist>
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label" for="uploadTopic">Konu</label>
-                                <select class="form-select" id="uploadTopic" name="topic_id" data-level="topic" data-placeholder="Konu seç (opsiyonel)"></select>
+                                <input class="form-control" id="uploadTopic" name="topic" data-level="topic-input" list="uploadTopicList" placeholder="Konu yaz veya önerilerden seç (opsiyonel)">
+                                <datalist id="uploadTopicList"></datalist>
                             </div>
 
                             <div class="col-12">

@@ -9,7 +9,7 @@ require __DIR__ . '/includes/header.php';
         <div class="hero-content">
             <span class="eyebrow">Not Bul • notbul.site</span>
             <h1>Ders Notu Bul, paylaş ve öğren.</h1>
-            <p>Not Bul, öğrenciler için Ders Notu Paylaşım Platformu. Üniversite, bölüm, sınıf, ders ve konu filtreleriyle ihtiyacın olan nota hızlıca ulaş.</p>
+            <p>Not Bul, öğrenciler için Ders Notu Paylaşım Platformu. Üniversite, bölüm, ders ve konu filtreleriyle ihtiyacın olan nota hızlıca ulaş.</p>
         </div>
 
         <form id="homeFilterForm" class="glass-panel" data-hierarchy-group data-filter-source="public">
@@ -31,16 +31,12 @@ require __DIR__ . '/includes/header.php';
                     <select class="form-select" id="homeDepartment" name="department_id" data-level="department" data-placeholder="Bölüm seç"></select>
                 </div>
                 <div class="col-6 col-lg">
-                    <label class="form-label" for="homeClass">Sınıf</label>
-                    <select class="form-select" id="homeClass" name="class_id" data-level="class" data-placeholder="Tüm sınıflar"></select>
-                </div>
-                <div class="col-6 col-lg">
                     <label class="form-label" for="homeCourse">Ders</label>
-                    <select class="form-select" id="homeCourse" name="course_id" data-level="course" data-placeholder="Tüm dersler"></select>
+                    <select class="form-select" id="homeCourse" name="course" data-level="course" data-placeholder="Tüm dersler"></select>
                 </div>
                 <div class="col-6 col-lg">
                     <label class="form-label" for="homeTopic">Konu</label>
-                    <select class="form-select" id="homeTopic" name="topic_id" data-level="topic" data-placeholder="Tüm konular"></select>
+                    <select class="form-select" id="homeTopic" name="topic" data-level="topic" data-placeholder="Tüm konular"></select>
                 </div>
             </div>
             <p class="mt-3 mb-0 small text-secondary">Filtrelenmiş sonuç sayısı: <strong id="homeResultCount">0</strong></p>
