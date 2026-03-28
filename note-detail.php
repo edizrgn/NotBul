@@ -43,9 +43,9 @@ require __DIR__ . '/includes/header.php';
                         <span class="badge text-bg-info"><?= strtoupper(pathinfo($note['original_filename'], PATHINFO_EXTENSION)) ?> Önizleme</span>
                     </div>
                     <div class="preview-canvas p-0" style="min-height: 500px; background: #f8f9fa;">
-                        <?php if (str_contains($note['mime_type'], 'pdf')): ?>
+                        <?php if (strpos($note['mime_type'], 'pdf') !== false): ?>
                             <iframe src="view.php?id=<?= $note['id'] ?>#toolbar=0" width="100%" height="600px" style="border: none;"></iframe>
-                        <?php elseif (str_starts_with($note['mime_type'], 'image/')): ?>
+                        <?php elseif (strpos($note['mime_type'], 'image/') === 0): ?>
                             <img src="view.php?id=<?= $note['id'] ?>" class="img-fluid" alt="<?= htmlspecialchars($note['title']) ?>">
                         <?php else: ?>
                             <div class="p-4 text-center">
