@@ -1,5 +1,119 @@
 <?php
 declare(strict_types=1);
+
+require_once __DIR__ . '/includes/db.php';
+@session_start();
+
+if (!isset($_SESSION['user_id'])) {
+    header('Location: login.php');
+    exit;
+}
+
+$error = '';
+$success = '';
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $userId = $_SESSION['user_id'];
+    $title = trim($_POST['title'] ?? '');
+    $description = trim($_POST['description'] ?? '');
+    $universityId = $_POST['university_id'] ?? null;
+    $departmentType = $_POST['department_type'] ?? null;
+    $departmentId = $_POST['department_id'] ?? null;
+    $classId = $_POST['class_id'] ?? null;
+    $course = trim($_POST['course'] ?? '');
+    $topic = trim($_POST['topic'] ?? '');
+    $tags = trim($_POST['tags'] ?? '');
+    
+    // empty values should be null to avoid foreign key issues or empty strings
+    if ($universityId === '') $universityId = null;
+    if ($departmentType === '') $departmentType = null;
+    if ($departmentId === '') $departmentId = null;
+    if ($classId === '') $classId = null;
+    
+    if (empty($title) || empty($course)) {
+        $error = 'Başlık ve Ders alanları zorunludur.';
+    } elseif (!isset($_FILES['note_file']) || $_FILES['note_file']['error'] !== UPLOAD_ERR_OK) {
+        $error = 'Geçerli bir dosya seçilmedi veya yükleme hatası oluştu.';
+    } else {
+        $file = $_FILES['note_file'];
+        $maxSize = 25 * 1024 * 1024; // 25 MB
+        
+        $allowedMimeTypes = [
+            'application/pdf',
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+            'image/png',
+            'image/jpeg',
+            'image/webp'
+        ];
+        $allowedExtensions = ['pdf', 'docx', 'pptx', 'png', 'jpg', 'jpeg', 'webp'];
+        
+        $originalFilename = $file['name'];
+        $fileSize = $file['size'];
+        $tmpName = $file['tmp_name'];
+        
+        $ext = strtolower(pathinfo($originalFilename, PATHINFO_EXTENSION));
+        $finfo = finfo_open(FILEINFO_MIME_TYPE);
+        $mimeType = finfo_file($finfo, $tmpName);
+        finfo_close($finfo);
+        
+        if ($fileSize > $maxSize) {
+            $error = 'Dosya boyutu 25 MB sınırını aşıyor.';
+        } elseif (!in_array($ext, $allowedExtensions) || !in_array($mimeType, $allowedMimeTypes)) {
+            $error = 'Desteklenmeyen dosya formatı.';
+        } else {
+            $uploadDir = __DIR__ . '/storage/notes/';
+            if (!is_dir($uploadDir)) {
+                mkdir($uploadDir, 0755, true);
+                file_put_contents($uploadDir . '.htaccess', "Deny from all\n");
+            }
+            
+            $storedFilename = md5(uniqid('nb_', true)) . '.' . $ext;
+            $destination = $uploadDir . $storedFilename;
+            
+            if (move_uploaded_file($tmpName, $destination)) {
+                $stmt = $pdo->prepare("
+                    INSERT INTO notes (
+                        user_id, title, description, university_id, department_type, department_id, 
+                        class_id, course, topic, tags, original_filename, stored_filename, file_size, mime_type
+                    ) VALUES (
+                        :user_id, :title, :description, :university_id, :department_type, :department_id,
+                        :class_id, :course, :topic, :tags, :original_filename, :stored_filename, :file_size, :mime_type
+                    )
+                ");
+                
+                $result = $stmt->execute([
+                    'user_id' => $userId,
+                    'title' => $title,
+                    'description' => $description,
+                    'university_id' => $universityId,
+                    'department_type' => $departmentType,
+                    'department_id' => $departmentId,
+                    'class_id' => $classId,
+                    'course' => $course,
+                    'topic' => $topic,
+                    'tags' => $tags,
+                    'original_filename' => $originalFilename,
+                    'stored_filename' => $storedFilename,
+                    'file_size' => $fileSize,
+                    'mime_type' => $mimeType
+                ]);
+                
+                if ($result) {
+                    $success = 'Notunuz başarıyla yüklendi.';
+                } else {
+                    $error = 'Veritabanına kaydedilirken bir hata oluştu.';
+                    if (file_exists($destination)) {
+                        unlink($destination); // sil
+                    }
+                }
+            } else {
+                $error = 'Dosya sunucuya taşınırken bir hata oluştu.';
+            }
+        }
+    }
+}
+
 $pageTitle = 'Not Bul | Not Yükle';
 $pageKey = 'upload';
 require __DIR__ . '/includes/header.php';
@@ -17,7 +131,7 @@ require __DIR__ . '/includes/header.php';
                         <span class="badge bg-soft-info text-primary-emphasis">Frontend prototipi</span>
                     </div>
 
-                    <form id="uploadForm" class="mt-4" data-hierarchy-group data-filter-source="public">
+                    <form id="uploadForm" class="mt-4" data-hierarchy-group data-filter-source="public" method="POST" enctype="multipart/form-data">
                         <div id="dropZone" class="drop-zone">
                             <input id="noteFile" name="note_file" type="file" accept=".pdf,.docx,.pptx,.png,.jpg,.jpeg,.webp" hidden>
                             <p class="drop-title mb-2">Dosyayı sürükle bırak veya seç</p>
@@ -25,6 +139,14 @@ require __DIR__ . '/includes/header.php';
                             <button class="btn btn-primary" type="button" id="pickFileButton">Dosya Seç</button>
                             <div id="fileList" class="file-list mt-3"></div>
                         </div>
+
+                        <?php if ($error): ?>
+                            <div class="alert alert-danger mt-3" role="alert"><?= htmlspecialchars($error) ?></div>
+                        <?php endif; ?>
+                        
+                        <?php if ($success): ?>
+                            <div class="alert alert-success mt-3" role="alert"><?= htmlspecialchars($success) ?></div>
+                        <?php endif; ?>
 
                         <div id="uploadNotice" class="alert mt-3 d-none" role="alert"></div>
 
