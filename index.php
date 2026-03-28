@@ -21,9 +21,14 @@ try {
 $pageTitle = 'Not Bul | Anasayfa';
 $pageKey = 'home';
 require __DIR__ . '/includes/header.php';
+
+$errorMsg = isset($_GET['error']) && $_GET['error'] === 'not_found' ? 'Üzgünüz, aradığınız not veritabanında bulunamadı (ID: ' . (int)$_GET['id'] . ').' : '';
 ?>
 <main class="page-shell">
     <section class="hero-section container">
+        <?php if ($errorMsg): ?>
+            <div class="alert alert-warning mt-3"><?= htmlspecialchars($errorMsg) ?></div>
+        <?php endif; ?>
         <div class="hero-content">
             <span class="eyebrow">Not Bul • notbul.site</span>
             <h1>Ders Notu Bul, paylaş ve öğren.</h1>

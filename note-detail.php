@@ -21,7 +21,8 @@ $stmt->execute(['id' => $id]);
 $note = $stmt->fetch();
 
 if (!$note) {
-    header('Location: index.php');
+    // Debug: die("Not bulunamadı. Aranan ID: " . $id); 
+    header('Location: index.php?error=not_found&id=' . $id);
     exit;
 }
 

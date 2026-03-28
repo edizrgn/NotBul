@@ -1098,8 +1098,13 @@
             resultsContainer.innerHTML = pageItems.map((note) => {
                 return `
                     <article class="result-item">
-                        <h3>${escapeHtml(note.title)}</h3>
-                        <p>${escapeHtml(note.description)}</p>
+                        <div class="d-flex justify-content-between align-items-start gap-3">
+                            <div>
+                                <h3 class="h5 mb-1">${escapeHtml(note.title)}</h3>
+                                <p class="mb-2 text-secondary">${escapeHtml(note.description)}</p>
+                            </div>
+                            <a href="note-detail.php?id=${note.id}" class="btn btn-sm btn-outline-primary whitespace-nowrap">Detay</a>
+                        </div>
                         <div class="result-footer">
                             <div class="d-flex flex-wrap gap-2">
                                 <span class="note-tag">${escapeHtml(resolveUniversityName(note.universityId))}</span>
