@@ -145,8 +145,8 @@ require __DIR__ . '/includes/header.php';
                             <img src="view.php?id=<?= $note['id'] ?>" class="img-fluid" alt="<?= htmlspecialchars($note['title']) ?>">
                         <?php else: ?>
                             <div class="p-4 text-center">
-                                <p class="mb-2 fw-semibold">Bu dosya formatı (<?= htmlspecialchars($mime) ?>) için tarayıcıda doğrudan önizleme desteklenmiyor.</p>
-                                <p class="mb-0 text-secondary">Aşağıdaki butonu kullanarak dosyayı indirebilirsiniz.</p>
+                                <p class="mb-2 text-secondary">Bu dosya formatı tarayıcıda önizleme desteklenmiyor.</p>
+                                <p class="mb-0 text-secondary">Sağdaki "İndir" butonu ile dosyayı indirebilirsiniz.</p>
                             </div>
                         <?php endif; ?>
                     </div>

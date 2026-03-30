@@ -188,7 +188,6 @@ require __DIR__ . '/includes/header.php';
                             <h1 class="section-title mb-1">Not Yükleme</h1>
                             <p class="mb-0 text-secondary">Ders notunu güvenli şekilde yükle, gerekli alanları doldur ve paylaş.</p>
                         </div>
-                        <span class="badge bg-soft-info text-primary-emphasis">Backend aktif</span>
                     </div>
 
                     <form id="uploadForm" class="mt-4" data-hierarchy-group data-filter-source="public" data-max-upload-mb="<?= (int)$maxUploadMb ?>" method="POST" enctype="multipart/form-data">

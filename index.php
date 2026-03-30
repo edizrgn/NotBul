@@ -73,7 +73,10 @@ $successMsg = isset($_GET['note_deleted']) && $_GET['note_deleted'] === '1'
 
     <section class="container section-block pb-5">
         <div class="panel-card">
-            <h2 class="section-title mb-3">Yeni Yüklenenler</h2>
+            <div class="d-flex justify-content-between align-items-center gap-2 flex-wrap mb-3">
+                <h2 class="section-title mb-0">Yeni Yüklenenler</h2>
+                <a href="search.php" class="btn btn-sm btn-outline-primary">Tümünü görüntüle</a>
+            </div>
             <div id="latestNotesGrid" class="row g-3">
                 <?php if (empty($latestNotes)): ?>
                     <div class="col-12">
