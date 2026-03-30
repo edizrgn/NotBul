@@ -71,19 +71,6 @@ $successMsg = isset($_GET['note_deleted']) && $_GET['note_deleted'] === '1'
         </form>
     </section>
 
-    <!-- Popüler Notlar (Önceki statik demo veriler JS tarafından doldurulmaya devam edebilir) -->
-    <section class="container section-block">
-        <div class="panel-card">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <h2 class="section-title mb-0">Popüler Notlar</h2>
-                <a class="btn btn-sm btn-outline-primary" href="search.php">Tümünü Gör</a>
-            </div>
-            <div id="popularNotesGrid" class="row g-3">
-                <!-- app.js içindeki statik veriler buraya gelecek -->
-            </div>
-        </div>
-    </section>
-
     <section class="container section-block pb-5">
         <div class="panel-card">
             <h2 class="section-title mb-3">Yeni Yüklenenler</h2>

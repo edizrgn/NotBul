@@ -1,51 +1,12 @@
 (() => {
     'use strict';
 
-    const DATA = {
-        universities: [
-            { id: 'itu', name: 'İstanbul Teknik Üniversitesi' },
-            { id: 'ytu', name: 'Yıldız Teknik Üniversitesi' },
-            { id: 'metu', name: 'Orta Doğu Teknik Üniversitesi' }
-        ],
-        faculties: [
-            { id: 'itu-muh', universityId: 'itu', name: 'Mühendislik Fakültesi' },
-            { id: 'itu-fen', universityId: 'itu', name: 'Fen Edebiyat Fakültesi' },
-            { id: 'ytu-muh', universityId: 'ytu', name: 'Mühendislik Fakültesi' },
-            { id: 'metu-eng', universityId: 'metu', name: 'Mühendislik Fakültesi' }
-        ],
-        departments: [
-            { id: 'itu-ceng', facultyId: 'itu-muh', name: 'Bilgisayar Mühendisliği' },
-            { id: 'itu-ee', facultyId: 'itu-muh', name: 'Elektrik Mühendisliği' },
-            { id: 'ytu-ceng', facultyId: 'ytu-muh', name: 'Bilgisayar Mühendisliği' },
-            { id: 'ytu-math', facultyId: 'ytu-muh', name: 'Matematik Mühendisliği' },
-            { id: 'metu-ceng', facultyId: 'metu-eng', name: 'Bilgisayar Mühendisliği' }
-        ],
-        classes: [
-            { id: '1', name: '1. Sınıf' },
-            { id: '2', name: '2. Sınıf' },
-            { id: '3', name: '3. Sınıf' },
-            { id: '4', name: '4. Sınıf' }
-        ],
-        courses: [
-            { id: 'calc', departmentId: '14051', classId: '1', name: 'Calculus I' },
-            { id: 'prog', departmentId: '12010', classId: '1', name: 'Programlamaya Giriş' },
-            { id: 'data', departmentId: '12010', classId: '2', name: 'Veri Yapıları' },
-            { id: 'algo', departmentId: '12010', classId: '2', name: 'Algorithms' },
-            { id: 'db', departmentId: '12010', classId: '3', name: 'Veritabanı Sistemleri' },
-            { id: 'signals', departmentId: '12644', classId: '3', name: 'Sayısal İşaret İşleme' },
-            { id: 'net', departmentId: '12010', classId: '4', name: 'Bilgisayar Ağları' }
-        ],
-        topics: [
-            { id: 'limits', courseId: 'calc', name: 'Limit ve Süreklilik' },
-            { id: 'oop', courseId: 'prog', name: 'OOP Temelleri' },
-            { id: 'trees', courseId: 'data', name: 'Ağaç ve Heap Yapıları' },
-            { id: 'dp', courseId: 'algo', name: 'Dynamic Programming' },
-            { id: 'normalization', courseId: 'db', name: 'Normalizasyon' },
-            { id: 'fft', courseId: 'signals', name: 'Fourier ve FFT' },
-            { id: 'routing', courseId: 'net', name: 'Routing Protokolleri' }
-        ],
-        notes: []
-    };
+    const CLASS_OPTIONS = [
+        { id: '1', name: '1. Sınıf' },
+        { id: '2', name: '2. Sınıf' },
+        { id: '3', name: '3. Sınıf' },
+        { id: '4', name: '4. Sınıf' }
+    ];
 
     const REMOTE = {
         universities: [],
@@ -55,11 +16,6 @@
             onlisans: []
         },
         departmentsById: new Map()
-    };
-
-    const LOOKUP = {
-        facultyById: new Map(DATA.faculties.map((item) => [item.id, item])),
-        departmentById: new Map(DATA.departments.map((item) => [item.id, item]))
     };
 
     async function loadRemoteFilterData() {
@@ -87,25 +43,14 @@
                 [...REMOTE.departmentsByType.lisans, ...REMOTE.departmentsByType.onlisans].map((item) => [item.id, item])
             );
         } catch (error) {
-            // Fallback: mevcut demo verisiyle çalışmaya devam et.
-            REMOTE.universities = [...DATA.universities];
+            REMOTE.universities = [];
             REMOTE.universitiesById = new Map(REMOTE.universities.map((item) => [item.id, item]));
             REMOTE.departmentsByType = {
-                lisans: [...DATA.departments],
+                lisans: [],
                 onlisans: []
             };
-            REMOTE.departmentsById = new Map(REMOTE.departmentsByType.lisans.map((item) => [item.id, item]));
+            REMOTE.departmentsById = new Map();
         }
-    }
-
-    function getUniversityByDepartmentId(departmentId) {
-        const department = LOOKUP.departmentById.get(departmentId);
-        if (!department) {
-            return '';
-        }
-
-        const faculty = LOOKUP.facultyById.get(department.facultyId);
-        return faculty ? faculty.universityId : '';
     }
 
     function normalize(value) {
@@ -134,17 +79,12 @@
         return new Intl.NumberFormat('tr-TR').format(numberValue || 0);
     }
 
-    function resolveLabel(items, id) {
-        const item = items.find((entry) => entry.id === id);
-        return item ? item.name : '-';
-    }
-
     function resolveUniversityName(id) {
         const remote = REMOTE.universitiesById.get(id);
         if (remote) {
             return remote.name;
         }
-        return resolveLabel(DATA.universities, id);
+        return '-';
     }
 
     function resolveDepartmentName(id) {
@@ -152,28 +92,22 @@
         if (remote) {
             return remote.name;
         }
-        return resolveLabel(DATA.departments, id);
+        return '-';
     }
 
     function resolveCourseName(note) {
-        if (note.course) {
-            return note.course;
-        }
-        return resolveLabel(DATA.courses, note.courseId);
+        return (note.course || '').toString();
     }
 
     function resolveTopicName(note) {
-        if (note.topic) {
-            return note.topic;
-        }
-        return resolveLabel(DATA.topics, note.topicId);
+        return (note.topic || '').toString();
     }
 
     function getAllNotes() {
         if (Array.isArray(window.NOTBUL_NOTES)) {
             return window.NOTBUL_NOTES;
         }
-        return DATA.notes;
+        return [];
     }
 
     function getUniqueOptions(values) {
@@ -209,120 +143,7 @@
     }
 
     function initHierarchyGroup(group) {
-        if (group.dataset.filterSource === 'public') {
-            initPublicFilterGroup(group);
-            return;
-        }
-
-        const university = group.querySelector('select[data-level="university"]');
-        const faculty = group.querySelector('select[data-level="faculty"]');
-        const department = group.querySelector('select[data-level="department"]');
-        const classSelect = group.querySelector('select[data-level="class"]');
-        const course = group.querySelector('select[data-level="course"]');
-        const topic = group.querySelector('select[data-level="topic"]');
-
-        populateSelect(university, DATA.universities, university?.dataset.placeholder || 'Seçiniz', true);
-        populateSelect(classSelect, DATA.classes, classSelect?.dataset.placeholder || 'Seçiniz', true);
-
-        const refreshFaculty = () => {
-            if (!faculty) {
-                return;
-            }
-
-            const selectedUniversity = university ? university.value : '';
-            const list = selectedUniversity
-                ? DATA.faculties.filter((item) => item.universityId === selectedUniversity)
-                : DATA.faculties;
-
-            populateSelect(faculty, list, faculty.dataset.placeholder || 'Seçiniz', true);
-        };
-
-        const refreshDepartment = () => {
-            if (!department) {
-                return;
-            }
-
-            let list = DATA.departments;
-            if (faculty && faculty.value) {
-                list = list.filter((item) => item.facultyId === faculty.value);
-            } else if (university && university.value) {
-                const facultyIds = DATA.faculties
-                    .filter((item) => item.universityId === university.value)
-                    .map((item) => item.id);
-                list = list.filter((item) => facultyIds.includes(item.facultyId));
-            }
-
-            populateSelect(department, list, department.dataset.placeholder || 'Seçiniz', true);
-        };
-
-        const refreshCourse = () => {
-            if (!course) {
-                return;
-            }
-
-            let list = DATA.courses;
-            if (department && department.value) {
-                list = list.filter((item) => item.departmentId === department.value);
-            } else if (university && university.value) {
-                list = list.filter((item) => getUniversityByDepartmentId(item.departmentId) === university.value);
-            }
-
-            if (classSelect && classSelect.value) {
-                list = list.filter((item) => item.classId === classSelect.value);
-            }
-
-            populateSelect(course, list, course.dataset.placeholder || 'Seçiniz', true);
-        };
-
-        const refreshTopic = () => {
-            if (!topic) {
-                return;
-            }
-
-            const selectedCourse = course ? course.value : '';
-            const list = selectedCourse
-                ? DATA.topics.filter((item) => item.courseId === selectedCourse)
-                : DATA.topics;
-
-            populateSelect(topic, list, topic.dataset.placeholder || 'Seçiniz', true);
-        };
-
-        refreshFaculty();
-        refreshDepartment();
-        refreshCourse();
-        refreshTopic();
-
-        university?.addEventListener('change', () => {
-            refreshFaculty();
-            refreshDepartment();
-            refreshCourse();
-            refreshTopic();
-            group.dispatchEvent(new Event('hierarchy:changed'));
-        });
-
-        faculty?.addEventListener('change', () => {
-            refreshDepartment();
-            refreshCourse();
-            refreshTopic();
-            group.dispatchEvent(new Event('hierarchy:changed'));
-        });
-
-        department?.addEventListener('change', () => {
-            refreshCourse();
-            refreshTopic();
-            group.dispatchEvent(new Event('hierarchy:changed'));
-        });
-
-        classSelect?.addEventListener('change', () => {
-            refreshCourse();
-            refreshTopic();
-            group.dispatchEvent(new Event('hierarchy:changed'));
-        });
-
-        course?.addEventListener('change', () => {
-            refreshTopic();
-            group.dispatchEvent(new Event('hierarchy:changed'));
-        });
+        initPublicFilterGroup(group);
     }
 
     function initPublicFilterGroup(group) {
@@ -338,7 +159,7 @@
         const topicDatalist = group.querySelector('#uploadTopicList');
 
         populateSelect(university, REMOTE.universities, university?.dataset.placeholder || 'Seçiniz', true);
-        populateSelect(classSelect, DATA.classes, classSelect?.dataset.placeholder || 'Seçiniz', true);
+        populateSelect(classSelect, CLASS_OPTIONS, classSelect?.dataset.placeholder || 'Seçiniz', true);
         populateSelect(
             departmentType,
             [
