@@ -2,6 +2,7 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/includes/db.php';
+require_once __DIR__ . '/includes/brevo.php';
 
 $error = '';
 $success = '';
@@ -9,35 +10,85 @@ $success = '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $firstName = trim($_POST['first_name'] ?? '');
     $lastName = trim($_POST['last_name'] ?? '');
-    $email = trim($_POST['email'] ?? '');
+    $email = mb_strtolower(trim($_POST['email'] ?? ''));
     $password = $_POST['password'] ?? '';
     $passwordConfirm = $_POST['password_confirm'] ?? '';
 
     if (empty($firstName) || empty($lastName) || empty($email) || empty($password) || empty($passwordConfirm)) {
         $error = 'Lütfen tüm alanları doldurun.';
+    } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        $error = 'Lütfen geçerli bir e-posta adresi girin.';
     } elseif ($password !== $passwordConfirm) {
         $error = 'Şifreler uyuşmuyor.';
     } elseif (strlen($password) < 8) {
         $error = 'Şifre en az 8 karakter olmalıdır.';
     } else {
-        $stmt = $pdo->prepare("SELECT id FROM users WHERE email = :email");
-        $stmt->execute(['email' => $email]);
-        if ($stmt->fetch()) {
-            $error = 'Bu e-posta adresi zaten kullanımda.';
-        } else {
-            $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
-            $stmt = $pdo->prepare("INSERT INTO users (first_name, last_name, email, password) VALUES (:first_name, :last_name, :email, :password)");
-            $result = $stmt->execute([
-                'first_name' => $firstName,
-                'last_name' => $lastName,
-                'email' => $email,
-                'password' => $hashedPassword
-            ]);
+        try {
+            $stmt = $pdo->prepare("SELECT id, verified FROM users WHERE email = :email LIMIT 1");
+            $stmt->execute(['email' => $email]);
+            $existingUser = $stmt->fetch();
 
-            if ($result) {
-                $success = 'Kayıt başarılı! Şimdi giriş yapabilirsiniz.';
+            if ($existingUser && (int) $existingUser['verified'] === 1) {
+                $error = 'Bu e-posta adresi zaten kullanımda.';
             } else {
-                $error = 'Kayıt sırasında bir hata oluştu.';
+                $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
+                $plainToken = bin2hex(random_bytes(32));
+                $tokenHash = hash('sha256', $plainToken);
+                $tokenExpiresAt = (new DateTimeImmutable('+24 hours'))->format('Y-m-d H:i:s');
+                $fullName = trim($firstName . ' ' . $lastName);
+                $verificationUrl = buildAppBaseUrl() . '/verify-email.php?token=' . urlencode($plainToken);
+
+                $pdo->beginTransaction();
+
+                if ($existingUser) {
+                    $updateStmt = $pdo->prepare(
+                        "UPDATE users
+                         SET first_name = :first_name,
+                             last_name = :last_name,
+                             password = :password,
+                             verified = 0,
+                             email_verification_token = :token,
+                             email_verification_token_expires_at = :expires_at,
+                             verified_at = NULL
+                         WHERE id = :id"
+                    );
+                    $updateStmt->execute([
+                        'first_name' => $firstName,
+                        'last_name' => $lastName,
+                        'password' => $hashedPassword,
+                        'token' => $tokenHash,
+                        'expires_at' => $tokenExpiresAt,
+                        'id' => $existingUser['id'],
+                    ]);
+                } else {
+                    $insertStmt = $pdo->prepare(
+                        "INSERT INTO users
+                            (first_name, last_name, email, password, verified, email_verification_token, email_verification_token_expires_at)
+                         VALUES
+                            (:first_name, :last_name, :email, :password, 0, :token, :expires_at)"
+                    );
+                    $insertStmt->execute([
+                        'first_name' => $firstName,
+                        'last_name' => $lastName,
+                        'email' => $email,
+                        'password' => $hashedPassword,
+                        'token' => $tokenHash,
+                        'expires_at' => $tokenExpiresAt,
+                    ]);
+                }
+
+                sendVerificationEmail($email, $fullName, $verificationUrl);
+                $pdo->commit();
+
+                $success = 'Kayıt alındı. Hesabını aktifleştirmek için e-posta kutuna gönderdiğimiz doğrulama bağlantısını kullan.';
+            }
+        } catch (Throwable $exception) {
+            if ($pdo->inTransaction()) {
+                $pdo->rollBack();
+            }
+
+            if ($error === '') {
+                $error = 'Kayıt sırasında bir hata oluştu. Lütfen tekrar deneyin.';
             }
         }
     }

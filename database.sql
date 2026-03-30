@@ -8,8 +8,29 @@ CREATE TABLE IF NOT EXISTS users (
     last_name VARCHAR(50) NOT NULL,
     email VARCHAR(100) NOT NULL UNIQUE,
     password VARCHAR(255) NOT NULL,
+    verified TINYINT(1) NOT NULL DEFAULT 0,
+    email_verification_token CHAR(64) NULL,
+    email_verification_token_expires_at DATETIME NULL,
+    verified_at DATETIME NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+-- Existing installations migration.
+ALTER TABLE users
+    ADD COLUMN IF NOT EXISTS verified TINYINT(1) NOT NULL DEFAULT 0 AFTER password,
+    ADD COLUMN IF NOT EXISTS email_verification_token CHAR(64) NULL AFTER verified,
+    ADD COLUMN IF NOT EXISTS email_verification_token_expires_at DATETIME NULL AFTER email_verification_token,
+    ADD COLUMN IF NOT EXISTS verified_at DATETIME NULL AFTER email_verification_token_expires_at;
+
+-- Keep pre-existing accounts active after adding the verification columns.
+UPDATE users
+SET verified = 1,
+    verified_at = COALESCE(verified_at, NOW())
+WHERE verified = 0
+  AND email_verification_token IS NULL;
+
+CREATE INDEX IF NOT EXISTS idx_users_verified ON users(verified);
+CREATE INDEX IF NOT EXISTS idx_users_email_verification_token ON users(email_verification_token);
 
 CREATE TABLE IF NOT EXISTS notes (
     id INT AUTO_INCREMENT PRIMARY KEY,

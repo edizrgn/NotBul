@@ -13,18 +13,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (empty($email) || empty($password)) {
         $error = 'Lütfen tüm alanları doldurun.';
     } else {
-        $stmt = $pdo->prepare("SELECT id, first_name, last_name, password FROM users WHERE email = :email");
+        $stmt = $pdo->prepare("SELECT id, first_name, last_name, password, verified FROM users WHERE email = :email");
         $stmt->execute(['email' => $email]);
         $user = $stmt->fetch();
 
         if ($user && password_verify($password, $user['password'])) {
-            // Şifre doğru, oturum aç
-            $_SESSION['user_id'] = $user['id'];
-            $_SESSION['first_name'] = $user['first_name'];
-            $_SESSION['last_name'] = $user['last_name'];
-            
-            header('Location: index.php');
-            exit;
+            if ((int) $user['verified'] !== 1) {
+                $error = 'Hesabın henüz doğrulanmamış. Lütfen e-posta adresine gönderilen doğrulama bağlantısını kullan.';
+            } else {
+                // Şifre doğru, oturum aç
+                $_SESSION['user_id'] = $user['id'];
+                $_SESSION['first_name'] = $user['first_name'];
+                $_SESSION['last_name'] = $user['last_name'];
+
+                header('Location: index.php');
+                exit;
+            }
         } else {
             $error = 'E-posta veya şifre hatalı.';
         }
