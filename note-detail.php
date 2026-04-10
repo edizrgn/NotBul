@@ -227,7 +227,7 @@ require __DIR__ . '/includes/header.php';
                     </div>
 
                     <div class="mt-4 d-grid gap-2 d-md-flex">
-                        <a class="btn btn-primary btn-lg px-4" href="view.php?id=<?= $note['id'] ?>" download="<?= htmlspecialchars($note['original_filename']) ?>">İndir</a>
+                        <a class="btn btn-primary btn-lg px-4" href="view.php?id=<?= $note['id'] ?>&amp;download=1" download="<?= htmlspecialchars($note['original_filename']) ?>">İndir</a>
                         <a class="btn btn-outline-primary btn-lg" href="search.php">Benzer Notlar</a>
                     </div>
                     <?php if ($isOwner): ?>

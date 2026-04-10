@@ -9,6 +9,7 @@ require_once __DIR__ . '/includes/storage.php';
 // Dosyalar doğrudan URL ile değil bu endpoint üzerinden sunulur.
 
 $id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
+$isDownload = isset($_GET['download']) && $_GET['download'] === '1';
 
 if ($id <= 0) {
     die('Geçersiz dosya ID.');
@@ -39,10 +40,39 @@ if (!file_exists($filePath)) {
     die('Dosya sunucuda bulunamadı.');
 }
 
+if ($isDownload) {
+    try {
+        $columnCheckStmt = $pdo->query("SHOW COLUMNS FROM notes LIKE 'download_count'");
+        $hasDownloadCount = (bool)$columnCheckStmt->fetch();
+    } catch (Throwable $e) {
+        $hasDownloadCount = false;
+    }
+
+    if ($hasDownloadCount) {
+        try {
+            $incrementStmt = $pdo->prepare("UPDATE notes SET download_count = download_count + 1 WHERE id = :id");
+            $incrementStmt->execute(['id' => $id]);
+        } catch (Throwable $e) {
+            error_log('view.php download_count update error: ' . $e->getMessage());
+        }
+    }
+}
+
+$filename = trim((string)($note['original_filename'] ?? ''));
+$filename = preg_replace('/[\r\n]+/', '', $filename) ?? '';
+if ($filename === '') {
+    $filename = 'not-' . $id;
+}
+
 // Tarayıcıya dosya tipini bildir
 header('Content-Type: ' . $note['mime_type']);
 header('X-Content-Type-Options: nosniff');
 header('Content-Length: ' . filesize($filePath));
+if ($isDownload) {
+    header('Content-Disposition: attachment; filename="' . addcslashes($filename, "\\\"") . '"; filename*=UTF-8\'\'' . rawurlencode($filename));
+} else {
+    header('Content-Disposition: inline; filename="' . addcslashes($filename, "\\\"") . '"');
+}
 
 // Dosyayı oku ve gönder
 readfile($filePath);

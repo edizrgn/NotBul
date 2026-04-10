@@ -13,6 +13,17 @@ try {
 }
 
 if (!$dbUnavailable) {
+    $downloadCountSelect = '0 AS download_count';
+
+    try {
+        $columnCheckStmt = $pdo->query("SHOW COLUMNS FROM notes LIKE 'download_count'");
+        if ($columnCheckStmt->fetch()) {
+            $downloadCountSelect = 'n.download_count AS download_count';
+        }
+    } catch (Throwable $e) {
+        $downloadCountSelect = '0 AS download_count';
+    }
+
     try {
         $stmt = $pdo->query("
             SELECT
@@ -28,6 +39,7 @@ if (!$dbUnavailable) {
                 n.tags,
                 n.original_filename,
                 n.mime_type,
+                {$downloadCountSelect},
                 n.created_at,
                 u.first_name,
                 u.last_name
@@ -59,7 +71,7 @@ if (!$dbUnavailable) {
                 'topic' => (string)($row['topic'] ?? ''),
                 'tags' => $tags,
                 'views' => 0,
-                'downloads' => 0,
+                'downloads' => (int)($row['download_count'] ?? 0),
                 'fileType' => $fileType,
                 'createdAt' => (string)$row['created_at']
             ];
