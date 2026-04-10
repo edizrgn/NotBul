@@ -11,6 +11,8 @@ CREATE TABLE IF NOT EXISTS users (
     verified TINYINT(1) NOT NULL DEFAULT 0,
     email_verification_token CHAR(64) NULL,
     email_verification_token_expires_at DATETIME NULL,
+    password_reset_token CHAR(64) NULL,
+    password_reset_token_expires_at DATETIME NULL,
     verified_at DATETIME NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -20,7 +22,9 @@ ALTER TABLE users
     ADD COLUMN IF NOT EXISTS verified TINYINT(1) NOT NULL DEFAULT 0 AFTER password,
     ADD COLUMN IF NOT EXISTS email_verification_token CHAR(64) NULL AFTER verified,
     ADD COLUMN IF NOT EXISTS email_verification_token_expires_at DATETIME NULL AFTER email_verification_token,
-    ADD COLUMN IF NOT EXISTS verified_at DATETIME NULL AFTER email_verification_token_expires_at;
+    ADD COLUMN IF NOT EXISTS password_reset_token CHAR(64) NULL AFTER email_verification_token_expires_at,
+    ADD COLUMN IF NOT EXISTS password_reset_token_expires_at DATETIME NULL AFTER password_reset_token,
+    ADD COLUMN IF NOT EXISTS verified_at DATETIME NULL AFTER password_reset_token_expires_at;
 
 -- Keep pre-existing accounts active after adding the verification columns.
 UPDATE users
@@ -31,6 +35,7 @@ WHERE verified = 0
 
 CREATE INDEX IF NOT EXISTS idx_users_verified ON users(verified);
 CREATE INDEX IF NOT EXISTS idx_users_email_verification_token ON users(email_verification_token);
+CREATE INDEX IF NOT EXISTS idx_users_password_reset_token ON users(password_reset_token);
 
 CREATE TABLE IF NOT EXISTS notes (
     id INT AUTO_INCREMENT PRIMARY KEY,

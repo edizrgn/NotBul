@@ -8,14 +8,6 @@ require_once __DIR__ . '/env.php';
  */
 function sendVerificationEmail(string $recipientEmail, string $recipientName, string $verificationUrl): void
 {
-    $apiKey = envValue('BREVO_API_KEY');
-    if ($apiKey === null || $apiKey === '') {
-        throw new RuntimeException('BREVO_API_KEY bulunamadı.');
-    }
-
-    $senderEmail = envValue('BREVO_SENDER_EMAIL', 'no-reply@notbul.site');
-    $senderName = envValue('BREVO_SENDER_NAME', 'Not Bul');
-
     $subject = 'Not Bul hesap doğrulama';
     $safeRecipientName = htmlspecialchars($recipientName, ENT_QUOTES, 'UTF-8');
     $safeUrl = htmlspecialchars($verificationUrl, ENT_QUOTES, 'UTF-8');
@@ -27,6 +19,61 @@ function sendVerificationEmail(string $recipientEmail, string $recipientName, st
         <p>Bağlantı 24 saat içinde geçerliliğini yitirir.</p>
         <p>Eğer bu kaydı sen oluşturmadıysan bu e-postayı görmezden gelebilirsin.</p>
     ";
+
+    sendBrevoEmail($recipientEmail, $recipientName, $subject, $htmlContent, 'doğrulama e-postası');
+}
+
+/**
+ * @throws RuntimeException
+ */
+function sendPasswordResetEmail(string $recipientEmail, string $recipientName, string $resetUrl): void
+{
+    $subject = 'Not Bul şifre sıfırlama';
+    $safeRecipientName = htmlspecialchars($recipientName, ENT_QUOTES, 'UTF-8');
+    $safeUrl = htmlspecialchars($resetUrl, ENT_QUOTES, 'UTF-8');
+
+    $htmlContent = "
+        <p>Merhaba {$safeRecipientName},</p>
+        <p>Şifreni sıfırlamak için aşağıdaki bağlantıya tıkla:</p>
+        <p><a href=\"{$safeUrl}\">Şifremi sıfırla</a></p>
+        <p>Bağlantı 1 saat içinde geçerliliğini yitirir.</p>
+        <p>Eğer bu talebi sen oluşturmadıysan bu e-postayı görmezden gelebilirsin.</p>
+    ";
+
+    sendBrevoEmail($recipientEmail, $recipientName, $subject, $htmlContent, 'şifre sıfırlama e-postası');
+}
+
+function buildAppBaseUrl(): string
+{
+    $configuredUrl = envValue('APP_BASE_URL');
+    if ($configuredUrl !== null && $configuredUrl !== '') {
+        return rtrim($configuredUrl, '/');
+    }
+
+    $https = $_SERVER['HTTPS'] ?? '';
+    $scheme = ($https !== '' && $https !== 'off') ? 'https' : 'http';
+    $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
+
+    return $scheme . '://' . $host;
+}
+
+/**
+ * @throws RuntimeException
+ */
+function sendBrevoEmail(
+    string $recipientEmail,
+    string $recipientName,
+    string $subject,
+    string $htmlContent,
+    string $emailTypeLabel
+): void {
+    $apiKey = envValue('BREVO_API_KEY');
+    if ($apiKey === null || $apiKey === '') {
+        throw new RuntimeException('BREVO_API_KEY bulunamadı.');
+    }
+
+    $senderEmail = envValue('BREVO_SENDER_EMAIL', 'no-reply@notbul.site');
+    $senderName = envValue('BREVO_SENDER_NAME', 'Not Bul');
 
     $payload = [
         'sender' => [
@@ -72,20 +119,6 @@ function sendVerificationEmail(string $recipientEmail, string $recipientName, st
     if ($httpCode < 200 || $httpCode >= 300) {
         $decoded = json_decode($response, true);
         $message = is_array($decoded) && isset($decoded['message']) ? (string) $decoded['message'] : 'Bilinmeyen hata';
-        throw new RuntimeException('Brevo doğrulama e-postası gönderemedi: ' . $message);
+        throw new RuntimeException('Brevo ' . $emailTypeLabel . ' gönderemedi: ' . $message);
     }
-}
-
-function buildAppBaseUrl(): string
-{
-    $configuredUrl = envValue('APP_BASE_URL');
-    if ($configuredUrl !== null && $configuredUrl !== '') {
-        return rtrim($configuredUrl, '/');
-    }
-
-    $https = $_SERVER['HTTPS'] ?? '';
-    $scheme = ($https !== '' && $https !== 'off') ? 'https' : 'http';
-    $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
-
-    return $scheme . '://' . $host;
 }
