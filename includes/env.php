@@ -14,7 +14,7 @@ function envValue(string $key, ?string $default = null): ?string
     static $envCache = null;
     if ($envCache === null) {
         $envCache = [];
-        $envPath = __DIR__ . '/../.env';
+        $envPath = __DIR__ . '/etc/notbul/.env';
 
         if (is_readable($envPath)) {
             $lines = file($envPath, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
