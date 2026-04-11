@@ -19,8 +19,9 @@
             <div class="col-6 col-lg-3">
                 <h3 class="footer-title">Linkler</h3>
                 <ul class="footer-list">
-                    <li><a href="upload.php">Not Yükle</a></li>
                     <li><a href="search.php">Ders Notu Bul</a></li>
+                    <li><a href="upload.php">Not Yükle</a></li>
+                    
                     
                 </ul>
             </div>
@@ -28,7 +29,7 @@
                 <h3 class="footer-title">Sosyal</h3>
                 <ul class="footer-list">
                     <li><a href="https://github.com/edizrgn/notbul">GitHub</a></li>
-                    
+
                 </ul>
             </div>
         </div>

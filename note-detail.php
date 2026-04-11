@@ -190,7 +190,7 @@ require __DIR__ . '/includes/header.php';
                         <?php else: ?>
                             <div class="p-4 text-center">
                                 <p class="mb-2 text-secondary">Bu dosya formatı (<?= strtoupper(pathinfo($note['original_filename'], PATHINFO_EXTENSION)) ?>) tarayıcıda önizleme desteklemiyor.</p>
-                                <p class="mb-0 text-secondary">Sağdaki "İndir" butonu ile dosyayı indirebilirsiniz.</p>
+                                <p class="mb-0 text-secondary">'İndir' butonu ile dosyayı indirebilirsiniz.</p>
                             </div>
                         <?php endif; ?>
                     </div>
