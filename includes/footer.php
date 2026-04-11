@@ -33,10 +33,12 @@
                 </ul>
             </div>
         </div>
-        <div class="footer-bottom mt-4 pt-3 d-flex flex-column flex-md-row justify-content-between gap-2">
-            <p class="mb-0">Not Bul | notbul.site</p>
-            <p class="mb-0">Pre-Alpha</p>
-            <p class="mb-0">Tüm hakları saklıdır.</p>
+        <div class="footer-bottom mt-4 pt-3">
+            <p class="footer-bottom-brand mb-0">Not Bul | notbul.site</p>
+            <div class="footer-legal-notes">
+                <p class="mb-0">Kullanıcılar tarafından yüklenen içeriklerin sorumluluğu yükleyene aittir.</p>
+                <p class="mb-0">Platform kodları MIT lisansı ile lisanslanmıştır.</p>
+            </div>
         </div>
     </div>
 </footer>
