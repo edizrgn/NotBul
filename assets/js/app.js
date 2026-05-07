@@ -567,6 +567,17 @@
 
             let tags = [];
 
+            const normalizeTag = (rawValue) => {
+                return (rawValue || '')
+                    .toString()
+                    .trim()
+                    .toLocaleLowerCase('tr-TR')
+                    .replace(/\s+/g, '-')
+                    .replace(/[^0-9a-zçğıöşü-]/g, '')
+                    .replace(/-+/g, '-')
+                    .replace(/^-+|-+$/g, '');
+            };
+
             const sync = () => {
                 hiddenField.value = tags.join(',');
                 chipsContainer.innerHTML = tags.map((tag) => {
@@ -576,7 +587,7 @@
             };
 
             const addTag = (rawValue) => {
-                const cleanValue = normalize(rawValue).replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+                const cleanValue = normalizeTag(rawValue);
                 if (!cleanValue || tags.includes(cleanValue) || tags.length >= 12) {
                     return;
                 }
@@ -611,7 +622,7 @@
                 if (!tagValue) {
                     return;
                 }
-                tags = tags.filter((tag) => tag !== normalize(tagValue));
+                tags = tags.filter((tag) => tag !== normalizeTag(tagValue));
                 sync();
             });
 

@@ -46,6 +46,83 @@ function resolveDepartmentName(string $departmentId): string
     return $departmentsById[$normalizedId] ?? $normalizedId;
 }
 
+function resolveUniversityName(string $universityId): string
+{
+    $normalizedId = trim($universityId);
+    if ($normalizedId === '') {
+        return '-';
+    }
+
+    static $universitiesById = null;
+
+    if ($universitiesById === null) {
+        $universitiesById = [];
+        $dataPath = __DIR__ . '/assets/data/universiteler.json';
+
+        $json = @file_get_contents($dataPath);
+        if (is_string($json) && $json !== '') {
+            $decoded = json_decode($json, true);
+            if (is_array($decoded)) {
+                foreach ($decoded as $university) {
+                    if (!is_array($university)) {
+                        continue;
+                    }
+
+                    $id = trim((string)($university['id'] ?? ''));
+                    $name = trim((string)($university['name'] ?? ''));
+
+                    if ($id !== '' && $name !== '') {
+                        $universitiesById[$id] = $name;
+                    }
+                }
+            }
+        }
+    }
+
+    return $universitiesById[$normalizedId] ?? $normalizedId;
+}
+
+function resolveDepartmentTypeLabel(string $departmentType): string
+{
+    return match (trim($departmentType)) {
+        'lisans' => 'Lisans',
+        'onlisans' => 'Önlisans',
+        '' => '-',
+        default => ucfirst($departmentType),
+    };
+}
+
+function resolveClassLabel(string $classId): string
+{
+    $normalizedId = trim($classId);
+    if ($normalizedId === '') {
+        return '-';
+    }
+
+    if (ctype_digit($normalizedId)) {
+        return $normalizedId . '. Sınıf';
+    }
+
+    return $normalizedId;
+}
+
+function formatFileSizeHuman(int $bytes): string
+{
+    if ($bytes < 1024) {
+        return $bytes . ' B';
+    }
+
+    if ($bytes < 1024 * 1024) {
+        return number_format($bytes / 1024, 2, ',', '.') . ' KB';
+    }
+
+    if ($bytes < 1024 * 1024 * 1024) {
+        return number_format($bytes / (1024 * 1024), 2, ',', '.') . ' MB';
+    }
+
+    return number_format($bytes / (1024 * 1024 * 1024), 2, ',', '.') . ' GB';
+}
+
 try {
     require_once __DIR__ . '/includes/db.php';
     require_once __DIR__ . '/includes/storage.php';
@@ -159,6 +236,17 @@ if ($deleteToken === '') {
 
 $isOwner = isset($_SESSION['user_id']) && (int)$_SESSION['user_id'] === (int)$note['user_id'];
 $departmentName = resolveDepartmentName((string)($note['department_id'] ?? ''));
+$universityName = resolveUniversityName((string)($note['university_id'] ?? ''));
+$departmentTypeLabel = resolveDepartmentTypeLabel((string)($note['department_type'] ?? ''));
+$classLabel = resolveClassLabel((string)($note['class_id'] ?? ''));
+$courseName = trim((string)($note['course'] ?? ''));
+$topicName = trim((string)($note['topic'] ?? ''));
+$originalFilename = trim((string)($note['original_filename'] ?? '-'));
+$fileExtension = strtoupper(pathinfo($originalFilename, PATHINFO_EXTENSION));
+$fileExtension = $fileExtension !== '' ? $fileExtension : '-';
+$downloadCount = (int)($note['download_count'] ?? 0);
+$fileSizeBytes = (int)($note['file_size'] ?? 0);
+$formattedCreatedAt = date('d.m.Y H:i', strtotime((string)$note['created_at']));
 
 $pageTitle = 'Not Bul | ' . htmlspecialchars($note['title']);
 $pageKey = 'detail';
@@ -204,11 +292,17 @@ require __DIR__ . '/includes/header.php';
 
                     <div class="note-meta-grid">
                         <div><span>Yükleyen</span><strong><?= htmlspecialchars($note['first_name'] . ' ' . $note['last_name']) ?></strong></div>
-                        <div><span>Ders</span><strong><?= htmlspecialchars($note['course']) ?></strong></div>
+                        <div><span>Üniversite</span><strong><?= htmlspecialchars($universityName) ?></strong></div>
+                        <div><span>Program Türü</span><strong><?= htmlspecialchars($departmentTypeLabel) ?></strong></div>
                         <div><span>Bölüm</span><strong><?= htmlspecialchars($departmentName) ?></strong></div>
-                        <div><span>Sınıf</span><strong><?= htmlspecialchars($note['class_id'] ?: '-') ?></strong></div>
-                        <div><span>Tarih</span><strong><?= date('d.m.Y', strtotime($note['created_at'])) ?></strong></div>
-                        <div><span>Boyut</span><strong><?= round($note['file_size'] / 1024, 2) ?> KB</strong></div>
+                        <div><span>Sınıf</span><strong><?= htmlspecialchars($classLabel) ?></strong></div>
+                        <div><span>Ders</span><strong><?= htmlspecialchars($courseName !== '' ? $courseName : '-') ?></strong></div>
+                        <div><span>Konu</span><strong><?= htmlspecialchars($topicName !== '' ? $topicName : '-') ?></strong></div>
+                        <div><span>İndirme</span><strong><?= number_format($downloadCount, 0, ',', '.') ?></strong></div>
+                        <div><span>Dosya Türü</span><strong><?= htmlspecialchars($fileExtension) ?></strong></div>
+                        <div><span>Dosya Adı</span><strong><?= htmlspecialchars($originalFilename) ?></strong></div>
+                        <div><span>Boyut</span><strong><?= htmlspecialchars(formatFileSizeHuman($fileSizeBytes)) ?></strong></div>
+                        <div><span>Yüklenme</span><strong><?= htmlspecialchars($formattedCreatedAt) ?></strong></div>
                     </div>
 
                     <div class="mt-3 d-flex flex-wrap gap-2">
