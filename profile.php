@@ -128,7 +128,7 @@ require __DIR__ . '/includes/header.php';
                                                     • <?= htmlspecialchars((string)$note['topic']) ?>
                                                 <?php endif; ?>
                                             </p>
-                                            <div class="small text-secondary my-note-file text-truncate" title="<?= htmlspecialchars((string)$note['original_filename']) ?>">
+                                            <div class="small text-secondary my-note-file" title="<?= htmlspecialchars((string)$note['original_filename']) ?>">
                                                 <?= htmlspecialchars((string)$note['original_filename']) ?>
                                                 • <?= number_format(((int)$note['file_size']) / 1024, 1, ',', '.') ?> KB
                                             </div>

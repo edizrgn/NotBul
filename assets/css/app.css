@@ -473,6 +473,8 @@ a {
 
 .my-note-file {
     max-width: 100%;
+    overflow-wrap: anywhere;
+    word-break: break-word;
 }
 
 .pagination .page-link {
