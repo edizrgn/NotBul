@@ -134,3 +134,5 @@ CREATE TABLE IF NOT EXISTS note_comments (
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 CREATE INDEX IF NOT EXISTS idx_note_comments_note_id ON note_comments(note_id);
+CREATE INDEX IF NOT EXISTS idx_note_comments_user_id ON note_comments(user_id);
+CREATE INDEX IF NOT EXISTS idx_note_comments_created_at ON note_comments(created_at);

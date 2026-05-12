@@ -79,7 +79,11 @@ function adminNoteStatus(array $note): array
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $action = (string)($_POST['action'] ?? '');
     $requestToken = (string)($_POST['csrf_token'] ?? '');
-    $redirectSection = $action === 'delete_note' ? 'notes' : 'users';
+    $redirectSection = match ($action) {
+        'delete_note' => 'notes',
+        'delete_comment' => 'comments',
+        default => 'users',
+    };
 
     if (!adminValidateCsrfToken('admin_panel', $requestToken)) {
         adminSetFlash('danger', 'Güvenlik doğrulaması başarısız oldu. Sayfayı yenileyip tekrar deneyin.');
@@ -250,6 +254,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             adminRedirect('notes');
         }
 
+        if ($action === 'delete_comment') {
+            $commentId = (int)($_POST['comment_id'] ?? 0);
+
+            if ($commentId <= 0) {
+                adminSetFlash('danger', 'Geçersiz yorum silme isteği.');
+                adminRedirect('comments');
+            }
+
+            $deleteStmt = $pdo->prepare("DELETE FROM note_comments WHERE id = :id LIMIT 1");
+            $deleteStmt->execute(['id' => $commentId]);
+
+            if ($deleteStmt->rowCount() < 1) {
+                adminSetFlash('danger', 'Silinecek yorum bulunamadı.');
+                adminRedirect('comments');
+            }
+
+            adminSetFlash('success', 'Yorum kalıcı olarak silindi.');
+            adminRedirect('comments');
+        }
+
         adminSetFlash('danger', 'Bilinmeyen admin işlemi.');
         adminRedirect();
     } catch (Throwable $e) {
@@ -282,6 +306,11 @@ $noteStats = $pdo->query("
         COALESCE(SUM(file_size), 0) AS total_file_size,
         COALESCE(SUM(CASE WHEN created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY) THEN 1 ELSE 0 END), 0) AS uploads_7d
     FROM notes
+")->fetch();
+
+$commentStats = $pdo->query("
+    SELECT COUNT(*) AS total_comments
+    FROM note_comments
 ")->fetch();
 
 $adminCount = (int)($userStats['admin_users'] ?? 0);
@@ -345,6 +374,27 @@ $topNotesStmt = $pdo->query("
 ");
 $topNotes = $topNotesStmt->fetchAll();
 
+$commentsStmt = $pdo->query("
+    SELECT
+        nc.id,
+        nc.note_id,
+        nc.user_id,
+        nc.rating,
+        nc.comment,
+        nc.created_at,
+        n.title AS note_title,
+        n.course AS note_course,
+        n.deleted_at AS note_deleted_at,
+        u.first_name,
+        u.last_name,
+        u.email
+    FROM note_comments nc
+    JOIN notes n ON n.id = nc.note_id
+    JOIN users u ON u.id = nc.user_id
+    ORDER BY nc.created_at DESC, nc.id DESC
+");
+$comments = $commentsStmt->fetchAll();
+
 $flash = adminGetFlash();
 
 $pageTitle = 'Not Bul | Admin Paneli';
@@ -361,6 +411,7 @@ require __DIR__ . '/includes/header.php';
             <div class="d-flex flex-wrap gap-2">
                 <a class="btn btn-sm btn-outline-primary" href="#users"><i class="fa-solid fa-users me-1"></i>Kullanıcılar</a>
                 <a class="btn btn-sm btn-outline-primary" href="#notes"><i class="fa-solid fa-file-lines me-1"></i>Notlar</a>
+                <a class="btn btn-sm btn-outline-primary" href="#comments"><i class="fa-solid fa-comments me-1"></i>Yorumlar</a>
             </div>
         </div>
 
@@ -390,6 +441,10 @@ require __DIR__ . '/includes/header.php';
             <div class="admin-stat-card">
                 <span>Toplam Not</span>
                 <strong><?= adminFormatNumber((int)($noteStats['total_notes'] ?? 0)) ?></strong>
+            </div>
+            <div class="admin-stat-card">
+                <span>Toplam Yorum</span>
+                <strong><?= adminFormatNumber((int)($commentStats['total_comments'] ?? 0)) ?></strong>
             </div>
             <div class="admin-stat-card">
                 <span>Yayında</span>
@@ -630,6 +685,81 @@ require __DIR__ . '/includes/header.php';
                     </tbody>
                 </table>
             </div>
+        </div>
+
+        <div id="comments" class="panel-card mt-4">
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+                <h2 class="h4 mb-0">Yorum Yönetimi</h2>
+                <span class="text-secondary small"><?= adminFormatNumber(count($comments)) ?> yorum</span>
+            </div>
+            <?php if (empty($comments)): ?>
+                <div class="empty-state">Henüz yorum bulunmuyor.</div>
+            <?php else: ?>
+                <div class="table-responsive">
+                    <table class="table admin-table align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Not</th>
+                                <th>Yazan</th>
+                                <th>Puan</th>
+                                <th>Yorum</th>
+                                <th>Tarih</th>
+                                <th class="text-end">İşlem</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($comments as $comment): ?>
+                                <tr>
+                                    <td><?= (int)$comment['id'] ?></td>
+                                    <td>
+                                        <strong><?= htmlspecialchars((string)$comment['note_title'], ENT_QUOTES, 'UTF-8') ?></strong>
+                                        <div class="text-secondary small">
+                                            Not #<?= (int)$comment['note_id'] ?>
+                                            <?php if (!empty($comment['note_course'])): ?>
+                                                / <?= htmlspecialchars((string)$comment['note_course'], ENT_QUOTES, 'UTF-8') ?>
+                                            <?php endif; ?>
+                                            <?php if (!empty($comment['note_deleted_at'])): ?>
+                                                / Arşivde
+                                            <?php endif; ?>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <?= htmlspecialchars(trim((string)$comment['first_name'] . ' ' . (string)$comment['last_name']), ENT_QUOTES, 'UTF-8') ?>
+                                        <div class="text-secondary small">
+                                            Kullanıcı #<?= (int)$comment['user_id'] ?> /
+                                            <?= htmlspecialchars((string)$comment['email'], ENT_QUOTES, 'UTF-8') ?>
+                                        </div>
+                                    </td>
+                                    <td><?= (int)$comment['rating'] ?>/5</td>
+                                    <td class="admin-comment-cell"><?= nl2br(htmlspecialchars((string)$comment['comment'], ENT_QUOTES, 'UTF-8')) ?></td>
+                                    <td><?= htmlspecialchars(adminDate((string)$comment['created_at']), ENT_QUOTES, 'UTF-8') ?></td>
+                                    <td class="text-end">
+                                        <div class="d-flex justify-content-end gap-2 flex-wrap">
+                                            <a class="btn btn-sm btn-outline-primary" href="admin-comment-edit.php?id=<?= (int)$comment['id'] ?>">Düzenle</a>
+                                            <?php if (empty($comment['note_deleted_at'])): ?>
+                                                <a class="btn btn-sm btn-outline-secondary" href="note-detail.php?id=<?= (int)$comment['note_id'] ?>#comments">Notu Gör</a>
+                                            <?php endif; ?>
+                                            <form method="POST" action="admin.php#comments" class="d-inline-block">
+                                                <input type="hidden" name="action" value="delete_comment">
+                                                <input type="hidden" name="comment_id" value="<?= (int)$comment['id'] ?>">
+                                                <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrfToken, ENT_QUOTES, 'UTF-8') ?>">
+                                                <button
+                                                    class="btn btn-sm btn-outline-danger"
+                                                    type="submit"
+                                                    onclick="return confirm('Bu yorum kalıcı olarak silinecek. Devam edilsin mi?');"
+                                                >
+                                                    Sil
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
+            <?php endif; ?>
         </div>
     </section>
 </main>
