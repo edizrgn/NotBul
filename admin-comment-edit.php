@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/includes/db.php';
 require_once __DIR__ . '/includes/admin_auth.php';
+require_once __DIR__ . '/includes/admin_notifications.php';
 
 $adminUser = requireAdminUser($pdo);
 $csrfToken = adminCsrfToken('admin_comment_edit');
@@ -70,6 +71,35 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         if (empty($errors)) {
             try {
+                $beforeStmt = $pdo->prepare("
+                    SELECT
+                        nc.id,
+                        nc.note_id,
+                        nc.user_id,
+                        nc.rating,
+                        nc.comment,
+                        nc.created_at,
+                        n.title AS note_title,
+                        n.course AS note_course,
+                        n.topic AS note_topic,
+                        n.deleted_at AS note_deleted_at,
+                        u.first_name,
+                        u.last_name,
+                        u.email
+                    FROM note_comments nc
+                    JOIN notes n ON n.id = nc.note_id
+                    JOIN users u ON u.id = nc.user_id
+                    WHERE nc.id = :id
+                    LIMIT 1
+                ");
+                $beforeStmt->execute(['id' => $commentId]);
+                $commentBefore = $beforeStmt->fetch();
+
+                if (!$commentBefore) {
+                    adminSetFlash('danger', 'Düzenlenecek yorum bulunamadı.');
+                    adminCommentRedirectToList();
+                }
+
                 $updateStmt = $pdo->prepare("
                     UPDATE note_comments
                     SET rating = :rating,
@@ -86,6 +116,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 if ($updateStmt->rowCount() < 1) {
                     adminSetFlash('warning', 'Yorumda değişiklik yapılmadı veya yorum bulunamadı.');
                 } else {
+                    sendAdminNotification($pdo, 'Yorum düzenlendi', 'Admin panelinden bir yorum güncellendi.', [
+                        'İşlem yapan admin' => adminNotificationAdminLabel($adminUser),
+                        'Yorum' => '#' . (int)$commentBefore['id'],
+                        'Not' => (string)$commentBefore['note_title'] . ' (#' . (int)$commentBefore['note_id'] . ')',
+                        'Yazan' => adminNotificationUserLabel($commentBefore) . ' (#' . (int)$commentBefore['user_id'] . ')',
+                        'Puan değişimi' => (int)$commentBefore['rating'] . '/5' . "\n=> " . $rating . '/5',
+                        'Yorum değişimi' => (string)$commentBefore['comment'] . "\n=> " . $commentText,
+                    ], [
+                        'Yorumu Düzenle' => adminNotificationUrl('admin-comment-edit.php?id=' . $commentId),
+                        'Yorum Yönetimi' => adminNotificationUrl('admin.php#comments'),
+                    ]);
                     adminSetFlash('success', 'Yorum güncellendi.');
                 }
                 adminCommentRedirectToComment($commentId);
@@ -104,12 +145,51 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     } elseif ($action === 'delete_comment') {
         try {
+            $beforeStmt = $pdo->prepare("
+                SELECT
+                    nc.id,
+                    nc.note_id,
+                    nc.user_id,
+                    nc.rating,
+                    nc.comment,
+                    nc.created_at,
+                    n.title AS note_title,
+                    n.course AS note_course,
+                    n.topic AS note_topic,
+                    n.deleted_at AS note_deleted_at,
+                    u.first_name,
+                    u.last_name,
+                    u.email
+                FROM note_comments nc
+                JOIN notes n ON n.id = nc.note_id
+                JOIN users u ON u.id = nc.user_id
+                WHERE nc.id = :id
+                LIMIT 1
+            ");
+            $beforeStmt->execute(['id' => $commentId]);
+            $commentBefore = $beforeStmt->fetch();
+
+            if (!$commentBefore) {
+                adminSetFlash('danger', 'Silinecek yorum bulunamadı.');
+                adminCommentRedirectToList();
+            }
+
             $deleteStmt = $pdo->prepare("DELETE FROM note_comments WHERE id = :id LIMIT 1");
             $deleteStmt->execute(['id' => $commentId]);
 
             if ($deleteStmt->rowCount() < 1) {
                 adminSetFlash('danger', 'Silinecek yorum bulunamadı.');
             } else {
+                sendAdminNotification($pdo, 'Yorum silindi', 'Admin yorum düzenleme sayfasından bir yorum kalıcı olarak silindi.', [
+                    'İşlem yapan admin' => adminNotificationAdminLabel($adminUser),
+                    'Yorum' => '#' . (int)$commentBefore['id'],
+                    'Not' => (string)$commentBefore['note_title'] . ' (#' . (int)$commentBefore['note_id'] . ')',
+                    'Yazan' => adminNotificationUserLabel($commentBefore) . ' (#' . (int)$commentBefore['user_id'] . ')',
+                    'Puan' => (int)$commentBefore['rating'] . '/5',
+                    'Yorum metni' => (string)$commentBefore['comment'],
+                ], [
+                    'Yorum Yönetimi' => adminNotificationUrl('admin.php#comments'),
+                ]);
                 adminSetFlash('success', 'Yorum kalıcı olarak silindi.');
             }
             adminCommentRedirectToList();

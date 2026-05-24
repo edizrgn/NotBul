@@ -5,6 +5,7 @@ require_once __DIR__ . '/includes/db.php';
 require_once __DIR__ . '/includes/storage.php';
 require_once __DIR__ . '/includes/admin_auth.php';
 require_once __DIR__ . '/includes/ratings.php';
+require_once __DIR__ . '/includes/admin_notifications.php';
 
 $adminUser = requireAdminUser($pdo);
 $csrfToken = adminCsrfToken('admin_panel');
@@ -77,10 +78,68 @@ function adminNoteStatus(array $note): array
     return ['label' => 'Beklemede', 'class' => 'bg-warning text-dark'];
 }
 
+function adminFullName(array $user): string
+{
+    $name = trim((string)($user['first_name'] ?? '') . ' ' . (string)($user['last_name'] ?? ''));
+
+    return $name !== '' ? $name : '-';
+}
+
+function adminCopyButton(string $value, string $label, bool $iconOnly = true): string
+{
+    $value = trim($value);
+    if ($value === '') {
+        return '';
+    }
+
+    $safeValue = htmlspecialchars($value, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+    $safeLabel = htmlspecialchars($label, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+    $class = $iconOnly
+        ? 'btn btn-sm btn-outline-secondary admin-copy-btn admin-copy-btn-icon'
+        : 'btn btn-sm btn-outline-secondary admin-copy-btn';
+    $content = '<i class="fa-regular fa-copy" aria-hidden="true"></i>';
+
+    if ($iconOnly) {
+        $content .= '<span class="visually-hidden">' . $safeLabel . '</span>';
+    } else {
+        $content .= '<span>' . $safeLabel . '</span>';
+    }
+
+    return '<button type="button" class="' . $class . '" data-copy-value="' . $safeValue . '" data-copy-label="' . $safeLabel . '" title="' . $safeLabel . '" aria-label="' . $safeLabel . '">' . $content . '</button>';
+}
+
+function adminEmailList(array $users, ?string $role = null): string
+{
+    $emails = [];
+    $seen = [];
+
+    foreach ($users as $user) {
+        if ($role !== null && (string)($user['role'] ?? '') !== $role) {
+            continue;
+        }
+
+        $email = trim((string)($user['email'] ?? ''));
+        if ($email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            continue;
+        }
+
+        $key = mb_strtolower($email, 'UTF-8');
+        if (isset($seen[$key])) {
+            continue;
+        }
+
+        $emails[] = $email;
+        $seen[$key] = true;
+    }
+
+    return implode(', ', $emails);
+}
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $action = (string)($_POST['action'] ?? '');
     $requestToken = (string)($_POST['csrf_token'] ?? '');
     $redirectSection = match ($action) {
+        'update_admin_notifications' => 'settings',
         'delete_note' => 'notes',
         'delete_comment' => 'comments',
         default => 'users',
@@ -92,6 +151,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     try {
+        if ($action === 'update_admin_notifications') {
+            $enabled = (string)($_POST['admin_email_notifications'] ?? '0') === '1' ? 1 : 0;
+
+            $updateStmt = $pdo->prepare("
+                UPDATE users
+                SET admin_email_notifications = :enabled
+                WHERE id = :id
+                  AND role = 'admin'
+                LIMIT 1
+            ");
+            $updateStmt->execute([
+                'enabled' => $enabled,
+                'id' => (int)$adminUser['id'],
+            ]);
+
+            $adminUser['admin_email_notifications'] = $enabled;
+            adminSetFlash('success', $enabled === 1 ? 'Kişisel admin mail bildirimleri açıldı.' : 'Kişisel admin mail bildirimleri kapatıldı.');
+            adminRedirect('settings');
+        }
+
         if ($action === 'update_user_role') {
             $targetUserId = (int)($_POST['user_id'] ?? 0);
             $nextRole = (string)($_POST['role'] ?? '');
@@ -101,7 +180,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 adminRedirect('users');
             }
 
-            $targetStmt = $pdo->prepare("SELECT id, first_name, last_name, role FROM users WHERE id = :id LIMIT 1");
+            $targetStmt = $pdo->prepare("SELECT id, first_name, last_name, email, role FROM users WHERE id = :id LIMIT 1");
             $targetStmt->execute(['id' => $targetUserId]);
             $targetUser = $targetStmt->fetch();
 
@@ -122,6 +201,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 'id' => $targetUserId,
             ]);
 
+            if ((string)($targetUser['role'] ?? 'user') !== $nextRole) {
+                sendAdminNotification($pdo, 'Kullanıcı rolü değişti', 'Admin panelinden bir kullanıcının rolü güncellendi.', [
+                    'İşlem yapan admin' => adminNotificationAdminLabel($adminUser),
+                    'Kullanıcı' => adminNotificationUserLabel($targetUser) . ' (#' . (int)$targetUser['id'] . ')',
+                    'Önceki rol' => (string)($targetUser['role'] ?? 'user'),
+                    'Yeni rol' => $nextRole,
+                ], [
+                    'Kullanıcı Yönetimi' => adminNotificationUrl('admin.php#users'),
+                ]);
+            }
+
             if ($targetUserId === (int)$adminUser['id']) {
                 $_SESSION['role'] = $nextRole;
             }
@@ -136,6 +226,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             if ($targetUserId <= 0 || !in_array($verified, [0, 1], true)) {
                 adminSetFlash('danger', 'Geçersiz doğrulama isteği.');
+                adminRedirect('users');
+            }
+
+            $targetStmt = $pdo->prepare("SELECT id, first_name, last_name, email, verified FROM users WHERE id = :id LIMIT 1");
+            $targetStmt->execute(['id' => $targetUserId]);
+            $targetUser = $targetStmt->fetch();
+
+            if (!$targetUser) {
+                adminSetFlash('danger', 'Kullanıcı bulunamadı.');
                 adminRedirect('users');
             }
 
@@ -160,6 +259,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
 
             $updateStmt->execute(['id' => $targetUserId]);
+
+            if ((int)($targetUser['verified'] ?? 0) !== $verified) {
+                sendAdminNotification($pdo, 'Kullanıcı doğrulama durumu değişti', 'Admin panelinden bir kullanıcının e-posta doğrulama durumu güncellendi.', [
+                    'İşlem yapan admin' => adminNotificationAdminLabel($adminUser),
+                    'Kullanıcı' => adminNotificationUserLabel($targetUser) . ' (#' . (int)$targetUser['id'] . ')',
+                    'Önceki durum' => (int)$targetUser['verified'] === 1 ? 'Doğrulanmış' : 'Doğrulanmamış',
+                    'Yeni durum' => $verified === 1 ? 'Doğrulanmış' : 'Doğrulanmamış',
+                ], [
+                    'Kullanıcı Yönetimi' => adminNotificationUrl('admin.php#users'),
+                ]);
+            }
+
             adminSetFlash('success', 'Kullanıcı doğrulama durumu güncellendi.');
             adminRedirect('users');
         }
@@ -191,6 +302,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $notesStmt->execute(['uid' => $targetUserId]);
             $notesToDelete = $notesStmt->fetchAll();
 
+            $commentCountStmt = $pdo->prepare("SELECT COUNT(*) FROM note_comments WHERE user_id = :uid");
+            $commentCountStmt->execute(['uid' => $targetUserId]);
+            $commentCount = (int)$commentCountStmt->fetchColumn();
+
             $pdo->beginTransaction();
             $deleteStmt = $pdo->prepare("DELETE FROM users WHERE id = :id LIMIT 1");
             $deleteStmt->execute(['id' => $targetUserId]);
@@ -205,6 +320,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             foreach ($fileWarnings as $warning) {
                 error_log('admin delete user file warning: ' . $warning);
             }
+
+            sendAdminNotification($pdo, 'Kullanıcı silindi', 'Admin panelinden bir kullanıcı ve ilişkili kayıtları kalıcı olarak silindi.', [
+                'İşlem yapan admin' => adminNotificationAdminLabel($adminUser),
+                'Silinen kullanıcı' => adminNotificationUserLabel($targetUser) . ' (#' . (int)$targetUser['id'] . ')',
+                'Rol' => (string)($targetUser['role'] ?? 'user'),
+                'Silinen not sayısı' => count($notesToDelete),
+                'Kullanıcının yorum sayısı' => $commentCount,
+                'Dosya uyarıları' => empty($fileWarnings) ? 'Yok' : implode("\n", $fileWarnings),
+            ], [
+                'Kullanıcı Yönetimi' => adminNotificationUrl('admin.php#users'),
+            ]);
 
             if ($targetUserId === (int)$adminUser['id']) {
                 $_SESSION = [];
@@ -234,7 +360,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 adminRedirect('notes');
             }
 
-            $noteStmt = $pdo->prepare("SELECT * FROM notes WHERE id = :id LIMIT 1");
+            $noteStmt = $pdo->prepare("
+                SELECT n.*, u.first_name, u.last_name, u.email
+                FROM notes n
+                JOIN users u ON u.id = n.user_id
+                WHERE n.id = :id
+                LIMIT 1
+            ");
             $noteStmt->execute(['id' => $noteId]);
             $note = $noteStmt->fetch();
 
@@ -252,6 +384,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             } else {
                 adminSetFlash('success', 'Not kalıcı olarak silindi.');
             }
+
+            sendAdminNotification($pdo, 'Not silindi', 'Admin panelinden bir not kalıcı olarak silindi.', [
+                'İşlem yapan admin' => adminNotificationAdminLabel($adminUser),
+                'Not' => (string)$note['title'] . ' (#' . (int)$note['id'] . ')',
+                'Yükleyen' => adminNotificationUserLabel($note) . ' (#' . (int)$note['user_id'] . ')',
+                'Ders' => (string)($note['course'] ?? '-'),
+                'Konu' => (string)($note['topic'] ?? '-'),
+                'Dosya' => (string)$note['original_filename'],
+                'Dosya uyarısı' => $fileWarning ?? 'Yok',
+            ], [
+                'Not Yönetimi' => adminNotificationUrl('admin.php#notes'),
+            ]);
             adminRedirect('notes');
         }
 
@@ -260,6 +404,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             if ($commentId <= 0) {
                 adminSetFlash('danger', 'Geçersiz yorum silme isteği.');
+                adminRedirect('comments');
+            }
+
+            $commentStmt = $pdo->prepare("
+                SELECT
+                    nc.id,
+                    nc.note_id,
+                    nc.user_id,
+                    nc.rating,
+                    nc.comment,
+                    nc.created_at,
+                    n.title AS note_title,
+                    n.course AS note_course,
+                    u.first_name,
+                    u.last_name,
+                    u.email
+                FROM note_comments nc
+                JOIN notes n ON n.id = nc.note_id
+                JOIN users u ON u.id = nc.user_id
+                WHERE nc.id = :id
+                LIMIT 1
+            ");
+            $commentStmt->execute(['id' => $commentId]);
+            $comment = $commentStmt->fetch();
+
+            if (!$comment) {
+                adminSetFlash('danger', 'Silinecek yorum bulunamadı.');
                 adminRedirect('comments');
             }
 
@@ -272,6 +443,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
 
             adminSetFlash('success', 'Yorum kalıcı olarak silindi.');
+            sendAdminNotification($pdo, 'Yorum silindi', 'Admin panelinden bir yorum kalıcı olarak silindi.', [
+                'İşlem yapan admin' => adminNotificationAdminLabel($adminUser),
+                'Yorum' => '#' . (int)$comment['id'],
+                'Not' => (string)$comment['note_title'] . ' (#' . (int)$comment['note_id'] . ')',
+                'Yazan' => adminNotificationUserLabel($comment) . ' (#' . (int)$comment['user_id'] . ')',
+                'Puan' => (int)$comment['rating'] . '/5',
+                'Yorum metni' => (string)$comment['comment'],
+            ], [
+                'Yorum Yönetimi' => adminNotificationUrl('admin.php#comments'),
+            ]);
             adminRedirect('comments');
         }
 
@@ -324,6 +505,7 @@ $usersStmt = $pdo->query("
         u.email,
         u.verified,
         u.role,
+        u.admin_email_notifications,
         u.created_at,
         u.verified_at,
         COALESCE(ns.note_count, 0) AS note_count,
@@ -342,6 +524,9 @@ $usersStmt = $pdo->query("
     ORDER BY u.created_at DESC, u.id DESC
 ");
 $users = $usersStmt->fetchAll();
+$userEmailCopyValue = adminEmailList($users);
+$adminEmailCopyValue = adminEmailList($users, 'admin');
+$isAdminNotificationsEnabled = (int)($adminUser['admin_email_notifications'] ?? 0) === 1;
 
 $notesStmt = $pdo->query("
     SELECT
@@ -410,6 +595,7 @@ require __DIR__ . '/includes/header.php';
                 <p class="mb-0 text-secondary">Hoş geldin, <?= htmlspecialchars((string)$adminUser['first_name'], ENT_QUOTES, 'UTF-8') ?>.</p>
             </div>
             <div class="d-flex flex-wrap gap-2">
+                <a class="btn btn-sm btn-outline-primary" href="#settings"><i class="fa-solid fa-sliders me-1"></i>Admin Ayarları</a>
                 <a class="btn btn-sm btn-outline-primary" href="#users"><i class="fa-solid fa-users me-1"></i>Kullanıcılar</a>
                 <a class="btn btn-sm btn-outline-primary" href="#notes"><i class="fa-solid fa-file-lines me-1"></i>Notlar</a>
                 <a class="btn btn-sm btn-outline-primary" href="#comments"><i class="fa-solid fa-comments me-1"></i>Yorumlar</a>
@@ -477,6 +663,35 @@ require __DIR__ . '/includes/header.php';
             </div>
         </div>
 
+        <div id="settings" class="panel-card mt-4">
+            <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
+                <div>
+                    <h2 class="h4 mb-1">Admin Ayarları</h2>
+                    <p class="mb-0 text-secondary">Kişisel admin bildirimleri şu hesaba gönderilir: <?= htmlspecialchars((string)$adminUser['email'], ENT_QUOTES, 'UTF-8') ?></p>
+                </div>
+                <form method="POST" action="admin.php#settings" class="admin-settings-form">
+                    <input type="hidden" name="action" value="update_admin_notifications">
+                    <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrfToken, ENT_QUOTES, 'UTF-8') ?>">
+                    <input type="hidden" name="admin_email_notifications" value="0">
+                    <div class="form-check form-switch admin-notify-switch">
+                        <input
+                            class="form-check-input"
+                            type="checkbox"
+                            role="switch"
+                            id="adminEmailNotifications"
+                            name="admin_email_notifications"
+                            value="1"
+                            <?= $isAdminNotificationsEnabled ? 'checked' : '' ?>
+                        >
+                        <label class="form-check-label" for="adminEmailNotifications">
+                            Kişisel mail bildirimi
+                        </label>
+                    </div>
+                    <button class="btn btn-sm btn-primary" type="submit">Kaydet</button>
+                </form>
+            </div>
+        </div>
+
         <div class="panel-card mt-4">
             <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
                 <h2 class="h4 mb-0">En Çok İndirilen Notlar</h2>
@@ -517,7 +732,11 @@ require __DIR__ . '/includes/header.php';
         <div id="users" class="panel-card mt-4">
             <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
                 <h2 class="h4 mb-0">Kullanıcı Yönetimi</h2>
-                <span class="text-secondary small"><?= adminFormatNumber(count($users)) ?> kullanıcı</span>
+                <div class="d-flex align-items-center justify-content-end flex-wrap gap-2">
+                    <?= adminCopyButton($userEmailCopyValue, 'Tüm kullanıcı e-postalarını kopyala', false) ?>
+                    <?= adminCopyButton($adminEmailCopyValue, 'Admin e-postalarını kopyala', false) ?>
+                    <span class="text-secondary small"><?= adminFormatNumber(count($users)) ?> kullanıcı</span>
+                </div>
             </div>
             <div class="table-responsive">
                 <table class="table admin-table align-middle mb-0">
@@ -539,16 +758,25 @@ require __DIR__ . '/includes/header.php';
                             <?php
                                 $isVerified = (int)$user['verified'] === 1;
                                 $isLastAdmin = (string)$user['role'] === 'admin' && $adminCount <= 1;
+                                $userFullName = adminFullName($user);
                             ?>
                             <tr>
                                 <td><?= (int)$user['id'] ?></td>
                                 <td>
-                                    <strong><?= htmlspecialchars(trim((string)$user['first_name'] . ' ' . (string)$user['last_name']), ENT_QUOTES, 'UTF-8') ?></strong>
+                                    <span class="admin-copy-line">
+                                        <strong><?= htmlspecialchars($userFullName, ENT_QUOTES, 'UTF-8') ?></strong>
+                                        <?= adminCopyButton($userFullName, 'Kullanıcı adını kopyala') ?>
+                                    </span>
                                     <?php if ((int)$user['id'] === (int)$adminUser['id']): ?>
                                         <span class="badge text-bg-light ms-1">Sen</span>
                                     <?php endif; ?>
                                 </td>
-                                <td><?= htmlspecialchars((string)$user['email'], ENT_QUOTES, 'UTF-8') ?></td>
+                                <td>
+                                    <span class="admin-copy-line">
+                                        <span><?= htmlspecialchars((string)$user['email'], ENT_QUOTES, 'UTF-8') ?></span>
+                                        <?= adminCopyButton((string)$user['email'], 'E-postayı kopyala') ?>
+                                    </span>
+                                </td>
                                 <td>
                                     <?php if ($isVerified): ?>
                                         <span class="badge bg-success">Doğrulanmış</span>
@@ -631,7 +859,10 @@ require __DIR__ . '/includes/header.php';
                     </thead>
                     <tbody>
                         <?php foreach ($notes as $note): ?>
-                            <?php $status = adminNoteStatus($note); ?>
+                            <?php
+                                $status = adminNoteStatus($note);
+                                $noteUploaderName = adminFullName($note);
+                            ?>
                             <tr>
                                 <td><?= (int)$note['id'] ?></td>
                                 <td>
@@ -644,8 +875,14 @@ require __DIR__ . '/includes/header.php';
                                     </div>
                                 </td>
                                 <td>
-                                    <?= htmlspecialchars(trim((string)$note['first_name'] . ' ' . (string)$note['last_name']), ENT_QUOTES, 'UTF-8') ?>
-                                    <div class="text-secondary small"><?= htmlspecialchars((string)$note['email'], ENT_QUOTES, 'UTF-8') ?></div>
+                                    <span class="admin-copy-line">
+                                        <span><?= htmlspecialchars($noteUploaderName, ENT_QUOTES, 'UTF-8') ?></span>
+                                        <?= adminCopyButton($noteUploaderName, 'Yükleyen adını kopyala') ?>
+                                    </span>
+                                    <div class="text-secondary small admin-copy-line">
+                                        <span><?= htmlspecialchars((string)$note['email'], ENT_QUOTES, 'UTF-8') ?></span>
+                                        <?= adminCopyButton((string)$note['email'], 'Yükleyen e-postasını kopyala') ?>
+                                    </div>
                                 </td>
                                 <td>
                                     <span class="badge <?= htmlspecialchars($status['class'], ENT_QUOTES, 'UTF-8') ?>"><?= htmlspecialchars($status['label'], ENT_QUOTES, 'UTF-8') ?></span>
@@ -711,6 +948,7 @@ require __DIR__ . '/includes/header.php';
                         </thead>
                         <tbody>
                             <?php foreach ($comments as $comment): ?>
+                                <?php $commentAuthorName = adminFullName($comment); ?>
                                 <tr>
                                     <td><?= (int)$comment['id'] ?></td>
                                     <td>
@@ -726,10 +964,16 @@ require __DIR__ . '/includes/header.php';
                                         </div>
                                     </td>
                                     <td>
-                                        <?= htmlspecialchars(trim((string)$comment['first_name'] . ' ' . (string)$comment['last_name']), ENT_QUOTES, 'UTF-8') ?>
+                                        <span class="admin-copy-line">
+                                            <span><?= htmlspecialchars($commentAuthorName, ENT_QUOTES, 'UTF-8') ?></span>
+                                            <?= adminCopyButton($commentAuthorName, 'Yazan adını kopyala') ?>
+                                        </span>
                                         <div class="text-secondary small">
                                             Kullanıcı #<?= (int)$comment['user_id'] ?> /
-                                            <?= htmlspecialchars((string)$comment['email'], ENT_QUOTES, 'UTF-8') ?>
+                                            <span class="admin-copy-line admin-copy-line-inline">
+                                                <span><?= htmlspecialchars((string)$comment['email'], ENT_QUOTES, 'UTF-8') ?></span>
+                                                <?= adminCopyButton((string)$comment['email'], 'Yazan e-postasını kopyala') ?>
+                                            </span>
                                         </div>
                                     </td>
                                     <td><?= renderRatingStars((int)$comment['rating']) ?></td>

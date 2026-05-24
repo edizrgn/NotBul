@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/includes/db.php';
 require_once __DIR__ . '/includes/brevo.php';
+require_once __DIR__ . '/includes/admin_notifications.php';
 
 $error = '';
 $success = '';
@@ -37,10 +38,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $tokenExpiresAt = (new DateTimeImmutable('+24 hours'))->format('Y-m-d H:i:s');
                 $fullName = trim($firstName . ' ' . $lastName);
                 $verificationUrl = buildAppBaseUrl() . '/verify-email.php?token=' . urlencode($plainToken);
+                $wasExistingRegistration = (bool)$existingUser;
+                $registeredUserId = 0;
 
                 $pdo->beginTransaction();
 
                 if ($existingUser) {
+                    $registeredUserId = (int)$existingUser['id'];
                     $updateStmt = $pdo->prepare(
                         "UPDATE users
                          SET first_name = :first_name,
@@ -75,10 +79,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         'token' => $tokenHash,
                         'expires_at' => $tokenExpiresAt,
                     ]);
+                    $registeredUserId = (int)$pdo->lastInsertId();
                 }
 
                 sendVerificationEmail($email, $fullName, $verificationUrl);
                 $pdo->commit();
+
+                sendAdminNotification($pdo, $wasExistingRegistration ? 'Kayıt yenilendi' : 'Yeni kullanıcı kaydı', $wasExistingRegistration ? 'Doğrulanmamış mevcut bir kullanıcı kaydı yeni bilgilerle yenilendi.' : 'Yeni bir kullanıcı hesabı oluşturuldu ve doğrulama e-postası gönderildi.', [
+                    'Kullanıcı' => $fullName . ' <' . $email . '>',
+                    'Kullanıcı ID' => $registeredUserId,
+                    'Durum' => 'E-posta doğrulaması bekleniyor',
+                    'Doğrulama linki geçerlilik süresi' => $tokenExpiresAt,
+                ], [
+                    'Kullanıcı Yönetimi' => adminNotificationUrl('admin.php#users'),
+                ]);
 
                 $success = 'Kayıt alındı. Hesabını aktifleştirmek için e-posta kutuna gönderdiğimiz doğrulama bağlantısını kullan.';
             }

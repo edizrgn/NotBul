@@ -823,6 +823,56 @@ a {
     min-width: 118px;
 }
 
+.admin-settings-form {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.75rem;
+}
+
+.admin-notify-switch {
+    margin: 0;
+}
+
+.admin-copy-line {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    max-width: 100%;
+    vertical-align: middle;
+}
+
+.admin-copy-line > span,
+.admin-copy-line > strong {
+    overflow-wrap: anywhere;
+    word-break: break-word;
+}
+
+.admin-copy-line-inline {
+    display: inline-flex;
+}
+
+.admin-copy-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.35rem;
+    white-space: nowrap;
+}
+
+.admin-copy-btn-icon {
+    width: 1.9rem;
+    height: 1.9rem;
+    flex: 0 0 1.9rem;
+    padding: 0;
+}
+
+.admin-copy-btn.is-copied {
+    border-color: #198754;
+    color: #198754;
+}
+
 .admin-meta-list {
     display: grid;
     gap: 0.55rem;

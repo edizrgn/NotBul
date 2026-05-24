@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/includes/db.php';
 require_once __DIR__ . '/includes/admin_auth.php';
+require_once __DIR__ . '/includes/admin_notifications.php';
 
 $adminUser = requireAdminUser($pdo);
 $csrfToken = adminCsrfToken('admin_note_edit');
@@ -173,6 +174,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if (empty($errors)) {
         try {
+            $beforeStmt = $pdo->prepare("
+                SELECT n.*, u.first_name, u.last_name, u.email
+                FROM notes n
+                JOIN users u ON u.id = n.user_id
+                WHERE n.id = :id
+                LIMIT 1
+            ");
+            $beforeStmt->execute(['id' => $noteId]);
+            $noteBefore = $beforeStmt->fetch();
+
+            if (!$noteBefore) {
+                adminSetFlash('danger', 'Düzenlenecek not bulunamadı.');
+                adminEditRedirectToList();
+            }
+
             $updateStmt = $pdo->prepare("
                 UPDATE notes
                 SET title = :title,
@@ -210,6 +226,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 'scan_status' => $scanStatus,
                 'download_count' => $downloadCount,
                 'id' => $noteId,
+            ]);
+
+            sendAdminNotification($pdo, 'Not düzenlendi', 'Admin panelinden bir notun detayları güncellendi.', [
+                'İşlem yapan admin' => adminNotificationAdminLabel($adminUser),
+                'Not' => (string)$noteBefore['title'] . ' (#' . (int)$noteBefore['id'] . ')',
+                'Yükleyen' => adminNotificationUserLabel($noteBefore) . ' (#' . (int)$noteBefore['user_id'] . ')',
+                'Başlık değişimi' => (string)$noteBefore['title'] . "\n=> " . $title,
+                'Ders değişimi' => (string)($noteBefore['course'] ?? '-') . "\n=> " . ($course ?? '-'),
+                'Konu değişimi' => (string)($noteBefore['topic'] ?? '-') . "\n=> " . ($topic ?? '-'),
+                'Durum değişimi' => (string)$noteBefore['upload_status'] . ' / ' . (string)$noteBefore['scan_status'] . "\n=> " . $uploadStatus . ' / ' . $scanStatus,
+                'İndirme sayısı' => (int)$noteBefore['download_count'] . "\n=> " . $downloadCount,
+            ], [
+                'Notu Düzenle' => adminNotificationUrl('admin-note-edit.php?id=' . $noteId),
+                'Not Yönetimi' => adminNotificationUrl('admin.php#notes'),
             ]);
 
             adminSetFlash('success', 'Not detayları güncellendi.');

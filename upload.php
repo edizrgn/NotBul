@@ -4,6 +4,7 @@ declare(strict_types=1);
 require_once __DIR__ . '/includes/db.php';
 require_once __DIR__ . '/includes/storage.php';
 require_once __DIR__ . '/includes/upload_config.php';
+require_once __DIR__ . '/includes/admin_notifications.php';
 @session_start();
 
 if (!isset($_SESSION['user_id'])) {
@@ -160,7 +161,37 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 ]);
                 
                 if ($result) {
+                    $noteId = (int)$pdo->lastInsertId();
                     $success = 'Notunuz başarıyla yüklendi.';
+
+                    try {
+                        $uploaderStmt = $pdo->prepare("SELECT id, first_name, last_name, email FROM users WHERE id = :id LIMIT 1");
+                        $uploaderStmt->execute(['id' => $userId]);
+                        $uploader = $uploaderStmt->fetch() ?: [
+                            'id' => $userId,
+                            'first_name' => (string)($_SESSION['first_name'] ?? ''),
+                            'last_name' => (string)($_SESSION['last_name'] ?? ''),
+                            'email' => '',
+                        ];
+
+                        sendAdminNotification($pdo, 'Yeni not yüklendi', 'Bir kullanıcı yeni bir ders notu yükledi.', [
+                            'Not' => $title . ' (#' . $noteId . ')',
+                            'Yükleyen' => adminNotificationUserLabel($uploader) . ' (#' . (int)$uploader['id'] . ')',
+                            'Ders' => $course,
+                            'Konu' => $topic !== '' ? $topic : '-',
+                            'Üniversite ID' => $universityId ?? '-',
+                            'Bölüm ID' => $departmentId ?? '-',
+                            'Dosya' => $originalFilename,
+                            'Dosya boyutu' => number_format($fileSize, 0, ',', '.') . ' B',
+                            'MIME type' => $mimeType,
+                            'SHA-256' => $sha256,
+                        ], [
+                            'Notu Gör' => adminNotificationUrl('note-detail.php?id=' . $noteId),
+                            'Not Yönetimi' => adminNotificationUrl('admin.php#notes'),
+                        ]);
+                    } catch (Throwable $e) {
+                        error_log('upload admin notification prep error: ' . $e->getMessage());
+                    }
                 } else {
                     $error = 'Veritabanına kaydedilirken bir hata oluştu.';
                     if (file_exists($destination)) {

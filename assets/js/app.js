@@ -1019,6 +1019,73 @@
         apply();
     }
 
+    function copyTextToClipboard(text) {
+        if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+            return navigator.clipboard.writeText(text);
+        }
+
+        return new Promise((resolve, reject) => {
+            const textarea = document.createElement('textarea');
+            textarea.value = text;
+            textarea.setAttribute('readonly', '');
+            textarea.style.position = 'fixed';
+            textarea.style.inset = '0 auto auto 0';
+            textarea.style.opacity = '0';
+            document.body.appendChild(textarea);
+            textarea.select();
+
+            try {
+                const copied = document.execCommand('copy');
+                document.body.removeChild(textarea);
+                copied ? resolve() : reject(new Error('Copy command failed'));
+            } catch (error) {
+                document.body.removeChild(textarea);
+                reject(error);
+            }
+        });
+    }
+
+    function initAdminCopyTools() {
+        const buttons = document.querySelectorAll('[data-copy-value]');
+        if (!buttons.length) {
+            return;
+        }
+
+        buttons.forEach((button) => {
+            button.addEventListener('click', async () => {
+                const value = button.dataset.copyValue || '';
+                if (!value.trim()) {
+                    return;
+                }
+
+                if (!button.dataset.copyOriginalHtml) {
+                    button.dataset.copyOriginalHtml = button.innerHTML;
+                }
+
+                try {
+                    await copyTextToClipboard(value);
+                    window.clearTimeout(Number(button.dataset.copyTimer || 0));
+                    button.classList.add('is-copied');
+
+                    if (button.classList.contains('admin-copy-btn-icon')) {
+                        button.innerHTML = '<i class="fa-solid fa-check" aria-hidden="true"></i><span class="visually-hidden">Kopyalandı</span>';
+                    } else {
+                        button.innerHTML = '<i class="fa-solid fa-check" aria-hidden="true"></i><span>Kopyalandı</span>';
+                    }
+
+                    const timer = window.setTimeout(() => {
+                        button.classList.remove('is-copied');
+                        button.innerHTML = button.dataset.copyOriginalHtml || '';
+                    }, 1400);
+                    button.dataset.copyTimer = String(timer);
+                } catch (error) {
+                    button.classList.add('is-invalid');
+                    window.setTimeout(() => button.classList.remove('is-invalid'), 1400);
+                }
+            });
+        });
+    }
+
     document.addEventListener('DOMContentLoaded', async () => {
         await loadRemoteFilterData();
         initHierarchyGroups();
@@ -1036,6 +1103,9 @@
         }
         if (page === 'search') {
             initSearchPage();
+        }
+        if (page === 'admin') {
+            initAdminCopyTools();
         }
     });
 })();

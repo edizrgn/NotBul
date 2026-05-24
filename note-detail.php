@@ -4,6 +4,7 @@ declare(strict_types=1);
 @session_start();
 
 require_once __DIR__ . '/includes/ratings.php';
+require_once __DIR__ . '/includes/admin_notifications.php';
 
 function resolveDepartmentName(string $departmentId): string
 {
@@ -224,6 +225,51 @@ if ($requestMethod === 'POST' && ($_POST['action'] ?? '') === 'add_comment') {
                 'rating' => $rating,
                 'comment' => $commentText
             ]);
+            $commentId = (int)$pdo->lastInsertId();
+
+            try {
+                $notificationStmt = $pdo->prepare("
+                    SELECT
+                        nc.id,
+                        nc.note_id,
+                        nc.user_id,
+                        nc.rating,
+                        nc.comment,
+                        nc.created_at,
+                        n.title AS note_title,
+                        n.course AS note_course,
+                        n.topic AS note_topic,
+                        n.deleted_at AS note_deleted_at,
+                        u.first_name,
+                        u.last_name,
+                        u.email
+                    FROM note_comments nc
+                    JOIN notes n ON n.id = nc.note_id
+                    JOIN users u ON u.id = nc.user_id
+                    WHERE nc.id = :id
+                    LIMIT 1
+                ");
+                $notificationStmt->execute(['id' => $commentId]);
+                $newComment = $notificationStmt->fetch();
+
+                if ($newComment) {
+                    sendAdminNotification($pdo, 'Yeni yorum yapıldı', 'Bir kullanıcı bir nota yeni yorum ekledi.', [
+                        'Yorum' => '#' . (int)$newComment['id'],
+                        'Not' => (string)$newComment['note_title'] . ' (#' . (int)$newComment['note_id'] . ')',
+                        'Yazan' => adminNotificationUserLabel($newComment) . ' (#' . (int)$newComment['user_id'] . ')',
+                        'Ders' => (string)($newComment['note_course'] ?? '-'),
+                        'Konu' => (string)($newComment['note_topic'] ?? '-'),
+                        'Puan' => (int)$newComment['rating'] . '/5',
+                        'Yorum metni' => (string)$newComment['comment'],
+                    ], [
+                        'Notu Gör' => adminNotificationUrl('note-detail.php?id=' . (int)$newComment['note_id'] . '#comments'),
+                        'Yorum Yönetimi' => adminNotificationUrl('admin.php#comments'),
+                    ]);
+                }
+            } catch (Throwable $e) {
+                error_log('note-detail admin notification prep error: ' . $e->getMessage());
+            }
+
             header("Location: note-detail.php?id=$id&comment_added=1");
             exit;
         } catch (Throwable $e) {

@@ -196,15 +196,24 @@ function sendBrevoEmail(
     string $recipientName,
     string $subject,
     string $htmlContent,
-    string $emailTypeLabel
+    string $emailTypeLabel,
+    ?string $senderEmailOverride = null,
+    ?string $senderNameOverride = null
 ): void {
     $apiKey = envValue('BREVO_API_KEY');
     if ($apiKey === null || $apiKey === '') {
         throw new RuntimeException('BREVO_API_KEY bulunamadı.');
     }
 
-    $senderEmail = envValue('BREVO_SENDER_EMAIL', 'no-reply@notbul.site');
-    $senderName = envValue('BREVO_SENDER_NAME', 'Not Bul');
+    $senderEmail = trim((string)($senderEmailOverride ?? ''));
+    if ($senderEmail === '') {
+        $senderEmail = envValue('BREVO_SENDER_EMAIL', 'no-reply@notbul.site');
+    }
+
+    $senderName = trim((string)($senderNameOverride ?? ''));
+    if ($senderName === '') {
+        $senderName = envValue('BREVO_SENDER_NAME', 'Not Bul');
+    }
 
     $payload = [
         'sender' => [

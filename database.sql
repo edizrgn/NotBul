@@ -10,6 +10,7 @@ CREATE TABLE IF NOT EXISTS users (
     password VARCHAR(255) NOT NULL,
     verified TINYINT(1) NOT NULL DEFAULT 0,
     role ENUM('user', 'admin') NOT NULL DEFAULT 'user',
+    admin_email_notifications TINYINT(1) NOT NULL DEFAULT 0,
     email_verification_token CHAR(64) NULL,
     email_verification_token_expires_at DATETIME NULL,
     password_reset_token CHAR(64) NULL,
@@ -22,6 +23,7 @@ CREATE TABLE IF NOT EXISTS users (
 ALTER TABLE users
     ADD COLUMN IF NOT EXISTS verified TINYINT(1) NOT NULL DEFAULT 0 AFTER password,
     ADD COLUMN IF NOT EXISTS role ENUM('user', 'admin') NOT NULL DEFAULT 'user' AFTER verified,
+    ADD COLUMN IF NOT EXISTS admin_email_notifications TINYINT(1) NOT NULL DEFAULT 0 AFTER role,
     ADD COLUMN IF NOT EXISTS email_verification_token CHAR(64) NULL AFTER role,
     ADD COLUMN IF NOT EXISTS email_verification_token_expires_at DATETIME NULL AFTER email_verification_token,
     ADD COLUMN IF NOT EXISTS password_reset_token CHAR(64) NULL AFTER email_verification_token_expires_at,
@@ -37,6 +39,7 @@ WHERE verified = 0
 
 CREATE INDEX IF NOT EXISTS idx_users_verified ON users(verified);
 CREATE INDEX IF NOT EXISTS idx_users_role ON users(role);
+CREATE INDEX IF NOT EXISTS idx_users_admin_email_notifications ON users(role, admin_email_notifications);
 CREATE INDEX IF NOT EXISTS idx_users_email_verification_token ON users(email_verification_token);
 CREATE INDEX IF NOT EXISTS idx_users_password_reset_token ON users(password_reset_token);
 
