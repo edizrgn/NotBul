@@ -54,7 +54,91 @@
     }
 
     function normalize(value) {
-        return (value || '').toString().trim().toLowerCase();
+        return (value || '').toString().trim().toLocaleLowerCase('tr-TR');
+    }
+
+    function normalizeSearch(value) {
+        return normalize(value).normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/ı/g, 'i');
+    }
+
+    const FILTER_NAMES = ['university_id', 'department_type', 'department_id', 'class_id', 'course', 'topic', 'file_type'];
+
+    function restoreFilterParams(form, queryInput) {
+        const params = new URLSearchParams(window.location.search);
+        FILTER_NAMES.forEach((name) => {
+            const field = form.elements.namedItem(name);
+            if (!field) return;
+            const value = params.get(name) || '';
+            field.value = value;
+            if (field instanceof HTMLSelectElement) field.dataset.selected = value;
+        });
+        if (queryInput) queryInput.value = params.get('q') || params.get('query') || '';
+    }
+
+    function filterParams(form, queryInput, sort = '', page = 1, similarTo = '') {
+        const params = new URLSearchParams();
+        const data = new FormData(form);
+        const query = (queryInput?.value || '').trim();
+        if (query) params.set('q', query);
+        FILTER_NAMES.forEach((name) => {
+            const value = (data.get(name) || '').toString().trim();
+            if (value) params.set(name, value);
+        });
+        if (sort && sort !== 'relevance') params.set('sort', sort);
+        if (page > 1) params.set('page', String(page));
+        if (similarTo) params.set('similar_to', String(similarTo));
+        return params;
+    }
+
+    function searchLink(params) {
+        const query = params.toString();
+        return `search.php${query ? `?${query}` : ''}`;
+    }
+
+    function syncUrl(params, push = false) {
+        const url = new URL(window.location.href);
+        url.search = params.toString();
+        if (url.href !== window.location.href) {
+            window.history[push ? 'pushState' : 'replaceState']({}, '', url);
+        }
+        const returnTo = `${url.pathname.split('/').pop() || 'index.php'}${url.search}${url.hash}`;
+        document.querySelectorAll('[data-auth-page]').forEach((link) => {
+            const authParams = new URLSearchParams();
+            authParams.set('return_to', returnTo);
+            link.href = `${link.dataset.authPage}?${authParams.toString()}`;
+        });
+    }
+
+    function resetFilters(form, queryInput) {
+        form.reset();
+        FILTER_NAMES.forEach((name) => {
+            const field = form.elements.namedItem(name);
+            if (field) {
+                field.value = '';
+                delete field.dataset.selected;
+            }
+        });
+        if (queryInput) queryInput.value = '';
+        form.dispatchEvent(new Event('hierarchy:restore'));
+    }
+
+    function sortNotes(notes, sort = 'relevance', query = '') {
+        const words = normalizeSearch(query).split(/\s+/).filter(Boolean);
+        const relevance = (note) => {
+            const title = normalizeSearch(note.title);
+            const course = normalizeSearch(resolveCourseName(note));
+            const tags = normalizeSearch((note.tags || []).join(' '));
+            return words.reduce((score, word) => score + (title.includes(word) ? 5 : 0)
+                + (course.includes(word) ? 3 : 0) + (tags.includes(word) ? 2 : 0), 0);
+        };
+        return [...notes].sort((left, right) => {
+            let difference = 0;
+            if (sort === 'downloads') difference = (right.downloads || 0) - (left.downloads || 0);
+            if (sort === 'rating') difference = (Number(right.ratingAverage) || 0) - (Number(left.ratingAverage) || 0)
+                || (right.ratingCount || 0) - (left.ratingCount || 0);
+            if (sort === 'relevance' && words.length) difference = relevance(right) - relevance(left);
+            return difference || new Date(right.createdAt) - new Date(left.createdAt) || right.id - left.id;
+        });
     }
 
     function escapeHtml(value) {
@@ -68,6 +152,7 @@
 
     function formatDate(dateValue) {
         const date = new Date(dateValue);
+        if (Number.isNaN(date.getTime())) return '';
         return new Intl.DateTimeFormat('tr-TR', {
             day: '2-digit',
             month: '2-digit',
@@ -177,7 +262,13 @@
             return;
         }
 
-        const current = keepCurrent ? select.value : '';
+        const current = keepCurrent ? (select.dataset.selected ?? select.value) : '';
+        const preserveUnknown = select.dataset.selected && ['university', 'department'].includes(select.dataset.level)
+            && select.closest('[data-hierarchy-group]')?.dataset.optionsScope !== 'notes';
+        if (preserveUnknown && !items.some((item) => item.id === current)) {
+            items = [...items, { id: current, name: `${current} (mevcut seçim)` }];
+        }
+        delete select.dataset.selected;
         const options = [`<option value="">${escapeHtml(placeholder)}</option>`]
             .concat(items.map((item) => `<option value="${escapeHtml(item.id)}">${escapeHtml(item.name)}</option>`));
 
@@ -434,6 +525,15 @@
             group.dispatchEvent(new Event('hierarchy:changed'));
         });
 
+        group.addEventListener('hierarchy:restore', () => {
+            refreshUniversities();
+            refreshDepartmentTypes();
+            populateSelect(classSelect, CLASS_OPTIONS, classSelect?.dataset.placeholder || 'Seçiniz', true);
+            refreshDepartments();
+            refreshCourse();
+            refreshTopic();
+        });
+
     }
 
     function collectFilters(form) {
@@ -478,7 +578,7 @@
         }
 
         if (filters.query) {
-            const searchable = [
+            const searchable = normalizeSearch([
                 note.title,
                 note.description,
                 (note.tags || []).join(' '),
@@ -486,9 +586,9 @@
                 resolveTopicName(note),
                 resolveDepartmentName(note.departmentId),
                 resolveUniversityName(note.universityId)
-            ].join(' ').toLowerCase();
+            ].join(' '));
 
-            if (!searchable.includes(filters.query)) {
+            if (!normalizeSearch(filters.query).split(/\s+/).filter(Boolean).every((word) => searchable.includes(word))) {
                 return false;
             }
         }
@@ -518,15 +618,17 @@
             .join('');
         const course = resolveCourseName(note) || '-';
         const ratingHtml = ratingSummaryTemplate(note);
+        const returnTo = `${window.location.pathname.split('/').pop() || 'index.php'}${window.location.search}`;
 
         return `
             <article class="col-sm-6 col-xl-4">
                 <div class="note-card card shadow-sm border-0">
                     <div class="card-body">
-                        <h3 class="h6 mb-2 text-truncate">${escapeHtml(note.title)}</h3>
+                        <h3 class="h6 mb-2">${escapeHtml(note.title)}</h3>
                         <p class="text-secondary mb-3 small" style="height: 3em; overflow: hidden;">
                             ${escapeHtml(shortenText(note.description))}
                         </p>
+                        <p class="note-card-context small text-secondary mb-2">${escapeHtml(resolveUniversityName(note.universityId))} · ${escapeHtml(resolveDepartmentName(note.departmentId))} · ${escapeHtml(note.fileType === 'image' ? 'Görsel' : (note.fileType || '').toUpperCase())}</p>
                         <div class="note-tags mb-3">${tagHtml}</div>
                         <div class="note-card-footer d-flex justify-content-between align-items-center gap-3">
                             <div class="small">
@@ -535,7 +637,7 @@
                             </div>
                             <div class="note-card-actions d-flex align-items-center gap-2 ms-auto">
                                 ${ratingHtml}
-                                <a href="note-detail.php?id=${note.id}" class="btn btn-sm btn-primary">Detay</a>
+                                <a href="note-detail.php?id=${note.id}&amp;return_to=${escapeHtml(encodeURIComponent(returnTo))}" class="btn btn-sm btn-primary" aria-label="${escapeHtml(note.title)} notunu incele">Detay</a>
                             </div>
                         </div>
                     </div>
@@ -563,8 +665,12 @@
         }
 
         const popularGrid = document.getElementById('popularNotesGrid');
+        const latestGrid = document.getElementById('latestNotesGrid');
+        const latestSection = latestGrid?.closest('section');
         const primaryTitle = document.getElementById('homePrimaryPanelTitle');
         const resultCount = document.getElementById('homeResultCount');
+        const resultHint = document.getElementById('homeResultHint');
+        const queryInput = document.getElementById('homeQuery');
 
         const hasActiveSearch = (filters) => Object.values(filters).some((value) => value !== '');
 
@@ -572,9 +678,11 @@
             const filters = collectFilters(form);
             const filtered = filterNotes(filters);
             const searchActive = hasActiveSearch(filters);
+            const params = filterParams(form, queryInput);
+            syncUrl(params);
 
             const notesToShow = searchActive
-                ? [...filtered].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).slice(0, 6)
+                ? sortNotes(filtered, 'relevance', filters.query).slice(0, 6)
                 : [...getAllNotes()]
                     .sort((a, b) => {
                         const downloadDiff = (b.downloads || 0) - (a.downloads || 0);
@@ -591,12 +699,25 @@
                 searchActive ? 'Arama kriterlerine uygun not bulunamadı.' : 'Henüz popüler not bulunmuyor.'
             );
 
+            if (latestSection) latestSection.hidden = searchActive;
+            if (!searchActive) renderGrid(latestGrid, sortNotes(getAllNotes(), 'newest').slice(0, 6), 'Henüz not yüklenmemiş.');
+            document.querySelectorAll('[data-home-results-link]').forEach((link) => {
+                const linkParams = new URLSearchParams(params);
+                linkParams.set('sort', searchActive ? 'relevance' : (link.dataset.sort || 'newest'));
+                link.href = searchLink(linkParams);
+            });
+
             if (primaryTitle) {
                 primaryTitle.textContent = searchActive ? 'Arama Sonuçları' : 'Popüler Notlar';
             }
 
             if (resultCount) {
                 resultCount.textContent = formatNumber(filtered.length);
+            }
+            if (resultHint) resultHint.textContent = searchActive && filtered.length > 6
+                ? ' · İlk 6 not gösteriliyor. Tüm sonuçları açabilirsiniz.' : '';
+            if (searchActive && !filtered.length && popularGrid) {
+                popularGrid.innerHTML = '<div class="col-12"><div class="empty-state">Aramanıza uygun not bulunamadı. Daha az kelimeyle aramayı veya filtreleri temizlemeyi deneyin. <button type="button" class="btn btn-sm btn-outline-primary mt-2" data-reset-search>Filtreleri temizle</button></div></div>';
             }
         };
 
@@ -605,6 +726,16 @@
         form.addEventListener('hierarchy:changed', render);
         form.addEventListener('submit', (event) => {
             event.preventDefault();
+            window.location.assign(searchLink(filterParams(form, queryInput)));
+        });
+        const clear = () => { resetFilters(form, queryInput); render(); };
+        form.querySelector('[data-reset-search]')?.addEventListener('click', clear);
+        popularGrid?.addEventListener('click', (event) => {
+            if (event.target instanceof Element && event.target.closest('[data-reset-search]')) clear();
+        });
+        window.addEventListener('popstate', () => {
+            restoreFilterParams(form, queryInput);
+            form.dispatchEvent(new Event('hierarchy:restore'));
             render();
         });
         render();
@@ -637,7 +768,7 @@
                 hiddenField.value = tags.join(',');
                 chipsContainer.innerHTML = tags.map((tag) => {
                     const safeTag = escapeHtml(tag);
-                    return `<span class="tag-chip">${safeTag}<button type="button" data-remove-tag="${safeTag}">&times;</button></span>`;
+                    return `<span class="tag-chip">${safeTag}<button type="button" data-remove-tag="${safeTag}" aria-label="${safeTag} etiketini kaldır">&times;</button></span>`;
                 }).join('');
             };
 
@@ -687,6 +818,7 @@
                 sync();
             });
 
+            tags = [...new Set((hiddenField.value || '').split(',').map(normalizeTag).filter(Boolean))].slice(0, 12);
             sync();
         });
     }
@@ -732,7 +864,7 @@
             fileList.innerHTML = `
                 <div class="file-item"><strong>${escapeHtml(file.name)}</strong></div>
                 <div class="file-item">Boyut: ${formatNumber(Math.ceil(file.size / 1024))} KB</div>
-                <div class="file-item">Tür: ${escapeHtml(file.type || 'Bilinmiyor')}</div>
+                <button type="button" class="btn btn-sm btn-outline-secondary mt-2" data-clear-file>Dosyayı kaldır</button>
             `;
         };
 
@@ -805,8 +937,32 @@
             clearNotice();
             handleSelectedFile(fileInput.files?.[0]);
         });
+        fileList?.addEventListener('click', (event) => {
+            if (event.target instanceof Element && event.target.closest('[data-clear-file]')) {
+                fileInput.value = '';
+                fileList.innerHTML = '';
+                clearNotice();
+                pickFileButton?.focus();
+            }
+        });
+
+        const submitButton = uploadForm.querySelector('button[type="submit"]');
+        const submitLabel = submitButton?.textContent || 'Dosyayı Yükle';
+        const restoreSubmit = () => {
+            delete uploadForm.dataset.submitting;
+            uploadForm.removeAttribute('aria-busy');
+            if (submitButton) {
+                submitButton.disabled = false;
+                submitButton.textContent = submitLabel;
+            }
+        };
+        window.addEventListener('pageshow', restoreSubmit);
 
         uploadForm.addEventListener('submit', (event) => {
+            if (uploadForm.dataset.submitting === 'true') {
+                event.preventDefault();
+                return;
+            }
             const selectedFile = fileInput?.files?.[0];
             if (!selectedFile) {
                 event.preventDefault();
@@ -821,6 +977,13 @@
                 showNotice('Ders alanı zorunlu. Lütfen ders bilgisini girin.', 'danger');
                 return;
             }
+            uploadForm.dataset.submitting = 'true';
+            uploadForm.setAttribute('aria-busy', 'true');
+            if (submitButton) {
+                submitButton.disabled = true;
+                submitButton.innerHTML = '<span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>Yükleniyor…';
+            }
+            showNotice('Dosyanız yükleniyor. Yükleme bitince notunuza yönlendirileceksiniz.', 'info');
         });
     }
     function initNoteDetailPage() {
@@ -865,158 +1028,146 @@
     function initSearchPage() {
         const form = document.getElementById('searchFilterForm');
         const queryInput = document.getElementById('searchQuery');
+        const sortSelect = document.getElementById('searchSort');
         const resultsContainer = document.getElementById('searchResults');
         const pagination = document.getElementById('searchPagination');
         const countElement = document.getElementById('searchResultCount');
+        const status = document.getElementById('searchStatus');
+        const resultsPanel = document.getElementById('searchResultsPanel');
+        const filterPanel = document.getElementById('searchFilterPanel');
+        if (!form || !resultsContainer || !pagination || !countElement) return;
 
-        if (!form || !resultsContainer || !pagination || !countElement) {
-            return;
-        }
-
-        const urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.has('q') && queryInput) {
-            queryInput.value = urlParams.get('q');
-        }
-
-        const similarToId = parseInt(urlParams.get('similar_to'), 10);
-        let similarNote = null;
-        if (!isNaN(similarToId) && similarToId > 0 && Array.isArray(window.NOTBUL_NOTES)) {
-            similarNote = window.NOTBUL_NOTES.find(n => n.id === similarToId);
-        }
-
+        const params = new URLSearchParams(window.location.search);
+        let similarTo = params.get('similar_to') || '';
+        const validSorts = new Set(['relevance', 'newest', 'rating', 'downloads']);
+        if (sortSelect) sortSelect.value = validSorts.has(params.get('sort')) ? params.get('sort') : 'relevance';
         const state = {
-            currentPage: 1,
-            pageSize: 5,
+            currentPage: Math.max(1, parseInt(params.get('page'), 10) || 1),
+            pageSize: 10,
             filtered: []
         };
+        const desktop = window.matchMedia('(min-width: 992px)');
+        const syncFilterPanel = () => { if (filterPanel) filterPanel.open = desktop.matches; };
+        syncFilterPanel();
+        desktop.addEventListener?.('change', syncFilterPanel);
 
+        const currentParams = () => filterParams(form, queryInput, sortSelect?.value || 'relevance', state.currentPage, similarTo);
         const drawPagination = () => {
+            const totalPages = Math.ceil(state.filtered.length / state.pageSize);
+            if (totalPages <= 1) { pagination.innerHTML = ''; return; }
+            const pages = [...new Set([1, totalPages, state.currentPage - 1, state.currentPage, state.currentPage + 1])]
+                .filter((page) => page >= 1 && page <= totalPages).sort((a, b) => a - b);
+            const button = (page, label, disabled = false) => `<li class="page-item ${page === state.currentPage && !disabled ? 'active' : ''} ${disabled ? 'disabled' : ''}"><button type="button" class="page-link" data-page="${page}" ${disabled ? 'disabled' : ''} ${page === state.currentPage && !disabled ? 'aria-current="page"' : ''} aria-label="${typeof label === 'number' ? `Sayfa ${page}` : label}">${label}</button></li>`;
+            const items = [button(state.currentPage - 1, 'Önceki', state.currentPage === 1)];
+            let previous = 0;
+            pages.forEach((page) => {
+                if (previous && page - previous > 1) items.push('<li class="page-item disabled"><span class="page-link" aria-hidden="true">…</span></li>');
+                items.push(button(page, page));
+                previous = page;
+            });
+            items.push(button(state.currentPage + 1, 'Sonraki', state.currentPage === totalPages));
+            pagination.innerHTML = items.join('');
+        };
+        const drawResults = (push = false) => {
             const totalPages = Math.max(1, Math.ceil(state.filtered.length / state.pageSize));
             state.currentPage = Math.min(state.currentPage, totalPages);
-
-            const buttons = [];
-            for (let page = 1; page <= totalPages; page += 1) {
-                buttons.push(`
-                    <li class="page-item ${page === state.currentPage ? 'active' : ''}">
-                        <button type="button" class="page-link" data-page="${page}">${page}</button>
-                    </li>
-                `);
-            }
-
-            pagination.innerHTML = buttons.join('');
-        };
-
-        const drawResults = () => {
+            syncUrl(currentParams(), push);
             const start = (state.currentPage - 1) * state.pageSize;
             const pageItems = state.filtered.slice(start, start + state.pageSize);
-
+            const returnTo = `search.php${window.location.search}`;
+            countElement.textContent = formatNumber(state.filtered.length);
+            if (status) status.textContent = pageItems.length
+                ? `${formatNumber(state.filtered.length)} not bulundu. ${start + 1}–${start + pageItems.length} arası gösteriliyor.${similarTo ? ' Benzer notlar listeleniyor.' : ''}`
+                : 'Sonuç bulunamadı. Daha az kelime veya daha geniş filtrelerle aramayı deneyin.';
             if (!pageItems.length) {
-                resultsContainer.innerHTML = '<div class="empty-state">Filtreye uygun not bulunamadı.</div>';
-                countElement.textContent = '0';
-                drawPagination();
-                return;
-            }
-
-            resultsContainer.innerHTML = pageItems.map((note) => {
-                const ratingHtml = ratingSummaryTemplate(note, true);
-
-                return `
-                    <article class="result-item">
+                resultsContainer.innerHTML = '<div class="empty-state">Aramanıza uygun not bulunamadı. Farklı kelimeler kullanabilir veya filtreleri temizleyebilirsiniz.<br><button type="button" class="btn btn-sm btn-outline-primary mt-2" data-reset-search>Aramayı ve filtreleri temizle</button></div>';
+            } else {
+                resultsContainer.innerHTML = pageItems.map((note) => {
+                    const context = [resolveUniversityName(note.universityId), resolveDepartmentName(note.departmentId), resolveCourseName(note), resolveTopicName(note)]
+                        .filter((value) => value && value !== '-');
+                    const fileType = note.fileType === 'image' ? 'Görsel' : (note.fileType || '').toUpperCase();
+                    return `<article class="result-item">
                         <div class="d-flex justify-content-between align-items-start gap-3">
-                            <div>
+                            <div class="flex-grow-1" style="min-width: 0">
                                 <h3 class="h5 mb-1">${escapeHtml(note.title)}</h3>
-                                <p class="mb-2 text-secondary">${escapeHtml(note.description)}</p>
+                                <p class="mb-2 text-secondary">${escapeHtml(shortenText(note.description, 240))}</p>
                             </div>
-                            <a href="note-detail.php?id=${note.id}" class="btn btn-sm btn-outline-primary whitespace-nowrap">Detay</a>
+                            <a href="note-detail.php?id=${note.id}&amp;return_to=${escapeHtml(encodeURIComponent(returnTo))}" class="btn btn-sm btn-outline-primary flex-shrink-0" aria-label="${escapeHtml(note.title)} notunu incele">Detay</a>
                         </div>
                         <div class="result-footer">
-                            <div class="d-flex flex-wrap gap-2">
-                                <span class="note-tag">${escapeHtml(resolveUniversityName(note.universityId))}</span>
-                                <span class="note-tag">${escapeHtml(resolveCourseName(note))}</span>
-                                <span class="note-tag">${escapeHtml(resolveTopicName(note))}</span>
-                            </div>
-                            <div class="result-stats text-secondary small">
-                                ${ratingHtml}
-                                <span>${formatDate(note.createdAt)} | ${formatNumber(note.downloads)} indirme</span>
-                            </div>
+                            <div class="d-flex flex-wrap gap-2">${context.map((value) => `<span class="note-tag">${escapeHtml(value)}</span>`).join('')}<span class="note-tag">${escapeHtml(fileType)}</span></div>
+                            <div class="result-stats text-secondary small">${ratingSummaryTemplate(note, true)}<span>${formatDate(note.createdAt)} · ${formatNumber(note.downloads)} indirme</span></div>
                         </div>
-                    </article>
-                `;
-            }).join('');
-
-            countElement.textContent = formatNumber(state.filtered.length);
+                    </article>`;
+                }).join('');
+            }
             drawPagination();
         };
-
-        const apply = () => {
+        const apply = (resetPage = true) => {
+            if (resetPage) state.currentPage = 1;
             const filters = collectFilters(form);
-            if (queryInput instanceof HTMLInputElement) {
-                filters.query = normalize(queryInput.value);
+            filters.query = normalize(queryInput?.value);
+            let notes = filterNotes(filters);
+            const similarNote = getAllNotes().find((note) => String(note.id) === similarTo);
+            if (similarNote) {
+                const tags = (similarNote.tags || []).map(normalizeSearch);
+                const words = normalizeSearch(similarNote.title).split(/\s+/).filter((word) => word.length > 2);
+                const score = (note) => (note.tags || []).map(normalizeSearch).filter((tag) => tags.includes(tag)).length * 10
+                    + normalizeSearch(note.title).split(/\s+/).filter((word) => word.length > 2 && words.includes(word)).length * 2
+                    + (similarNote.course && normalizeSearch(note.course) === normalizeSearch(similarNote.course) ? 5 : 0);
+                notes = notes.filter((note) => note.id !== similarNote.id && score(note) > 0);
+                state.filtered = (sortSelect?.value || 'relevance') === 'relevance'
+                    ? [...notes].sort((a, b) => score(b) - score(a) || new Date(b.createdAt) - new Date(a.createdAt))
+                    : sortNotes(notes, sortSelect.value, filters.query);
+            } else {
+                similarTo = '';
+                state.filtered = sortNotes(notes, sortSelect?.value || 'relevance', filters.query);
             }
-
-            let isCustomSort = false;
-            let resultNotes = filterNotes(filters);
-
-            if (similarNote && !filters.query && !Object.values(filters).some(v => v && typeof v === 'string' && v.trim() !== '')) {
-                const targetTags = (similarNote.tags || []).map(normalize).filter(Boolean);
-                const targetTitleWords = normalize(similarNote.title).split(/\s+/).filter(w => w.length > 2);
-                
-                resultNotes = resultNotes.filter(note => {
-                    if (note.id === similarNote.id) return false;
-                    
-                    const noteTags = (note.tags || []).map(normalize);
-                    const noteTitleWords = normalize(note.title).split(/\s+/);
-                    
-                    let score = 0;
-                    const sharedTags = noteTags.filter(t => targetTags.includes(t));
-                    score += sharedTags.length * 10;
-                    
-                    const sharedTitleWords = noteTitleWords.filter(w => w.length > 2 && targetTitleWords.includes(w));
-                    score += sharedTitleWords.length * 2;
-                    
-                    if (note.course === similarNote.course && similarNote.course) score += 5;
-                    
-                    if (score > 0) {
-                        note._similarScore = score;
-                        return true;
-                    }
-                    return false;
-                });
-                
-                resultNotes.sort((a, b) => b._similarScore - a._similarScore);
-                isCustomSort = true;
-            }
-
-            if (!isCustomSort) {
-                resultNotes.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-            }
-
-            state.filtered = resultNotes;
-            state.currentPage = 1;
             drawResults();
         };
-
-        form.addEventListener('change', apply);
-        form.addEventListener('input', apply);
-        form.addEventListener('hierarchy:changed', apply);
-        queryInput?.addEventListener('input', apply);
-
-        pagination.addEventListener('click', (event) => {
-            const target = event.target;
-            if (!(target instanceof HTMLButtonElement)) {
-                return;
-            }
-
-            const nextPage = Number(target.dataset.page);
-            if (!Number.isInteger(nextPage) || nextPage < 1) {
-                return;
-            }
-
-            state.currentPage = nextPage;
-            drawResults();
+        const clear = () => {
+            similarTo = '';
+            resetFilters(form, queryInput);
+            if (sortSelect) sortSelect.value = 'relevance';
+            apply();
+            queryInput?.focus();
+        };
+        let timer;
+        const schedule = () => {
+            window.clearTimeout(timer);
+            timer = window.setTimeout(() => apply(), 150);
+        };
+        form.addEventListener('change', () => apply());
+        form.addEventListener('hierarchy:changed', () => apply());
+        form.addEventListener('submit', (event) => { event.preventDefault(); apply(); });
+        queryInput?.addEventListener('input', schedule);
+        sortSelect?.addEventListener('change', () => apply());
+        form.querySelector('[data-reset-search]')?.addEventListener('click', clear);
+        resultsContainer.addEventListener('click', (event) => {
+            if (event.target instanceof Element && event.target.closest('[data-reset-search]')) clear();
         });
-
-        apply();
+        pagination.addEventListener('click', (event) => {
+            const target = event.target instanceof Element ? event.target.closest('button[data-page]') : null;
+            if (!target || target.disabled) return;
+            const page = Number(target.dataset.page);
+            if (!Number.isInteger(page) || page < 1 || page > Math.ceil(state.filtered.length / state.pageSize)) return;
+            window.clearTimeout(timer);
+            state.currentPage = page;
+            drawResults(true);
+            resultsPanel?.scrollIntoView({ block: 'start' });
+            resultsPanel?.focus({ preventScroll: true });
+        });
+        window.addEventListener('popstate', () => {
+            window.clearTimeout(timer);
+            restoreFilterParams(form, queryInput);
+            form.dispatchEvent(new Event('hierarchy:restore'));
+            const restored = new URLSearchParams(window.location.search);
+            similarTo = restored.get('similar_to') || '';
+            if (sortSelect) sortSelect.value = validSorts.has(restored.get('sort')) ? restored.get('sort') : 'relevance';
+            state.currentPage = Math.max(1, parseInt(restored.get('page'), 10) || 1);
+            apply(false);
+        });
+        apply(false);
     }
 
     function copyTextToClipboard(text) {
@@ -1088,6 +1239,8 @@
 
     document.addEventListener('DOMContentLoaded', async () => {
         await loadRemoteFilterData();
+        const filterForm = document.getElementById('homeFilterForm') || document.getElementById('searchFilterForm');
+        if (filterForm) restoreFilterParams(filterForm, document.getElementById('homeQuery') || document.getElementById('searchQuery'));
         initHierarchyGroups();
         initTagInputs();
 

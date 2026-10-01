@@ -3,8 +3,10 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/includes/db.php';
 require_once __DIR__ . '/includes/user_notifications.php';
+require_once __DIR__ . '/includes/auth_redirect.php';
 
 $error = '';
+$returnTo = authReturnToFromRequest();
 $token = trim((string) ($_GET['token'] ?? $_POST['token'] ?? ''));
 $tokenHash = '';
 $resetUserId = null;
@@ -73,7 +75,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     'Giriş Yap' => userNotificationUrl('login.php'),
                 ]);
 
-                header('Location: login.php?reset=success');
+                header('Location: ' . authPageUrl('login.php', $returnTo, ['reset' => 'success']));
                 exit;
             }
 
@@ -88,7 +90,7 @@ $pageTitle = 'Not Bul | Yeni Şifre Belirle';
 $pageKey = 'reset-password';
 require __DIR__ . '/includes/header.php';
 ?>
-<main class="page-shell">
+<main id="mainContent" class="page-shell" tabindex="-1">
     <section class="container section-block">
         <div class="row justify-content-center">
             <div class="col-lg-5 col-md-7">
@@ -107,14 +109,21 @@ require __DIR__ . '/includes/header.php';
 
                     <?php if ($tokenStatus === 'valid'): ?>
                         <form action="reset-password.php" method="POST" novalidate>
+                            <input type="hidden" name="return_to" value="<?= htmlspecialchars($returnTo, ENT_QUOTES, 'UTF-8') ?>">
                             <input type="hidden" name="token" value="<?= htmlspecialchars($token, ENT_QUOTES, 'UTF-8') ?>">
                             <div class="mb-3">
                                 <label for="password" class="form-label">Yeni Şifre</label>
-                                <input type="password" class="form-control" id="password" name="password" autocomplete="new-password" minlength="8" required placeholder="En az 8 karakter">
+                                <div class="input-group">
+                                    <input type="password" class="form-control" id="password" name="password" autocomplete="new-password" minlength="8" required placeholder="En az 8 karakter">
+                                    <button type="button" class="btn btn-outline-secondary d-none" data-password-toggle aria-controls="password" aria-pressed="false" aria-label="Yeni şifreyi göster" hidden>Göster</button>
+                                </div>
                             </div>
                             <div class="mb-4">
                                 <label for="passwordConfirm" class="form-label">Yeni Şifre (Tekrar)</label>
-                                <input type="password" class="form-control" id="passwordConfirm" name="password_confirm" autocomplete="new-password" minlength="8" required placeholder="Şifreni tekrar gir">
+                                <div class="input-group">
+                                    <input type="password" class="form-control" id="passwordConfirm" name="password_confirm" autocomplete="new-password" minlength="8" required placeholder="Şifreni tekrar gir">
+                                    <button type="button" class="btn btn-outline-secondary d-none" data-password-toggle aria-controls="passwordConfirm" aria-pressed="false" aria-label="Yeni şifre tekrarını göster" hidden>Göster</button>
+                                </div>
                             </div>
                             <div class="d-grid gap-2">
                                 <button type="submit" class="btn btn-primary">Şifreyi Güncelle</button>
@@ -122,16 +131,17 @@ require __DIR__ . '/includes/header.php';
                         </form>
                     <?php else: ?>
                         <div class="d-grid gap-2">
-                            <a href="forgot-password.php" class="btn btn-primary">Yeni Sıfırlama Bağlantısı İste</a>
+                            <a href="<?= htmlspecialchars(authPageUrl('forgot-password.php', $returnTo), ENT_QUOTES, 'UTF-8') ?>" class="btn btn-primary">Yeni Sıfırlama Bağlantısı İste</a>
                         </div>
                     <?php endif; ?>
 
                     <div class="mt-3 text-center">
-                        <a href="login.php" class="text-decoration-none">Giriş sayfasına dön</a>
+                        <a href="<?= htmlspecialchars(authLoginUrl($returnTo), ENT_QUOTES, 'UTF-8') ?>" class="text-decoration-none">Giriş sayfasına dön</a>
                     </div>
                 </div>
             </div>
         </div>
     </section>
 </main>
+<script src="assets/js/auth.js?v=<?= rawurlencode((string)filemtime(__DIR__ . '/assets/js/auth.js')) ?>" defer></script>
 <?php require __DIR__ . '/includes/footer.php'; ?>

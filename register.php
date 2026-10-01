@@ -5,11 +5,13 @@ require_once __DIR__ . '/includes/db.php';
 require_once __DIR__ . '/includes/brevo.php';
 require_once __DIR__ . '/includes/admin_notifications.php';
 require_once __DIR__ . '/includes/registration_security.php';
+require_once __DIR__ . '/includes/auth_redirect.php';
 
 @session_start();
 
 $error = '';
 $success = '';
+$returnTo = authReturnToFromRequest();
 $turnstileSiteKey = registrationTurnstileSiteKey();
 $clientIp = registrationClientIp();
 
@@ -91,7 +93,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $tokenHash = hash('sha256', $plainToken);
                 $tokenExpiresAt = (new DateTimeImmutable('+24 hours'))->format('Y-m-d H:i:s');
                 $fullName = trim($firstName . ' ' . $lastName);
-                $verificationUrl = buildAppBaseUrl() . '/verify-email.php?token=' . urlencode($plainToken);
+                $verificationUrl = buildAppBaseUrl() . '/' . authPageUrl('verify-email.php', $returnTo, ['token' => $plainToken]);
                 $wasExistingRegistration = (bool)$existingUser;
                 $registeredUserId = 0;
 
@@ -179,7 +181,7 @@ require __DIR__ . '/includes/header.php';
 <?php if ($turnstileSiteKey !== ''): ?>
     <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 <?php endif; ?>
-<main class="page-shell">
+<main id="mainContent" class="page-shell" tabindex="-1">
     <section class="container section-block">
         <div class="row justify-content-center">
             <div class="col-lg-6 col-md-8">
@@ -192,6 +194,7 @@ require __DIR__ . '/includes/header.php';
                     
                     <?php if ($success): ?>
                         <div class="alert alert-success" role="alert"><?= htmlspecialchars($success) ?></div>
+                        <p class="small">E-posta gelmediyse spam klasörünü kontrol et. <a href="<?= htmlspecialchars(authPageUrl('resend-verification.php', $returnTo, ['email' => $email]), ENT_QUOTES, 'UTF-8') ?>">Doğrulama bağlantısını yeniden gönder</a>.</p>
                     <?php endif; ?>
 
                     <?php if ($turnstileSiteKey === ''): ?>
@@ -199,6 +202,7 @@ require __DIR__ . '/includes/header.php';
                     <?php endif; ?>
 
                     <form action="register.php" method="POST">
+                        <input type="hidden" name="return_to" value="<?= htmlspecialchars($returnTo, ENT_QUOTES, 'UTF-8') ?>">
                         <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($registrationCsrfToken, ENT_QUOTES, 'UTF-8') ?>">
                         <input type="hidden" name="form_nonce" value="<?= htmlspecialchars((string)$formChallenge['nonce'], ENT_QUOTES, 'UTF-8') ?>">
                         <div class="registration-trap" aria-hidden="true">
@@ -220,11 +224,17 @@ require __DIR__ . '/includes/header.php';
                             </div>
                             <div class="col-md-6">
                                 <label for="password" class="form-label">Şifre</label>
-                                <input type="password" class="form-control" id="password" name="password" autocomplete="new-password" minlength="8" required placeholder="En az 8 karakter">
+                                <div class="input-group">
+                                    <input type="password" class="form-control" id="password" name="password" autocomplete="new-password" minlength="8" required placeholder="En az 8 karakter">
+                                    <button type="button" class="btn btn-outline-secondary d-none" data-password-toggle aria-controls="password" aria-pressed="false" aria-label="Şifreyi göster" hidden>Göster</button>
+                                </div>
                             </div>
                             <div class="col-md-6">
                                 <label for="passwordConfirm" class="form-label">Şifre (Tekrar)</label>
-                                <input type="password" class="form-control" id="passwordConfirm" name="password_confirm" autocomplete="new-password" minlength="8" required placeholder="Şifrenizi doğrulayın">
+                                <div class="input-group">
+                                    <input type="password" class="form-control" id="passwordConfirm" name="password_confirm" autocomplete="new-password" minlength="8" required placeholder="Şifrenizi doğrulayın">
+                                    <button type="button" class="btn btn-outline-secondary d-none" data-password-toggle aria-controls="passwordConfirm" aria-pressed="false" aria-label="Şifre tekrarını göster" hidden>Göster</button>
+                                </div>
                             </div>
                             <?php if ($turnstileSiteKey !== ''): ?>
                                 <div class="col-12">
@@ -236,7 +246,7 @@ require __DIR__ . '/includes/header.php';
                             <button type="submit" class="btn btn-primary" <?= $turnstileSiteKey === '' ? 'disabled' : '' ?>>Kayıt Ol</button>
                         </div>
                         <div class="mt-3 text-center">
-                            <span class="text-secondary">Zaten hesabınız var mı?</span> <a href="login.php" class="text-decoration-none">Giriş Yap</a>
+                            <span class="text-secondary">Zaten hesabınız var mı?</span> <a href="<?= htmlspecialchars(authLoginUrl($returnTo), ENT_QUOTES, 'UTF-8') ?>" class="text-decoration-none">Giriş Yap</a>
                         </div>
                     </form>
                 </div>
@@ -244,4 +254,5 @@ require __DIR__ . '/includes/header.php';
         </div>
     </section>
 </main>
+<script src="assets/js/auth.js?v=<?= rawurlencode((string)filemtime(__DIR__ . '/assets/js/auth.js')) ?>" defer></script>
 <?php require __DIR__ . '/includes/footer.php'; ?>

@@ -76,6 +76,27 @@ a {
     color: inherit;
 }
 
+:where(a, button, input, select, textarea, summary):focus-visible {
+    outline: 3px solid var(--primary);
+    outline-offset: 3px;
+}
+
+.skip-link {
+    position: fixed;
+    top: 0.5rem;
+    left: 0.5rem;
+    z-index: 1100;
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    background: var(--surface);
+    color: var(--text-main);
+    transform: translateY(-200%);
+}
+
+.skip-link:focus {
+    transform: translateY(0);
+}
+
 [id] {
     scroll-margin-top: calc(5.8rem + var(--safe-area-top));
 }
@@ -169,7 +190,7 @@ a {
     display: inline-flex;
     align-items: center;
     gap: 0.48rem;
-    min-height: 2.18rem;
+    min-height: 44px;
     max-width: 190px;
     border: 1px solid #cfe0f5;
     border-radius: 10px;
@@ -228,8 +249,8 @@ a {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 2.18rem;
-    height: 2.18rem;
+    width: 44px;
+    height: 44px;
     border: 1px solid #cfe0f5;
     border-radius: 8px;
     background: #f8fbff;
@@ -261,18 +282,30 @@ a {
 }
 
 .mobile-quick-actions {
-    display: inline-flex;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(44px, 1fr));
     align-items: center;
-    justify-content: flex-end;
+    width: 100%;
     gap: 0.34rem;
-    margin-left: auto;
+    margin-top: 0.5rem;
 }
 
 .mobile-quick-actions .header-action-btn {
-    width: 2.08rem;
-    height: 2.08rem;
+    width: 100%;
+    min-width: 44px;
+    min-height: 52px;
+    height: auto;
+    flex-direction: column;
+    gap: 0.2rem;
+    padding: 0.35rem 0.1rem;
     border-radius: 8px;
     font-size: 0.84rem;
+}
+
+.header-action-label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    line-height: 1.2;
 }
 
 .btn {
@@ -368,6 +401,7 @@ a {
     font-family: 'Sora', sans-serif;
     font-size: clamp(1.08rem, 1.8vw, 1.42rem);
     color: #1f2d41;
+    overflow-wrap: anywhere;
 }
 
 .form-control,
@@ -415,6 +449,21 @@ a {
 .note-card .card-body {
     display: flex;
     flex-direction: column;
+}
+
+.note-card h3,
+.note-card .text-truncate {
+    overflow: visible;
+    white-space: normal;
+    text-overflow: clip;
+    overflow-wrap: anywhere;
+}
+
+.note-card-context {
+    color: var(--text-soft);
+    font-size: 0.78rem;
+    line-height: 1.55;
+    overflow-wrap: anywhere;
 }
 
 .note-card-footer {
@@ -573,8 +622,24 @@ a {
 }
 
 .document-preview {
-    min-height: 500px;
+    display: block;
+    min-height: 260px;
     background: #f8f9fa;
+}
+
+.note-pdf-preview {
+    display: block;
+    width: 100%;
+    height: 600px;
+    border: 0;
+    border-radius: 10px;
+}
+
+.document-preview img {
+    display: block;
+    max-height: 600px;
+    margin-inline: auto;
+    object-fit: contain;
 }
 
 .note-meta-grid {
@@ -591,8 +656,10 @@ a {
 }
 
 .note-meta-grid strong {
+    display: block;
     font-size: 0.9rem;
     color: #22344b;
+    overflow-wrap: anywhere;
 }
 
 .comment-list {
@@ -700,6 +767,31 @@ a {
     gap: 0.72rem;
 }
 
+.search-filter-summary {
+    cursor: pointer;
+    color: var(--text-main);
+    font-size: 1rem;
+    font-weight: 700;
+    padding: 0;
+    min-height: 44px;
+}
+
+.search-filter-panel[open] > .search-filter-summary {
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 0.65rem;
+}
+
+.search-filter-panel > form {
+    border: 0;
+    box-shadow: none;
+}
+
+.search-status {
+    color: var(--text-soft);
+    font-size: 0.86rem;
+    overflow-wrap: anywhere;
+}
+
 .result-item {
     border: 1px solid #d9e4f3;
     border-radius: 12px;
@@ -711,11 +803,21 @@ a {
     font-size: 1.03rem;
     margin: 0 0 0.33rem;
     color: #1f2d43;
+    overflow-wrap: anywhere;
 }
 
 .result-item p {
     margin: 0;
     color: var(--text-soft);
+    overflow-wrap: anywhere;
+}
+
+.result-item > .d-flex > div:first-child {
+    min-width: 0;
+}
+
+.result-item > .d-flex > .btn {
+    flex-shrink: 0;
 }
 
 .result-footer {
@@ -754,7 +856,17 @@ a {
     word-break: break-word;
 }
 
+.pagination {
+    flex-wrap: wrap;
+    gap: 0.35rem 0;
+}
+
 .pagination .page-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 44px;
+    min-height: 44px;
     color: #346ec6;
     background: #f7faff;
     border-color: #cfddf3;
@@ -952,6 +1064,13 @@ a {
 
 .footer-list a:hover {
     color: #e8f1ff;
+}
+
+.footer-about summary {
+    color: #d9e7fa;
+    cursor: pointer;
+    font-size: 0.86rem;
+    font-weight: 600;
 }
 
 .footer-bottom {
@@ -1253,6 +1372,10 @@ a {
 }
 
 @media (max-width: 991.98px) {
+    [id] {
+        scroll-margin-top: calc(9rem + var(--safe-area-top));
+    }
+
     .site-header .navbar {
         padding-inline: 0.5rem;
     }
@@ -1277,6 +1400,16 @@ a {
 
     .sticky-panel {
         position: static;
+    }
+
+    .note-pdf-preview {
+        height: clamp(260px, 65vh, 600px);
+    }
+
+    .btn,
+    .form-control,
+    .form-select {
+        min-height: 44px;
     }
 
     .footer-bottom-brand,

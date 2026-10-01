@@ -258,7 +258,7 @@ $pageTitle = 'Not Bul | Yorum Düzenle';
 $pageKey = 'admin';
 require __DIR__ . '/includes/header.php';
 ?>
-<main class="page-shell">
+<main id="mainContent" class="page-shell" tabindex="-1">
     <section class="container section-block">
         <div class="d-flex justify-content-between align-items-start flex-wrap gap-3 mb-3">
             <div>

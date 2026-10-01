@@ -6,6 +6,7 @@ declare(strict_types=1);
 require_once __DIR__ . '/includes/ratings.php';
 require_once __DIR__ . '/includes/admin_notifications.php';
 require_once __DIR__ . '/includes/user_notifications.php';
+require_once __DIR__ . '/includes/auth_redirect.php';
 
 function resolveDepartmentName(string $departmentId): string
 {
@@ -143,8 +144,20 @@ if ($id <= 0) {
     exit;
 }
 
+$backToResults = authSafeReturnTo($_GET['return_to'] ?? '');
+$backPath = ltrim((string)parse_url($backToResults, PHP_URL_PATH), '/');
+if (!in_array($backPath, ['search.php', 'index.php'], true)) {
+    $backToResults = '';
+}
+$detailUrl = 'note-detail.php?id=' . $id;
+if ($backToResults !== '') {
+    $detailUrl .= '&return_to=' . rawurlencode($backToResults);
+}
+
 $deleteError = '';
 $commentError = '';
+$commentText = '';
+$commentRating = 0;
 $requestMethod = (string)($_SERVER['REQUEST_METHOD'] ?? 'GET');
 
 if ($requestMethod === 'POST' && ($_POST['action'] ?? '') === 'delete_note') {
@@ -204,7 +217,11 @@ if ($requestMethod === 'POST' && ($_POST['action'] ?? '') === 'delete_note') {
 
 if ($requestMethod === 'POST' && ($_POST['action'] ?? '') === 'add_comment') {
     $currentUserId = isset($_SESSION['user_id']) ? (int)$_SESSION['user_id'] : 0;
-    $rating = (int)($_POST['rating'] ?? 5);
+    $postedRating = $_POST['rating'] ?? '';
+    $rating = is_string($postedRating) && in_array($postedRating, ['1', '2', '3', '4', '5'], true)
+        ? (int)$postedRating
+        : 0;
+    $commentRating = $rating;
     $commentText = trim((string)($_POST['comment'] ?? ''));
     $requestToken = (string)($_POST['csrf_token'] ?? '');
     $sessionToken = (string)($_SESSION['csrf_token_note_comment'] ?? '');
@@ -214,9 +231,11 @@ if ($requestMethod === 'POST' && ($_POST['action'] ?? '') === 'add_comment') {
     } elseif ($sessionToken === '' || !hash_equals($sessionToken, $requestToken)) {
         $commentError = 'Güvenlik doğrulaması başarısız oldu. Lütfen tekrar deneyin.';
     } elseif ($rating < 1 || $rating > 5) {
-        $commentError = 'Geçersiz puanlama.';
+        $commentError = 'Lütfen 1 ile 5 arasında bir puan seçin.';
     } elseif ($commentText === '') {
         $commentError = 'Yorum boş olamaz.';
+    } elseif (mb_strlen($commentText) > 5000) {
+        $commentError = 'Yorum en fazla 5000 karakter olabilir.';
     } else {
         try {
             $stmt = $pdo->prepare("INSERT INTO note_comments (note_id, user_id, rating, comment) VALUES (:note_id, :user_id, :rating, :comment)");
@@ -300,7 +319,7 @@ if ($requestMethod === 'POST' && ($_POST['action'] ?? '') === 'add_comment') {
                 error_log('note-detail comment notification prep error: ' . $e->getMessage());
             }
 
-            header("Location: note-detail.php?id=$id&comment_added=1");
+            header('Location: ' . $detailUrl . '&comment_added=1#comments');
             exit;
         } catch (Throwable $e) {
             error_log('note-detail comment error: ' . $e->getMessage());
@@ -339,7 +358,7 @@ if ($requestMethod === 'POST' && ($_POST['action'] ?? '') === 'delete_comment') 
             if ($stmt->rowCount() < 1) {
                 $commentError = 'Yorum silinemedi. Yorum size ait olmayabilir.';
             } else {
-                header("Location: note-detail.php?id=$id&comment_deleted=1#comments");
+                header('Location: ' . $detailUrl . '&comment_deleted=1#comments');
                 exit;
             }
         } catch (Throwable $e) {
@@ -359,11 +378,7 @@ try {
             COALESCE(rs.rating_count, 0) AS rating_count
         FROM notes n
         JOIN users u ON n.user_id = u.id
-        LEFT JOIN (
-            SELECT note_id, AVG(rating) AS rating_average, COUNT(*) AS rating_count
-            FROM note_comments
-            GROUP BY note_id
-        ) rs ON rs.note_id = n.id
+        LEFT JOIN (" . noteRatingSummarySql() . ") rs ON rs.note_id = n.id
         WHERE n.id = :id
           AND n.upload_status = 'ready'
           AND n.scan_status = 'clean'
@@ -461,32 +476,45 @@ $pageTitle = 'Not Bul | ' . $noteTitle;
 $pageKey = 'detail';
 require __DIR__ . '/includes/header.php';
 ?>
-<main class="page-shell">
+<main class="page-shell" id="mainContent" tabindex="-1">
     <section class="container section-block">
         <?php if ($deleteError): ?>
-            <div class="alert alert-danger"><?= htmlspecialchars($deleteError) ?></div>
+            <div class="alert alert-danger" role="alert"><?= htmlspecialchars($deleteError) ?></div>
         <?php endif; ?>
-        <p class="text-secondary small mb-3">
-            Anasayfa > <?= htmlspecialchars($note['course']) ?> > <?= htmlspecialchars($note['title']) ?>
-        </p>
+        <?php if ($isOwner && ($_GET['uploaded'] ?? '') === '1'): ?>
+            <div class="alert alert-success" role="status">Notunuz başarıyla yüklendi ve paylaşıma açıldı.</div>
+        <?php elseif ($isOwner && ($_GET['updated'] ?? '') === '1'): ?>
+            <div class="alert alert-success" role="status">Notunuz başarıyla güncellendi.</div>
+        <?php endif; ?>
+        <nav aria-label="Sayfa yolu">
+            <ol class="breadcrumb small mb-2">
+                <li class="breadcrumb-item"><a href="index.php">Anasayfa</a></li>
+                <li class="breadcrumb-item"><a href="search.php?course=<?= rawurlencode($courseName) ?>"><?= htmlspecialchars($courseName !== '' ? $courseName : 'Ders Notları') ?></a></li>
+                <li class="breadcrumb-item active text-break" aria-current="page"><?= htmlspecialchars($noteTitle) ?></li>
+            </ol>
+        </nav>
+        <?php if ($backToResults !== ''): ?>
+            <a class="d-inline-block small mb-3" href="<?= htmlspecialchars($backToResults, ENT_QUOTES, 'UTF-8') ?>">Arama sonuçlarına dön</a>
+        <?php endif; ?>
         <div class="row g-4">
-            <div class="col-lg-7">
+            <div class="col-lg-7 order-2 order-lg-1">
                 <div class="preview-shell">
-                    <div class="preview-toolbar d-flex justify-content-between align-items-center">
+                    <div class="preview-toolbar d-flex justify-content-between align-items-center flex-wrap gap-2">
                         <strong>Dosya Önizleme</strong>
-                        <span class="badge text-bg-info"><?= strtoupper(pathinfo($note['original_filename'], PATHINFO_EXTENSION)) ?> Önizleme</span>
+                        <span class="badge text-bg-info"><?= htmlspecialchars($fileExtension) ?></span>
+                        <a class="small" href="view.php?id=<?= (int)$note['id'] ?>" target="_blank" rel="noopener noreferrer">Dosyayı yeni sekmede aç</a>
                     </div>
                     <div class="preview-canvas document-preview p-0">
                         <?php 
                         $mime = $note['mime_type'];
                         if (strpos($mime, 'pdf') !== false): 
                         ?>
-                            <iframe src="view.php?id=<?= $note['id'] ?>#toolbar=0" width="100%" height="600px" style="border: none;"></iframe>
+                            <iframe src="view.php?id=<?= (int)$note['id'] ?>" class="note-pdf-preview" title="<?= htmlspecialchars($noteTitle . ' — PDF önizleme', ENT_QUOTES, 'UTF-8') ?>" loading="lazy"></iframe>
                         <?php elseif (strpos($mime, 'image/') === 0): ?>
                             <img src="view.php?id=<?= $note['id'] ?>" class="img-fluid" alt="<?= htmlspecialchars($note['title']) ?>">
                         <?php else: ?>
                             <div class="p-4 text-center">
-                                <p class="mb-2 text-secondary">Bu dosya formatı (<?= strtoupper(pathinfo($note['original_filename'], PATHINFO_EXTENSION)) ?>) tarayıcıda önizleme desteklemiyor.</p>
+                                <p class="mb-2 text-secondary">Bu dosya formatı (<?= htmlspecialchars($fileExtension) ?>) tarayıcıda önizleme desteklemiyor.</p>
                                 <p class="mb-0 text-secondary">'İndir' butonu ile dosyayı indirebilirsiniz.</p>
                             </div>
                         <?php endif; ?>
@@ -494,13 +522,18 @@ require __DIR__ . '/includes/header.php';
                 </div>
             </div>
 
-            <div class="col-lg-5">
+            <div class="col-lg-5 order-1 order-lg-2">
                 <article class="panel-card h-100">
                     <div class="d-flex align-items-center flex-wrap gap-2 mb-2">
                         <h1 class="section-title mb-0"><?= htmlspecialchars($note['title']) ?></h1>
                         <?= renderRatingSummary($ratingAverage, $ratingCount, true, 'Henüz puan yok') ?>
                     </div>
-                    <p class="text-secondary"><?= nl2br(htmlspecialchars($note['description'] ?? 'Açıklama belirtilmedi.')) ?></p>
+                    <p class="text-secondary text-break"><?= nl2br(htmlspecialchars($note['description'] ?? 'Açıklama belirtilmedi.')) ?></p>
+
+                    <div class="mb-4 d-grid gap-2 d-sm-flex flex-wrap">
+                        <a class="btn btn-primary btn-lg px-4" href="view.php?id=<?= (int)$note['id'] ?>&amp;download=1" download="<?= htmlspecialchars($note['original_filename'], ENT_QUOTES, 'UTF-8') ?>">İndir</a>
+                        <a class="btn btn-outline-primary btn-lg" href="search.php?similar_to=<?= (int)$note['id'] ?>">Benzer Notlar</a>
+                    </div>
 
                     <div class="note-meta-grid">
                         <div><span>Yükleyen</span><strong><?= htmlspecialchars($note['first_name'] . ' ' . $note['last_name']) ?></strong></div>
@@ -532,12 +565,9 @@ require __DIR__ . '/includes/header.php';
                         ?>
                     </div>
 
-                    <div class="mt-4 d-grid gap-2 d-md-flex">
-                        <a class="btn btn-primary btn-lg px-4" href="view.php?id=<?= $note['id'] ?>&amp;download=1" download="<?= htmlspecialchars($note['original_filename']) ?>">İndir</a>
-                        <a class="btn btn-outline-primary btn-lg" href="search.php?similar_to=<?= (int)$note['id'] ?>">Benzer Notlar</a>
-                    </div>
                     <?php if ($isOwner): ?>
-                        <form method="POST" action="note-detail.php?id=<?= (int)$note['id'] ?>" class="mt-3">
+                        <form method="POST" action="<?= htmlspecialchars($detailUrl, ENT_QUOTES, 'UTF-8') ?>" class="mt-3 d-flex flex-wrap gap-2">
+                            <a class="btn btn-outline-primary" href="note-edit.php?id=<?= (int)$note['id'] ?>">Notu Düzenle</a>
                             <input type="hidden" name="action" value="delete_note">
                             <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($deleteToken, ENT_QUOTES, 'UTF-8') ?>">
                             <button
@@ -555,49 +585,49 @@ require __DIR__ . '/includes/header.php';
 
         <div class="row g-4 mt-2">
             <div class="col-12">
-                <div class="panel-card">
+                <div class="panel-card" id="comments">
                     <h2 class="section-title h4 mb-4">Yorumlar</h2>
                     
                     <?php if ($commentError): ?>
-                        <div class="alert alert-danger"><?= htmlspecialchars($commentError) ?></div>
+                        <div class="alert alert-danger" role="alert"><?= htmlspecialchars($commentError) ?></div>
                     <?php endif; ?>
                     <?php if (isset($_GET['comment_added'])): ?>
-                        <div class="alert alert-success">Yorumunuz başarıyla eklendi.</div>
+                        <div class="alert alert-success" role="status">Yorumunuz başarıyla eklendi.</div>
                     <?php elseif (isset($_GET['comment_updated'])): ?>
-                        <div class="alert alert-success">Yorumunuz başarıyla güncellendi.</div>
+                        <div class="alert alert-success" role="status">Yorumunuz başarıyla güncellendi.</div>
                     <?php elseif (isset($_GET['comment_deleted'])): ?>
-                        <div class="alert alert-success">Yorumunuz başarıyla silindi.</div>
+                        <div class="alert alert-success" role="status">Yorumunuz başarıyla silindi.</div>
                     <?php endif; ?>
 
                     <?php if (isset($_SESSION['user_id'])): ?>
-                        <form method="POST" action="note-detail.php?id=<?= $note['id'] ?>" class="mb-4">
+                        <form method="POST" action="<?= htmlspecialchars($detailUrl, ENT_QUOTES, 'UTF-8') ?>#comments" class="mb-4">
                             <input type="hidden" name="action" value="add_comment">
                             <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($commentToken, ENT_QUOTES, 'UTF-8') ?>">
                             <div class="row g-3">
                                 <div class="col-md-3">
                                     <label for="rating" class="form-label">Değerlendirme</label>
-                                    <select name="rating" id="rating" class="form-select" required>
-                                        <option value="5">5 - Harika</option>
-                                        <option value="4">4 - İyi</option>
-                                        <option value="3">3 - Orta</option>
-                                        <option value="2">2 - Kötü</option>
-                                        <option value="1">1 - Çok Kötü</option>
+                                    <select name="rating" id="rating" class="form-select" aria-describedby="ratingHelp" required>
+                                        <option value="" <?= $commentRating < 1 || $commentRating > 5 ? 'selected' : '' ?>>Puan seçin</option>
+                                        <?php foreach ([5 => 'Harika', 4 => 'İyi', 3 => 'Orta', 2 => 'Kötü', 1 => 'Çok Kötü'] as $value => $label): ?>
+                                            <option value="<?= $value ?>" <?= $commentRating === $value ? 'selected' : '' ?>><?= $value ?> - <?= $label ?></option>
+                                        <?php endforeach; ?>
                                     </select>
                                 </div>
                                 <div class="col-md-9">
                                     <label for="comment" class="form-label">Yorumunuz</label>
-                                    <textarea name="comment" id="comment" rows="3" maxlength="5000" class="form-control" placeholder="Not hakkında düşünceleriniz..." required></textarea>
+                                    <textarea name="comment" id="comment" rows="3" maxlength="5000" class="form-control" placeholder="Not hakkında düşünceleriniz..." required><?= htmlspecialchars($commentText, ENT_QUOTES, 'UTF-8') ?></textarea>
                                 </div>
                                 <div class="col-12 text-end">
+                                    <p class="form-text text-start mt-0" id="ratingHelp">Her kullanıcı için son yorumundaki puan değerlendirmeye alınır.</p>
                                     <button type="submit" class="btn btn-primary">Yorum Gönder</button>
                                 </div>
                             </div>
                         </form>
                     <?php else: ?>
-                        <div class="alert alert-info">Yorum yapabilmek için <a href="login.php">giriş yapmalısınız</a>.</div>
+                        <div class="alert alert-info" role="status">Yorum yapabilmek için <a href="<?= htmlspecialchars(authLoginUrl($detailUrl . '#comments'), ENT_QUOTES, 'UTF-8') ?>">giriş yapmalısınız</a>.</div>
                     <?php endif; ?>
 
-                    <div id="comments" class="comments-list">
+                    <div class="comments-list">
                         <?php if (empty($comments)): ?>
                             <p class="text-secondary">Henüz yorum yapılmamış. İlk yorumu siz yapın!</p>
                         <?php else: ?>
@@ -615,7 +645,7 @@ require __DIR__ . '/includes/header.php';
                                         <?php if ($isCommentOwner): ?>
                                             <div class="d-flex gap-2 flex-wrap">
                                                 <a class="btn btn-sm btn-outline-primary" href="comment-edit.php?id=<?= (int)$comment['id'] ?>&amp;return=note">Düzenle</a>
-                                                <form method="POST" action="note-detail.php?id=<?= (int)$note['id'] ?>#comments" class="d-inline-block">
+                                                <form method="POST" action="<?= htmlspecialchars($detailUrl, ENT_QUOTES, 'UTF-8') ?>#comments" class="d-inline-block">
                                                     <input type="hidden" name="action" value="delete_comment">
                                                     <input type="hidden" name="comment_id" value="<?= (int)$comment['id'] ?>">
                                                     <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($commentToken, ENT_QUOTES, 'UTF-8') ?>">

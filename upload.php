@@ -5,15 +5,22 @@ require_once __DIR__ . '/includes/db.php';
 require_once __DIR__ . '/includes/storage.php';
 require_once __DIR__ . '/includes/upload_config.php';
 require_once __DIR__ . '/includes/admin_notifications.php';
+require_once __DIR__ . '/includes/note_form.php';
+require_once __DIR__ . '/includes/auth_redirect.php';
 @session_start();
 
 if (!isset($_SESSION['user_id'])) {
-    header('Location: login.php');
+    header('Location: ' . authLoginUrl('upload.php'));
     exit;
 }
 
 $error = '';
-$success = '';
+$formValues = noteFormValues([]);
+$uploadToken = (string)($_SESSION['csrf_token_upload'] ?? '');
+if ($uploadToken === '') {
+    $uploadToken = bin2hex(random_bytes(32));
+    $_SESSION['csrf_token_upload'] = $uploadToken;
+}
 $maxUploadMb = getMaxUploadMb();
 $maxUploadBytes = getMaxUploadBytes();
 
@@ -32,24 +39,24 @@ $uploadErrorMessage = static function (int $errorCode, int $maxMb): string {
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $userId = $_SESSION['user_id'];
-    $title = trim($_POST['title'] ?? '');
-    $description = trim($_POST['description'] ?? '');
-    $universityId = $_POST['university_id'] ?? null;
-    $departmentType = $_POST['department_type'] ?? null;
-    $departmentId = $_POST['department_id'] ?? null;
-    $classId = $_POST['class_id'] ?? null;
-    $course = trim($_POST['course'] ?? '');
-    $topic = trim($_POST['topic'] ?? '');
-    $tags = trim($_POST['tags'] ?? '');
-    
-    // empty values should be null to avoid foreign key issues or empty strings
-    if ($universityId === '') $universityId = null;
-    if ($departmentType === '') $departmentType = null;
-    if ($departmentId === '') $departmentId = null;
-    if ($classId === '') $classId = null;
-    
-    if (empty($title) || empty($course)) {
-        $error = 'Başlık ve Ders alanları zorunludur.';
+    $formValues = noteFormValues($_POST);
+    $bindings = noteFormBindings($formValues);
+    $title = $bindings['title'];
+    $description = $bindings['description'];
+    $universityId = $bindings['university_id'];
+    $departmentType = $bindings['department_type'];
+    $departmentId = $bindings['department_id'];
+    $classId = $bindings['class_id'];
+    $course = $bindings['course'];
+    $topic = $bindings['topic'];
+    $tags = $bindings['tags'];
+    $formErrors = noteFormErrors($formValues);
+    $requestToken = is_string($_POST['csrf_token'] ?? null) ? $_POST['csrf_token'] : '';
+
+    if ($requestToken === '' || !hash_equals($uploadToken, $requestToken)) {
+        $error = 'Güvenlik doğrulaması başarısız oldu. Bilgileriniz korundu; dosyayı yeniden seçip tekrar deneyin.';
+    } elseif ($formErrors !== []) {
+        $error = implode(' ', $formErrors);
     } elseif (!isset($_FILES['note_file'])) {
         $error = 'Dosya bilgisi alınamadı. Lütfen dosyayı tekrar seçin.';
     } else {
@@ -60,7 +67,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         $maxSize = $maxUploadBytes;
-        
+
         $allowedMimeTypes = [
             'application/pdf',
             'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
@@ -70,11 +77,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'image/webp'
         ];
         $allowedExtensions = ['pdf', 'docx', 'pptx', 'png', 'jpg', 'jpeg', 'webp'];
-        
+
         $originalFilename = (string)($file['name'] ?? '');
         $fileSize = (int)($file['size'] ?? 0);
         $tmpName = (string)($file['tmp_name'] ?? '');
-        
+
         if (!$error && !is_uploaded_file($tmpName)) {
             $error = 'Yüklenen dosya doğrulanamadı. Lütfen tekrar deneyin.';
         }
@@ -86,12 +93,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $mimeType = (string)finfo_file($finfo, $tmpName);
             finfo_close($finfo);
         }
-        
-        if ($fileSize > $maxSize) {
+
+        if (!$error && $fileSize > $maxSize) {
             $error = 'Dosya boyutu ' . $maxUploadMb . ' MB sınırını aşıyor.';
-        } elseif (!in_array($ext, $allowedExtensions) || !in_array($mimeType, $allowedMimeTypes)) {
+        } elseif (!$error && (!in_array($ext, $allowedExtensions, true) || !in_array($mimeType, $allowedMimeTypes, true))) {
             $error = 'Desteklenmeyen dosya formatı.';
-        } else {
+        } elseif (!$error) {
             $storageRoot = rtrim(getNoteStorageDir(), "/\\") . DIRECTORY_SEPARATOR;
             $relativeDir = date('Y/m');
             $targetDir = $storageRoot . str_replace('/', DIRECTORY_SEPARATOR, $relativeDir) . DIRECTORY_SEPARATOR;
@@ -126,44 +133,47 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
 
             if (!$error && move_uploaded_file($tmpName, $destination)) {
-                $stmt = $pdo->prepare("
-                    INSERT INTO notes (
-                        user_id, title, description, university_id, department_type, department_id, 
-                        class_id, course, topic, tags, original_filename, stored_filename, storage_disk,
-                        storage_path, sha256, file_size, mime_type, upload_status, scan_status
-                    ) VALUES (
-                        :user_id, :title, :description, :university_id, :department_type, :department_id,
-                        :class_id, :course, :topic, :tags, :original_filename, :stored_filename, :storage_disk,
-                        :storage_path, :sha256, :file_size, :mime_type, :upload_status, :scan_status
-                    )
-                ");
-                
-                $result = $stmt->execute([
-                    'user_id' => $userId,
-                    'title' => $title,
-                    'description' => $description,
-                    'university_id' => $universityId,
-                    'department_type' => $departmentType,
-                    'department_id' => $departmentId,
-                    'class_id' => $classId,
-                    'course' => $course,
-                    'topic' => $topic,
-                    'tags' => $tags,
-                    'original_filename' => $originalFilename,
-                    'stored_filename' => $storedFilename,
-                    'storage_disk' => 'local',
-                    'storage_path' => $storagePath,
-                    'sha256' => $sha256,
-                    'file_size' => $fileSize,
-                    'mime_type' => $mimeType,
-                    'upload_status' => 'ready',
-                    'scan_status' => 'clean'
-                ]);
-                
+                try {
+                    $stmt = $pdo->prepare("
+                        INSERT INTO notes (
+                            user_id, title, description, university_id, department_type, department_id,
+                            class_id, course, topic, tags, original_filename, stored_filename, storage_disk,
+                            storage_path, sha256, file_size, mime_type, upload_status, scan_status
+                        ) VALUES (
+                            :user_id, :title, :description, :university_id, :department_type, :department_id,
+                            :class_id, :course, :topic, :tags, :original_filename, :stored_filename, :storage_disk,
+                            :storage_path, :sha256, :file_size, :mime_type, :upload_status, :scan_status
+                        )
+                    ");
+
+                    $result = $stmt->execute([
+                        'user_id' => $userId,
+                        'title' => $title,
+                        'description' => $description,
+                        'university_id' => $universityId,
+                        'department_type' => $departmentType,
+                        'department_id' => $departmentId,
+                        'class_id' => $classId,
+                        'course' => $course,
+                        'topic' => $topic,
+                        'tags' => $tags,
+                        'original_filename' => $originalFilename,
+                        'stored_filename' => $storedFilename,
+                        'storage_disk' => 'local',
+                        'storage_path' => $storagePath,
+                        'sha256' => $sha256,
+                        'file_size' => $fileSize,
+                        'mime_type' => $mimeType,
+                        'upload_status' => 'ready',
+                        'scan_status' => 'clean'
+                    ]);
+                } catch (Throwable $e) {
+                    error_log('upload note save error: ' . $e->getMessage());
+                    $result = false;
+                }
+
                 if ($result) {
                     $noteId = (int)$pdo->lastInsertId();
-                    $success = 'Notunuz başarıyla yüklendi.';
-
                     try {
                         $uploaderStmt = $pdo->prepare("SELECT id, first_name, last_name, email FROM users WHERE id = :id LIMIT 1");
                         $uploaderStmt->execute(['id' => $userId]);
@@ -192,10 +202,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     } catch (Throwable $e) {
                         error_log('upload admin notification prep error: ' . $e->getMessage());
                     }
+
+                    header('Location: note-detail.php?id=' . $noteId . '&uploaded=1', true, 303);
+                    exit;
                 } else {
                     $error = 'Veritabanına kaydedilirken bir hata oluştu.';
                     if (file_exists($destination)) {
-                        unlink($destination); // sil
+                        @unlink($destination);
                     }
                 }
             } elseif (!$error) {
@@ -205,11 +218,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
+$notesPayload = noteFormSuggestions($pdo);
 $pageTitle = 'Not Bul | Not Yükle';
 $pageKey = 'upload';
 require __DIR__ . '/includes/header.php';
 ?>
-<main class="page-shell">
+<main id="mainContent" class="page-shell" tabindex="-1">
     <section class="container section-block">
         <div class="row g-4 align-items-start">
             <div class="col-lg-8">
@@ -222,6 +236,7 @@ require __DIR__ . '/includes/header.php';
                     </div>
 
                     <form id="uploadForm" class="mt-4" data-hierarchy-group data-filter-source="public" data-max-upload-mb="<?= (int)$maxUploadMb ?>" method="POST" enctype="multipart/form-data">
+                        <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($uploadToken, ENT_QUOTES, 'UTF-8') ?>">
                         <div id="dropZone" class="drop-zone">
                             <input id="noteFile" name="note_file" type="file" accept=".pdf,.docx,.pptx,.png,.jpg,.jpeg,.webp" hidden>
                             <p class="drop-title mb-2">Dosyanı buraya bırak veya cihazından seç</p>
@@ -232,10 +247,7 @@ require __DIR__ . '/includes/header.php';
 
                         <?php if ($error): ?>
                             <div class="alert alert-danger mt-3" role="alert"><?= htmlspecialchars($error) ?></div>
-                        <?php endif; ?>
-                        
-                        <?php if ($success): ?>
-                            <div class="alert alert-success mt-3" role="alert"><?= htmlspecialchars($success) ?></div>
+                            <p class="form-text">Girdiğiniz bilgiler korundu. Dosyanızı yeniden seçmeniz gerekiyor.</p>
                         <?php endif; ?>
 
                         <div id="uploadNotice" class="alert mt-3 d-none" role="alert"></div>
@@ -243,46 +255,46 @@ require __DIR__ . '/includes/header.php';
                         <div class="row g-3 mt-1">
                             <div class="col-12">
                                 <label class="form-label" for="uploadTitle">Başlık</label>
-                                <input class="form-control" id="uploadTitle" name="title" required maxlength="160" placeholder="Örn: Veri Yapıları Final Özet Notları">
+                                <input class="form-control" id="uploadTitle" name="title" value="<?= htmlspecialchars($formValues['title'], ENT_QUOTES, 'UTF-8') ?>" required maxlength="160" placeholder="Örn: Veri Yapıları Final Özet Notları">
                             </div>
                             <div class="col-12">
                                 <label class="form-label" for="uploadDescription">Açıklama</label>
-                                <textarea class="form-control" id="uploadDescription" name="description" rows="4" maxlength="1000" placeholder="Notun içeriğini, kapsamını ve hangi sınavlar için uygun olduğunu yaz."></textarea>
+                                <textarea class="form-control" id="uploadDescription" name="description" rows="4" maxlength="1000" placeholder="Notun içeriğini, kapsamını ve hangi sınavlar için uygun olduğunu yaz."><?= htmlspecialchars($formValues['description'], ENT_QUOTES, 'UTF-8') ?></textarea>
                             </div>
 
                             <div class="col-md-6">
                                 <label class="form-label" for="uploadUniversity">Üniversite</label>
-                                <select class="form-select" id="uploadUniversity" name="university_id" data-level="university" data-placeholder="Üniversite seç"></select>
+                                <select class="form-select" id="uploadUniversity" name="university_id" data-level="university" data-selected="<?= htmlspecialchars($formValues['university_id'], ENT_QUOTES, 'UTF-8') ?>" data-placeholder="Üniversite seç"></select>
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label" for="uploadDepartmentType">Program Türü</label>
-                                <select class="form-select" id="uploadDepartmentType" name="department_type" data-level="department-type" data-placeholder="Program türü seç"></select>
+                                <select class="form-select" id="uploadDepartmentType" name="department_type" data-level="department-type" data-selected="<?= htmlspecialchars($formValues['department_type'], ENT_QUOTES, 'UTF-8') ?>" data-placeholder="Program türü seç"></select>
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label" for="uploadDepartment">Bölüm</label>
-                                <select class="form-select" id="uploadDepartment" name="department_id" data-level="department" data-placeholder="Bölüm seç (opsiyonel)"></select>
+                                <select class="form-select" id="uploadDepartment" name="department_id" data-level="department" data-selected="<?= htmlspecialchars($formValues['department_id'], ENT_QUOTES, 'UTF-8') ?>" data-placeholder="Bölüm seç (opsiyonel)"></select>
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label" for="uploadClass">Sınıf</label>
-                                <select class="form-select" id="uploadClass" name="class_id" data-level="class" data-placeholder="Sınıf seç (opsiyonel)"></select>
+                                <select class="form-select" id="uploadClass" name="class_id" data-level="class" data-selected="<?= htmlspecialchars($formValues['class_id'], ENT_QUOTES, 'UTF-8') ?>" data-placeholder="Sınıf seç (opsiyonel)"></select>
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label" for="uploadCourse">Ders</label>
-                                <input class="form-control" id="uploadCourse" name="course" data-level="course-input" list="uploadCourseList" placeholder="Dersi yaz veya önerilerden seç" required>
+                                <input class="form-control" id="uploadCourse" name="course" value="<?= htmlspecialchars($formValues['course'], ENT_QUOTES, 'UTF-8') ?>" maxlength="150" data-level="course-input" list="uploadCourseList" placeholder="Dersi yaz veya önerilerden seç" required>
                                 <datalist id="uploadCourseList"></datalist>
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label" for="uploadTopic">Konu</label>
-                                <input class="form-control" id="uploadTopic" name="topic" data-level="topic-input" list="uploadTopicList" placeholder="Konu yaz veya önerilerden seç (opsiyonel)">
+                                <input class="form-control" id="uploadTopic" name="topic" value="<?= htmlspecialchars($formValues['topic'], ENT_QUOTES, 'UTF-8') ?>" maxlength="150" data-level="topic-input" list="uploadTopicList" placeholder="Konu yaz veya önerilerden seç (opsiyonel)">
                                 <datalist id="uploadTopicList"></datalist>
                             </div>
 
                             <div class="col-12">
-                                <label class="form-label">Etiketler</label>
+                                <label class="form-label" for="uploadTagField">Etiketler</label>
                                 <div class="tag-input-shell" data-tag-input>
                                     <div class="tag-chips" data-tag-chips></div>
-                                    <input class="form-control" type="text" data-tag-field placeholder="Etiket yaz, Enter ile ekle (örn: final, çıkmış-soru)">
-                                    <input type="hidden" name="tags" data-tag-hidden>
+                                    <input class="form-control" id="uploadTagField" type="text" data-tag-field placeholder="Etiket yaz, Enter ile ekle (örn: final, çıkmış-soru)">
+                                    <input type="hidden" name="tags" data-tag-hidden value="<?= htmlspecialchars($formValues['tags'], ENT_QUOTES, 'UTF-8') ?>">
                                 </div>
                             </div>
                         </div>
@@ -307,4 +319,5 @@ require __DIR__ . '/includes/header.php';
         </div>
     </section>
 </main>
+<script>window.NOTBUL_NOTES = <?= json_encode($notesPayload, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_INVALID_UTF8_SUBSTITUTE) ?>;</script>
 <?php require __DIR__ . '/includes/footer.php'; ?>

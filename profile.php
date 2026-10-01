@@ -3,14 +3,87 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/includes/db.php';
 require_once __DIR__ . '/includes/ratings.php';
+require_once __DIR__ . '/includes/auth_redirect.php';
 @session_start();
 
 if (!isset($_SESSION['user_id'])) {
-    header('Location: login.php');
+    header('Location: ' . authLoginUrl('profile.php'));
     exit;
 }
 
 $userId = (int)$_SESSION['user_id'];
+
+function profileRequestedPage(string $parameter): int
+{
+    $value = $_GET[$parameter] ?? 1;
+    if (!is_scalar($value)) {
+        return 1;
+    }
+    $page = filter_var($value, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
+    return $page === false ? 1 : $page;
+}
+
+$profilePages = [
+    'notes_page' => profileRequestedPage('notes_page'),
+    'archived_page' => profileRequestedPage('archived_page'),
+    'comments_page' => profileRequestedPage('comments_page'),
+];
+
+function profilePageUrl(array $pages, array $extra = [], string $anchor = ''): string
+{
+    $parameters = array_merge(array_filter($pages, static fn (int $page): bool => $page > 1), $extra);
+    return 'profile.php' . ($parameters !== [] ? '?' . http_build_query($parameters) : '') . ($anchor !== '' ? '#' . $anchor : '');
+}
+
+function renderProfilePagination(int $count, array $pages, string $parameter, string $anchor, string $label): string
+{
+    if ($count === 0) {
+        return '';
+    }
+
+    $page = $pages[$parameter];
+    $pageCount = max(1, (int)ceil($count / 12));
+    $start = ($page - 1) * 12 + 1;
+    $end = min($count, $page * 12);
+    $html = '<p class="small text-secondary mt-3 mb-2">' . $count . ' kayıt • ' . $start . '–' . $end . ' gösteriliyor</p>';
+    if ($pageCount === 1) {
+        return $html;
+    }
+
+    $link = static function (int $target, string $text, string $accessibleLabel) use ($pages, $parameter, $anchor): string {
+        $targetPages = $pages;
+        $targetPages[$parameter] = $target;
+        return '<li class="page-item"><a class="page-link" href="' . htmlspecialchars(profilePageUrl($targetPages, [], $anchor), ENT_QUOTES, 'UTF-8') . '" aria-label="' . htmlspecialchars($accessibleLabel, ENT_QUOTES, 'UTF-8') . '">' . $text . '</a></li>';
+    };
+
+    $html .= '<nav aria-label="' . htmlspecialchars($label . ' sayfaları', ENT_QUOTES, 'UTF-8') . '"><ul class="pagination flex-wrap gap-1 mb-0">';
+    if ($page > 1) {
+        $html .= $link($page - 1, 'Önceki', 'Önceki sayfa');
+    }
+    $first = max(1, min($page - 2, $pageCount - 4));
+    $last = min($pageCount, $first + 4);
+    if ($first > 1) {
+        $html .= $link(1, '1', '1. sayfa');
+        if ($first > 2) {
+            $html .= '<li class="page-item disabled"><span class="page-link">…</span></li>';
+        }
+    }
+    for ($target = $first; $target <= $last; $target++) {
+        $html .= $target === $page
+            ? '<li class="page-item active"><span class="page-link" aria-current="page">' . $target . '</span></li>'
+            : $link($target, (string)$target, $target . '. sayfa');
+    }
+    if ($last < $pageCount) {
+        if ($last < $pageCount - 1) {
+            $html .= '<li class="page-item disabled"><span class="page-link">…</span></li>';
+        }
+        $html .= $link($pageCount, (string)$pageCount, $pageCount . '. sayfa');
+    }
+    if ($page < $pageCount) {
+        $html .= $link($page + 1, 'Sonraki', 'Sonraki sayfa');
+    }
+    return $html . '</ul></nav>';
+}
 
 $stmt = $pdo->prepare("SELECT id, first_name, last_name, email, created_at, verified FROM users WHERE id = :id");
 $stmt->execute(['id' => $userId]);
@@ -18,7 +91,7 @@ $user = $stmt->fetch();
 
 if (!$user) {
     session_destroy();
-    header('Location: login.php');
+    header('Location: ' . authLoginUrl('profile.php'));
     exit;
 }
 
@@ -63,7 +136,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     ]);
 
                     if ($actionStmt->rowCount() > 0) {
-                        header('Location: profile.php?comment_deleted=1#comments');
+                        header('Location: ' . profilePageUrl($profilePages, ['comment_deleted' => 1], 'comments'), true, 303);
                         exit;
                     }
 
@@ -88,7 +161,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 ]);
 
                 if ($actionStmt->rowCount() > 0) {
-                    header('Location: profile.php?note_deleted=1');
+                    header('Location: ' . profilePageUrl($profilePages, ['note_deleted' => 1], 'notes'), true, 303);
                     exit;
                 }
 
@@ -109,7 +182,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 ]);
 
                 if ($actionStmt->rowCount() > 0) {
-                    header('Location: profile.php?note_restored=1');
+                    header('Location: ' . profilePageUrl($profilePages, ['note_restored' => 1], 'archived'), true, 303);
                     exit;
                 }
 
@@ -136,6 +209,10 @@ $stmtCommentCount = $pdo->prepare("SELECT COUNT(*) as comment_count FROM note_co
 $stmtCommentCount->execute(['uid' => $userId]);
 $commentCount = (int)$stmtCommentCount->fetch()['comment_count'];
 
+$profilePages['notes_page'] = min($profilePages['notes_page'], max(1, (int)ceil($noteCount / 12)));
+$profilePages['archived_page'] = min($profilePages['archived_page'], max(1, (int)ceil($deletedNoteCount / 12)));
+$profilePages['comments_page'] = min($profilePages['comments_page'], max(1, (int)ceil($commentCount / 12)));
+
 $stmtMyNotes = $pdo->prepare("
     SELECT
         n.id,
@@ -151,17 +228,15 @@ $stmtMyNotes = $pdo->prepare("
         rs.rating_average,
         COALESCE(rs.rating_count, 0) AS rating_count
     FROM notes n
-    LEFT JOIN (
-        SELECT note_id, AVG(rating) AS rating_average, COUNT(*) AS rating_count
-        FROM note_comments
-        GROUP BY note_id
-    ) rs ON rs.note_id = n.id
+    LEFT JOIN (" . noteRatingSummarySql() . ") rs ON rs.note_id = n.id
     WHERE n.user_id = :uid
       AND n.deleted_at IS NULL
-    ORDER BY n.created_at DESC
-    LIMIT 12
+    ORDER BY n.created_at DESC, n.id DESC
+    LIMIT 12 OFFSET :offset
 ");
-$stmtMyNotes->execute(['uid' => $userId]);
+$stmtMyNotes->bindValue('uid', $userId, PDO::PARAM_INT);
+$stmtMyNotes->bindValue('offset', ($profilePages['notes_page'] - 1) * 12, PDO::PARAM_INT);
+$stmtMyNotes->execute();
 $myNotes = $stmtMyNotes->fetchAll();
 
 $stmtDeletedNotes = $pdo->prepare("
@@ -178,17 +253,15 @@ $stmtDeletedNotes = $pdo->prepare("
         rs.rating_average,
         COALESCE(rs.rating_count, 0) AS rating_count
     FROM notes n
-    LEFT JOIN (
-        SELECT note_id, AVG(rating) AS rating_average, COUNT(*) AS rating_count
-        FROM note_comments
-        GROUP BY note_id
-    ) rs ON rs.note_id = n.id
+    LEFT JOIN (" . noteRatingSummarySql() . ") rs ON rs.note_id = n.id
     WHERE n.user_id = :uid
       AND n.deleted_at IS NOT NULL
-    ORDER BY n.deleted_at DESC
-    LIMIT 12
+    ORDER BY n.deleted_at DESC, n.id DESC
+    LIMIT 12 OFFSET :offset
 ");
-$stmtDeletedNotes->execute(['uid' => $userId]);
+$stmtDeletedNotes->bindValue('uid', $userId, PDO::PARAM_INT);
+$stmtDeletedNotes->bindValue('offset', ($profilePages['archived_page'] - 1) * 12, PDO::PARAM_INT);
+$stmtDeletedNotes->execute();
 $deletedNotes = $stmtDeletedNotes->fetchAll();
 
 $stmtMyComments = $pdo->prepare("
@@ -206,15 +279,17 @@ $stmtMyComments = $pdo->prepare("
     FROM note_comments nc
     JOIN notes n ON n.id = nc.note_id
     WHERE nc.user_id = :uid
-    ORDER BY nc.created_at DESC
-    LIMIT 12
+    ORDER BY nc.created_at DESC, nc.id DESC
+    LIMIT 12 OFFSET :offset
 ");
-$stmtMyComments->execute(['uid' => $userId]);
+$stmtMyComments->bindValue('uid', $userId, PDO::PARAM_INT);
+$stmtMyComments->bindValue('offset', ($profilePages['comments_page'] - 1) * 12, PDO::PARAM_INT);
+$stmtMyComments->execute();
 $myComments = $stmtMyComments->fetchAll();
 
 $noteActionSuccess = '';
 if (isset($_GET['note_deleted']) && $_GET['note_deleted'] === '1') {
-    $noteActionSuccess = 'Not başarıyla arşive alındı. Dilerseniz aşağıdaki "Silinen Notlar" bölümünden geri alabilirsiniz.';
+    $noteActionSuccess = 'Not başarıyla arşive alındı. Dilerseniz aşağıdaki "Arşivlenen Notlar" bölümünden geri alabilirsiniz.';
 } elseif (isset($_GET['note_restored']) && $_GET['note_restored'] === '1') {
     $noteActionSuccess = 'Not başarıyla geri alındı ve tekrar listelere dahil edildi.';
 } elseif (isset($_GET['comment_updated']) && $_GET['comment_updated'] === '1') {
@@ -223,13 +298,17 @@ if (isset($_GET['note_deleted']) && $_GET['note_deleted'] === '1') {
     $noteActionSuccess = 'Yorum başarıyla silindi.';
 } elseif (isset($_GET['comment_error']) && $_GET['comment_error'] === 'not_found') {
     $noteActionError = 'Yorum bulunamadı veya size ait değil.';
+} elseif (isset($_GET['note_updated']) && $_GET['note_updated'] === '1') {
+    $noteActionSuccess = 'Not bilgileri güncellendi.';
+} elseif (isset($_GET['note_error']) && $_GET['note_error'] === 'not_found') {
+    $noteActionError = 'Not bulunamadı veya size ait değil.';
 }
 
 $pageTitle = 'Not Bul | Profilim';
 $pageKey = 'profile';
 require __DIR__ . '/includes/header.php';
 ?>
-<main class="page-shell">
+<main id="mainContent" class="page-shell" tabindex="-1">
     <section class="container section-block mt-5">
         <?php if ($noteActionSuccess): ?>
             <div class="alert alert-success mb-3"><?= htmlspecialchars($noteActionSuccess) ?></div>
@@ -311,7 +390,7 @@ require __DIR__ . '/includes/header.php';
             </div>
 
             <div class="col-lg-7">
-                <div class="panel-card">
+                <div id="notes" class="panel-card">
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <h2 class="h3 mb-0">Notlarım</h2>
                         <a href="upload.php" class="btn btn-sm btn-outline-primary">
@@ -360,7 +439,8 @@ require __DIR__ . '/includes/header.php';
                                                 <?= htmlspecialchars(date('d.m.Y H:i', strtotime((string)$note['created_at']))) ?>
                                             </div>
                                             <div class="d-flex flex-wrap gap-2 justify-content-end">
-                                                <form method="POST" action="profile.php" class="d-inline-block">
+                                                <a href="note-edit.php?id=<?= (int)$note['id'] ?>" class="btn btn-sm btn-outline-primary">Düzenle</a>
+                                                <form method="POST" action="<?= htmlspecialchars(profilePageUrl($profilePages, [], 'notes'), ENT_QUOTES, 'UTF-8') ?>" class="d-inline-block">
                                                     <input type="hidden" name="action" value="soft_delete_note">
                                                     <input type="hidden" name="note_id" value="<?= (int)$note['id'] ?>">
                                                     <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($noteActionToken, ENT_QUOTES, 'UTF-8') ?>">
@@ -384,9 +464,10 @@ require __DIR__ . '/includes/header.php';
                             <?php endforeach; ?>
                         </div>
                     <?php endif; ?>
+                    <?= renderProfilePagination($noteCount, $profilePages, 'notes_page', 'notes', 'Notlarım') ?>
                 </div>
 
-                <div class="panel-card mt-4">
+                <div id="archived" class="panel-card mt-4">
                     <h2 class="h4 mb-3">Arşivlenen Notlar</h2>
 
                     <?php if (empty($deletedNotes)): ?>
@@ -422,7 +503,8 @@ require __DIR__ . '/includes/header.php';
                                             <div class="small text-secondary mb-2">
                                                 Silinme: <?= htmlspecialchars(date('d.m.Y H:i', strtotime((string)$deletedNote['deleted_at']))) ?>
                                             </div>
-                                            <form method="POST" action="profile.php" class="d-inline-block">
+                                            <a href="note-edit.php?id=<?= (int)$deletedNote['id'] ?>" class="btn btn-sm btn-outline-primary">Düzenle</a>
+                                            <form method="POST" action="<?= htmlspecialchars(profilePageUrl($profilePages, [], 'archived'), ENT_QUOTES, 'UTF-8') ?>" class="d-inline-block">
                                                 <input type="hidden" name="action" value="restore_note">
                                                 <input type="hidden" name="note_id" value="<?= (int)$deletedNote['id'] ?>">
                                                 <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($noteActionToken, ENT_QUOTES, 'UTF-8') ?>">
@@ -434,6 +516,7 @@ require __DIR__ . '/includes/header.php';
                             <?php endforeach; ?>
                         </div>
                     <?php endif; ?>
+                    <?= renderProfilePagination($deletedNoteCount, $profilePages, 'archived_page', 'archived', 'Arşivlenen notlar') ?>
                 </div>
 
                 <div id="comments" class="panel-card mt-4">
@@ -472,7 +555,7 @@ require __DIR__ . '/includes/header.php';
                                                 <?php if ($canViewNote): ?>
                                                     <a class="btn btn-sm btn-outline-secondary" href="note-detail.php?id=<?= (int)$comment['note_id'] ?>#comments">Notu Gör</a>
                                                 <?php endif; ?>
-                                                <form method="POST" action="profile.php#comments" class="d-inline-block">
+                                                <form method="POST" action="<?= htmlspecialchars(profilePageUrl($profilePages, [], 'comments'), ENT_QUOTES, 'UTF-8') ?>" class="d-inline-block">
                                                     <input type="hidden" name="action" value="delete_comment">
                                                     <input type="hidden" name="comment_id" value="<?= (int)$comment['id'] ?>">
                                                     <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($noteActionToken, ENT_QUOTES, 'UTF-8') ?>">
@@ -491,6 +574,7 @@ require __DIR__ . '/includes/header.php';
                             <?php endforeach; ?>
                         </div>
                     <?php endif; ?>
+                    <?= renderProfilePagination($commentCount, $profilePages, 'comments_page', 'comments', 'Yorumlarım') ?>
                 </div>
             </div>
         </div>

@@ -4,10 +4,11 @@ declare(strict_types=1);
 require_once __DIR__ . '/includes/db.php';
 require_once __DIR__ . '/includes/storage.php';
 require_once __DIR__ . '/includes/user_notifications.php';
+require_once __DIR__ . '/includes/auth_redirect.php';
 @session_start();
 
 if (!isset($_SESSION['user_id'])) {
-    header('Location: login.php');
+    header('Location: ' . authLoginUrl('profile_edit.php'));
     exit;
 }
 
@@ -190,7 +191,7 @@ $pageTitle = 'Not Bul | Profili Düzenle';
 $pageKey = 'profile_edit';
 require __DIR__ . '/includes/header.php';
 ?>
-<main class="page-shell">
+<main id="mainContent" class="page-shell" tabindex="-1">
     <section class="container section-block mt-5">
         <div class="row justify-content-center">
             <div class="col-lg-6">

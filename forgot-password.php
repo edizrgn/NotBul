@@ -3,12 +3,16 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/includes/db.php';
 require_once __DIR__ . '/includes/brevo.php';
+require_once __DIR__ . '/includes/auth_redirect.php';
 
 $error = '';
 $success = '';
+$returnTo = authReturnToFromRequest();
+$submittedEmail = $_POST['email'] ?? $_GET['email'] ?? '';
+$submittedEmail = is_string($submittedEmail) && strlen($submittedEmail) <= 254 ? $submittedEmail : '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $email = mb_strtolower(trim($_POST['email'] ?? ''));
+    $email = mb_strtolower(trim($submittedEmail), 'UTF-8');
 
     if ($email === '') {
         $error = 'Lütfen e-posta adresini girin.';
@@ -49,7 +53,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $fullName = 'Not Bul Kullanıcısı';
                 }
 
-                $resetUrl = buildAppBaseUrl() . '/reset-password.php?token=' . urlencode($plainToken);
+                $resetUrl = buildAppBaseUrl() . '/' . authPageUrl('reset-password.php', $returnTo, ['token' => $plainToken]);
                 sendPasswordResetEmail((string) $user['email'], $fullName, $resetUrl);
             }
         } catch (Throwable $exception) {
@@ -62,7 +66,7 @@ $pageTitle = 'Not Bul | Şifremi Unuttum';
 $pageKey = 'forgot-password';
 require __DIR__ . '/includes/header.php';
 ?>
-<main class="page-shell">
+<main id="mainContent" class="page-shell" tabindex="-1">
     <section class="container section-block">
         <div class="row justify-content-center">
             <div class="col-lg-5 col-md-7">
@@ -79,6 +83,7 @@ require __DIR__ . '/includes/header.php';
                     <?php endif; ?>
 
                     <form action="forgot-password.php" method="POST" novalidate>
+                        <input type="hidden" name="return_to" value="<?= htmlspecialchars($returnTo, ENT_QUOTES, 'UTF-8') ?>">
                         <div class="mb-4">
                             <label for="email" class="form-label">E-posta Adresi</label>
                             <input
@@ -92,14 +97,14 @@ require __DIR__ . '/includes/header.php';
                                 spellcheck="false"
                                 required
                                 placeholder="ornek@email.com"
-                                value="<?= htmlspecialchars($_POST['email'] ?? '', ENT_QUOTES, 'UTF-8') ?>"
+                                value="<?= htmlspecialchars($submittedEmail, ENT_QUOTES, 'UTF-8') ?>"
                             >
                         </div>
                         <div class="d-grid gap-2">
                             <button type="submit" class="btn btn-primary">Sıfırlama Bağlantısı Gönder</button>
                         </div>
                         <div class="mt-3 text-center">
-                            <a href="login.php" class="text-decoration-none">Giriş sayfasına dön</a>
+                            <a href="<?= htmlspecialchars(authLoginUrl($returnTo), ENT_QUOTES, 'UTF-8') ?>" class="text-decoration-none">Giriş sayfasına dön</a>
                         </div>
                     </form>
                 </div>

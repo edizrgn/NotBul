@@ -6,6 +6,13 @@ $pageTitle = $pageTitle ?? 'Not Bul';
 $pageKey = $pageKey ?? 'home';
 
 require_once __DIR__ . '/env.php';
+require_once __DIR__ . '/auth_redirect.php';
+$headerReturnTo = authSafeReturnTo($_SERVER['REQUEST_URI'] ?? 'index.php');
+if ($headerReturnTo === '' && isset($returnTo)) {
+    $headerReturnTo = authSafeReturnTo($returnTo);
+}
+$headerLoginUrl = authLoginUrl($headerReturnTo);
+$headerRegisterUrl = authPageUrl('register.php', $headerReturnTo);
 
 if (!function_exists('notbul_meta_text')) {
     function notbul_meta_text(?string $value, int $maxLength = 180): string
@@ -170,12 +177,13 @@ $navItems = [
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Sora:wght@600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer">
-    <link rel="stylesheet" href="assets/css/app.css">
+    <link rel="stylesheet" href="assets/css/app.css?v=<?= rawurlencode((string)(@filemtime(__DIR__ . '/../assets/css/app.css') ?: time())) ?>">
 </head>
 <body data-page="<?= htmlspecialchars($pageKey, ENT_QUOTES, 'UTF-8'); ?>">
+<a class="skip-link" href="#mainContent">Ana içeriğe geç</a>
 <header class="site-header">
     <div class="container">
-        <nav class="navbar navbar-expand-lg py-2">
+        <nav class="navbar navbar-expand-lg py-2" aria-label="Ana menü">
             <a class="navbar-brand brand-mark" href="index.php">
                 <i class="fa-solid fa-book-open-reader brand-icon" aria-hidden="true"></i>
                 <span>Not Bul</span>
@@ -183,28 +191,35 @@ $navItems = [
             <div class="mobile-quick-actions d-lg-none" aria-label="Hızlı işlemler">
                 <a class="header-action-btn <?= $pageKey === 'search' ? 'active' : ''; ?>" href="search.php" title="Ders Notu Bul" aria-label="Ders Notu Bul">
                     <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+                    <span class="header-action-label">Ara</span>
                 </a>
                 <?php if (isset($_SESSION['user_id'])): ?>
                     <a class="header-action-btn <?= $pageKey === 'upload' ? 'active' : ''; ?>" href="upload.php" title="Not Yükle" aria-label="Not Yükle">
                         <i class="fa-solid fa-cloud-arrow-up" aria-hidden="true"></i>
+                        <span class="header-action-label">Yükle</span>
                     </a>
                     <a class="header-action-btn <?= in_array($pageKey, ['profile', 'profile_edit'], true) ? 'active' : ''; ?>" href="profile.php" title="Profilim" aria-label="Profilim">
                         <i class="fa-solid fa-user" aria-hidden="true"></i>
+                        <span class="header-action-label">Profil</span>
                     </a>
                     <?php if (($_SESSION['role'] ?? 'user') === 'admin'): ?>
                         <a class="header-action-btn <?= $pageKey === 'admin' ? 'active' : ''; ?>" href="admin.php" title="Admin Paneli" aria-label="Admin Paneli">
                             <i class="fa-solid fa-gauge-high" aria-hidden="true"></i>
+                            <span class="header-action-label">Admin</span>
                         </a>
                     <?php endif; ?>
                     <a class="header-action-btn header-action-danger" href="logout.php" title="Çıkış Yap" aria-label="Çıkış Yap">
                         <i class="fa-solid fa-right-from-bracket" aria-hidden="true"></i>
+                        <span class="header-action-label">Çıkış</span>
                     </a>
                 <?php else: ?>
-                    <a class="header-action-btn <?= $pageKey === 'login' ? 'active' : ''; ?>" href="login.php" title="Giriş Yap" aria-label="Giriş Yap">
+                    <a class="header-action-btn <?= $pageKey === 'login' ? 'active' : ''; ?>" data-auth-page="login.php" href="<?= htmlspecialchars($headerLoginUrl, ENT_QUOTES, 'UTF-8'); ?>" title="Giriş Yap" aria-label="Giriş Yap">
                         <i class="fa-solid fa-right-to-bracket" aria-hidden="true"></i>
+                        <span class="header-action-label">Giriş</span>
                     </a>
-                    <a class="header-action-btn <?= $pageKey === 'register' ? 'active' : ''; ?>" href="register.php" title="Kayıt Ol" aria-label="Kayıt Ol">
+                    <a class="header-action-btn <?= $pageKey === 'register' ? 'active' : ''; ?>" data-auth-page="register.php" href="<?= htmlspecialchars($headerRegisterUrl, ENT_QUOTES, 'UTF-8'); ?>" title="Kayıt Ol" aria-label="Kayıt Ol">
                         <i class="fa-solid fa-user-plus" aria-hidden="true"></i>
+                        <span class="header-action-label">Kayıt Ol</span>
                     </a>
                 <?php endif; ?>
             </div>
@@ -246,8 +261,8 @@ $navItems = [
                             </a>
                         </div>
                     <?php else: ?>
-                        <a class="btn btn-sm btn-outline-primary" href="login.php">Giriş Yap</a>
-                        <a class="btn btn-sm btn-primary" href="register.php">Kayıt Ol</a>
+                        <a class="btn btn-sm btn-outline-primary" data-auth-page="login.php" href="<?= htmlspecialchars($headerLoginUrl, ENT_QUOTES, 'UTF-8'); ?>">Giriş Yap</a>
+                        <a class="btn btn-sm btn-primary" data-auth-page="register.php" href="<?= htmlspecialchars($headerRegisterUrl, ENT_QUOTES, 'UTF-8'); ?>">Kayıt Ol</a>
                     <?php endif; ?>
                 </div>
             </div>

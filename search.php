@@ -39,9 +39,7 @@ if (!$dbUnavailable) {
             FROM notes n
             JOIN users u ON n.user_id = u.id
             LEFT JOIN (
-                SELECT note_id, AVG(rating) AS rating_average, COUNT(*) AS rating_count
-                FROM note_comments
-                GROUP BY note_id
+                " . noteRatingSummarySql() . "
             ) rs ON rs.note_id = n.id
             WHERE n.upload_status = 'ready'
               AND n.scan_status = 'clean'
@@ -79,6 +77,8 @@ if (!$dbUnavailable) {
         }
     } catch (Throwable $e) {
         $notesPayload = [];
+        $dbUnavailable = true;
+        error_log('search query error: ' . $e->getMessage());
     }
 }
 
@@ -86,21 +86,23 @@ $pageTitle = 'Not Bul | Ders Notu Bul';
 $pageKey = 'search';
 require __DIR__ . '/includes/header.php';
 ?>
-<main class="page-shell">
+<main id="mainContent" class="page-shell" tabindex="-1">
     <section class="container section-block">
         <?php if ($dbUnavailable): ?>
-            <div class="alert alert-warning">Veritabanı bağlantısı kurulamadığı için sonuçlar şu anda görüntülenemiyor.</div>
+            <div class="alert alert-warning" role="alert">Notlar şu anda getirilemiyor. Lütfen daha sonra tekrar deneyin.</div>
         <?php endif; ?>
         <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-3">
             <h1 class="section-title mb-0">Ders Notu Bul</h1>
             <div class="search-box-inline">
-                <input id="searchQuery" class="form-control" type="search" placeholder="Başlık, açıklama veya etiket ara">
+                <label for="searchQuery" class="visually-hidden">Not ara</label>
+                <input id="searchQuery" name="q" class="form-control" type="search" placeholder="Başlık, açıklama veya etiket ara" aria-controls="searchResults" autocomplete="off">
             </div>
         </div>
         <div class="row g-4 align-items-start">
             <aside class="col-lg-4 col-xl-3">
-                <form id="searchFilterForm" class="panel-card" data-hierarchy-group data-filter-source="public" data-options-scope="notes">
-                    <h2 class="h5 mb-3">Detaylı Filtreler</h2>
+                <details class="panel-card search-filter-panel" id="searchFilterPanel" open>
+                    <summary class="search-filter-summary">Detaylı filtreler</summary>
+                <form id="searchFilterForm" class="mt-3" data-hierarchy-group data-filter-source="public" data-options-scope="notes">
 
                     <div class="mb-3">
                         <label class="form-label" for="searchUniversity">Üniversite</label>
@@ -136,13 +138,28 @@ require __DIR__ . '/includes/header.php';
                             <option value="image">Görsel</option>
                         </select>
                     </div>
+                    <button type="button" class="btn btn-outline-secondary w-100 mt-3" data-reset-search>Filtreleri temizle</button>
                 </form>
+                </details>
             </aside>
 
             <div class="col-lg-8 col-xl-9">
-                <div class="panel-card">
-                    <p class="mb-3">Toplam sonuç: <strong id="searchResultCount">0</strong></p>
+                <div class="panel-card" id="searchResultsPanel" tabindex="-1">
+                    <div class="d-flex justify-content-between align-items-end flex-wrap gap-3 mb-3">
+                        <p class="mb-0">Toplam sonuç: <strong id="searchResultCount">0</strong></p>
+                        <div>
+                            <label for="searchSort" class="form-label small">Sıralama</label>
+                            <select id="searchSort" class="form-select form-select-sm" name="sort">
+                                <option value="relevance">En ilgili</option>
+                                <option value="newest">En yeni</option>
+                                <option value="rating">En yüksek puan</option>
+                                <option value="downloads">En çok indirilen</option>
+                            </select>
+                        </div>
+                    </div>
+                    <p id="searchStatus" class="search-status small text-secondary" role="status" aria-live="polite" aria-atomic="true">Notlar hazırlanıyor…</p>
                     <div id="searchResults" class="search-results"></div>
+                    <noscript><p class="alert alert-info">Arama ve filtreleme için tarayıcınızda JavaScript'i etkinleştirin.</p></noscript>
                     <nav class="mt-4" aria-label="Sayfalama">
                         <ul id="searchPagination" class="pagination justify-content-center mb-0"></ul>
                     </nav>

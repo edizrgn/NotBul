@@ -41,9 +41,7 @@ if (!$dbUnavailable) {
             FROM notes n
             JOIN users u ON n.user_id = u.id
             LEFT JOIN (
-                SELECT note_id, AVG(rating) AS rating_average, COUNT(*) AS rating_count
-                FROM note_comments
-                GROUP BY note_id
+                " . noteRatingSummarySql() . "
             ) rs ON rs.note_id = n.id
             WHERE n.upload_status = 'ready'
               AND n.scan_status = 'clean'
@@ -96,6 +94,8 @@ if (!$dbUnavailable) {
         $latestNotes = [];
         $popularNotes = [];
         $notesPayload = [];
+        $dbUnavailable = true;
+        error_log('home query error: ' . $e->getMessage());
     }
 }
 
@@ -123,12 +123,12 @@ $pageTitle = 'Not Bul | Anasayfa';
 $pageKey = 'home';
 require __DIR__ . '/includes/header.php';
 
-$errorMsg = isset($_GET['error']) && $_GET['error'] === 'not_found' ? 'Üzgünüz, aradığınız not veritabanında bulunamadı (ID: ' . (int)$_GET['id'] . ').' : '';
+$errorMsg = isset($_GET['error']) && $_GET['error'] === 'not_found' ? 'Aradığınız not bulunamadı veya yayından kaldırılmış. Aramayı kullanarak başka notlara ulaşabilirsiniz.' : '';
 $successMsg = isset($_GET['note_deleted']) && $_GET['note_deleted'] === '1'
     ? 'Not başarıyla arşive alındı.'
     : '';
 ?>
-<main class="page-shell">
+<main id="mainContent" class="page-shell" tabindex="-1">
     <section class="hero-section container">
         <?php if ($successMsg): ?>
             <div class="alert alert-success mt-3"><?= htmlspecialchars($successMsg) ?></div>
@@ -168,7 +168,13 @@ $successMsg = isset($_GET['note_deleted']) && $_GET['note_deleted'] === '1'
                     <select class="form-select" id="homeCourse" name="course" data-level="course" data-placeholder="Ders seç"></select>
                 </div>
             </div>
-            <p class="mt-3 mb-0 small text-secondary">Filtrelenmiş sonuç sayısı: <strong id="homeResultCount"><?= count($notesPayload) ?></strong></p>
+            <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mt-3">
+                <p class="mb-0 small text-secondary" role="status" aria-live="polite" aria-atomic="true">Bulunan not: <strong id="homeResultCount"><?= count($notesPayload) ?></strong><span id="homeResultHint"></span></p>
+                <div class="d-flex flex-wrap gap-2">
+                    <button type="button" class="btn btn-sm btn-outline-secondary" data-reset-search>Filtreleri temizle</button>
+                    <button type="submit" class="btn btn-sm btn-primary">Tüm sonuçları göster</button>
+                </div>
+            </div>
         </form>
     </section>
 
@@ -176,7 +182,7 @@ $successMsg = isset($_GET['note_deleted']) && $_GET['note_deleted'] === '1'
         <div class="panel-card">
             <div class="d-flex justify-content-between align-items-center gap-2 flex-wrap mb-3">
                 <h2 class="section-title mb-0" id="homePrimaryPanelTitle">Popüler Notlar</h2>
-                <a href="search.php" class="btn btn-sm btn-outline-primary">Tümünü görüntüle</a>
+                <a href="search.php?sort=downloads" class="btn btn-sm btn-outline-primary" data-home-results-link data-sort="downloads">Tümünü görüntüle</a>
             </div>
             <div id="popularNotesGrid" class="row g-3">
                 <?php if (empty($popularNotes)): ?>
@@ -188,7 +194,7 @@ $successMsg = isset($_GET['note_deleted']) && $_GET['note_deleted'] === '1'
                         <article class="col-sm-6 col-xl-4">
                             <div class="note-card card shadow-sm border-0">
                                 <div class="card-body">
-                                    <h3 class="h6 mb-2 text-truncate"><?= htmlspecialchars((string)$note['title']) ?></h3>
+                                    <h3 class="h6 mb-2"><?= htmlspecialchars((string)$note['title']) ?></h3>
                                     <p class="text-secondary mb-3 small" style="height: 3em; overflow: hidden;">
                                         <?= htmlspecialchars(buildNoteExcerpt((string)($note['description'] ?? ''))) ?>
                                     </p>
@@ -222,7 +228,7 @@ $successMsg = isset($_GET['note_deleted']) && $_GET['note_deleted'] === '1'
         <div class="panel-card">
             <div class="d-flex justify-content-between align-items-center gap-2 flex-wrap mb-3">
                 <h2 class="section-title mb-0">Son Yüklenenler</h2>
-                <a href="search.php" class="btn btn-sm btn-outline-primary">Tümünü görüntüle</a>
+                <a href="search.php?sort=newest" class="btn btn-sm btn-outline-primary" data-home-results-link data-sort="newest">Tümünü görüntüle</a>
             </div>
             <div id="latestNotesGrid" class="row g-3">
                 <?php if (empty($latestNotes)): ?>
@@ -234,7 +240,7 @@ $successMsg = isset($_GET['note_deleted']) && $_GET['note_deleted'] === '1'
                         <article class="col-sm-6 col-xl-4">
                             <div class="note-card card shadow-sm border-0">
                                 <div class="card-body">
-                                    <h3 class="h6 mb-2 text-truncate"><?= htmlspecialchars((string)$note['title']) ?></h3>
+                                    <h3 class="h6 mb-2"><?= htmlspecialchars((string)$note['title']) ?></h3>
                                     <p class="text-secondary mb-3 small" style="height: 3em; overflow: hidden;">
                                         <?= htmlspecialchars(buildNoteExcerpt((string)($note['description'] ?? ''))) ?>
                                     </p>

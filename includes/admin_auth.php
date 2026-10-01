@@ -30,7 +30,7 @@ function requireAdminUser(PDO $pdo): array
         $pageKey = 'admin';
         require __DIR__ . '/header.php';
         ?>
-        <main class="page-shell">
+        <main id="mainContent" class="page-shell" tabindex="-1">
             <section class="container section-block">
                 <div class="panel-card">
                     <h1 class="h3 mb-2">Yetkisiz erişim</h1>

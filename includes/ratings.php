@@ -1,6 +1,18 @@
 <?php
 declare(strict_types=1);
 
+function noteRatingSummarySql(): string
+{
+    return "SELECT nc.note_id, AVG(nc.rating) AS rating_average, COUNT(*) AS rating_count
+            FROM note_comments nc
+            JOIN (
+                SELECT note_id, user_id, MAX(id) AS latest_id
+                FROM note_comments
+                GROUP BY note_id, user_id
+            ) latest ON latest.latest_id = nc.id
+            GROUP BY nc.note_id";
+}
+
 function ratingAverageValue($average, int $count): ?float
 {
     if ($count < 1 || $average === null || $average === '') {
