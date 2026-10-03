@@ -1,13 +1,19 @@
 <?php
 declare(strict_types=1);
 
-function noteRatingSummarySql(): string
+function noteRatingSummarySql(?array $noteIds = null): string
 {
+    $scope = '';
+    if ($noteIds !== null) {
+        $ids = array_values(array_unique(array_filter(array_map('intval', $noteIds), static fn(int $id): bool => $id > 0)));
+        $scope = 'WHERE note_id IN (' . ($ids === [] ? '0' : implode(',', $ids)) . ')';
+    }
     return "SELECT nc.note_id, AVG(nc.rating) AS rating_average, COUNT(*) AS rating_count
             FROM note_comments nc
             JOIN (
                 SELECT note_id, user_id, MAX(id) AS latest_id
                 FROM note_comments
+                {$scope}
                 GROUP BY note_id, user_id
             ) latest ON latest.latest_id = nc.id
             GROUP BY nc.note_id";

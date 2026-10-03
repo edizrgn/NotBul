@@ -24,6 +24,7 @@ Proje şu anda aktif geliştirme aşamasındadır. Kod tabanı klasik PHP sayfal
 
 - Ana sayfada popüler notlar, son yüklenenler ve hızlı filtreleme
 - Ders notu arama ekranında üniversite, program türü, bölüm, sınıf, ders, konu ve dosya türü filtreleri
+- Sunucuda arama, sıralama ve 10 sonuçlu sayfalama; JavaScript kapalıyken çalışan GET formları
 - JSON kaynaklı üniversite ve bölüm listeleri
 - Giriş yapan kullanıcılar için PDF, DOCX, PPTX, PNG, JPG, JPEG ve WEBP not yükleme
 - Dosya uzantısı, MIME type, boyut ve SHA-256 bütünlük kontrolü
@@ -106,7 +107,8 @@ Proje şu anda aktif geliştirme aşamasındadır. Kod tabanı klasik PHP sayfal
 - `includes/storage.php`: Yüklenen notların saklandığı klasör ve güvenli dosya yolu çözümleme.
 - `includes/registration_security.php`: Kayıt formu güvenlik kontrolleri.
 - `includes/brevo.php`: Brevo e-posta gönderimi ve markalı e-posta şablonları.
-- `assets/js/app.js`: Hiyerarşik filtreler, arama, sayfalama, tag input ve upload arayüzü.
+- `includes/note_search.php`: Hazırlanmış SQL sorgularıyla arama, filtre seçenekleri, sıralama, benzer notlar ve sayfalama.
+- `assets/js/app.js`: Sunucu arama yanıtlarını görüntüleme, hiyerarşik filtreler, tag input ve upload arayüzü.
 - `database.sql`: Şema oluşturma ve mevcut kurulumlar için basit migration ifadeleri.
 - `ops/nginx/upload-limits.conf`: Nginx upload limiti için include dosyası.
 
@@ -341,6 +343,34 @@ Bu yöntem gerçek üretim davranışını birebir temsil etmez, ama arayüz ve 
 | `USER_NOTIFY_SENDER_NAME` | Kullanıcı bildirimleri için sender adı. |
 | `STALE_UNVERIFIED_USER_HOURS` | Admin önerilerinde eski doğrulanmamış hesap eşiği. Varsayılan `48`. |
 
+## Sunucuda Arama ve Sayfalama
+
+`search.php` yalnızca istenen sayfadaki **10 notu** getirir. Arama tüm kelimeleri başlık, açıklama, etiket, ders, konu, üniversite ve bölüm adlarında arar; Türkçe karakterlerin ASCII karşılıklarını da eşleştirir. `%` ve `_` arama metninde joker olarak yorumlanmaz. Filtreler, dört sıralama seçeneği, benzer notlar ve toplam sonuç sayısı SQL ile hesaplanır. Eşit sıralama değerlerinde tarih ve not ID'si kullanılarak sayfalama tutarlı tutulur. Aşırı büyük sayfa numaraları SQL offset hesaplanmadan önce son sayfaya sınırlandırılır.
+
+Ana sayfa popüler ve yeni notlar için yalnızca **altışar not** çeker. Kullanıcı bilgileri sayfadaki notlar seçildikten sonra birleştirilir. Normal aramada puan özetleri sadece gösterilecek notlar için hesaplanır; puana göre sıralama bütün adayların puanlarını hesaplamayı gerektirir.
+
+Sonuçlar ilk açılışta PHP tarafından HTML olarak hazırlanır. GET formu ve sayfa bağlantıları JavaScript kapalıyken de çalışır. JavaScript açıksa yazma bittikten **500 ms** sonra `search.php?format=json` isteği yapılır; eski istekler iptal edilir ve geç gelen yanıtlar ekranı değiştiremez. `format=home` altı kartlık ana sayfa önizlemesini, `format=options` hiyerarşik filtre seçeneklerini döndürür. Filtre seçenekleri yazarken veya sayfa değiştirirken yeniden sorgulanmaz; hiyerarşik seçim değiştiğinde güncellenir. Yalnızca yayımlanmış, temiz ve arşivlenmemiş notlar kullanılır.
+
+Mevcut kurulumda arama indekslerini eklemek için proje klasöründe:
+
+```bash
+php ops/apply-search-indexes.php
+```
+
+Komut tekrar çalıştırılabilir; mevcut indeksleri silmez. İndeksler yeni kurulumlar için `database.sql` içinde de yer alır. Görünürlük/tarih, görünürlük/indirme, hiyerarşik filtreler ve kullanıcı başına en son puan için dört birleşik indeks eklenir. İndeks kurulumu HTTP isteklerinde çalıştırılmaz.
+
+Arama metni en fazla 200 karakter ve 16 farklı kelime kabul eder. Parçalı metin eşleşmesi `LIKE '%kelime%'` kullanır; çok büyük veri ve yoğun eşzamanlı aramada bu kısım tam metin aramaya göre daha fazla CPU kullanabilir. Ölçüm ve test ayrıntıları [arama performansı raporunda](docs/search-performance.md) bulunur.
+
+Doğrulama için mevcut MariaDB bağlantısıyla:
+
+```bash
+php tests/note_search_test.php
+php tests/note_search_http_test.php
+php tests/note_search_benchmark.php
+```
+
+Bu testler gerçek MariaDB üzerinde yalnızca bağlantıya özel **geçici tablolar** oluşturur; kalıcı not/kullanıcı verilerini değiştirmez. Test hesabı geçici tablo oluşturabilmeli. HTTP testi yalnızca localhost üzerinde kısa süreli PHP test sunucusu başlatır. JavaScript davranış testleri `tests/note_search_frontend_test.js` içinde yer alır.
+
 ## Dosya Yükleme ve Saklama
 
 Yükleme akışı `upload.php` içinde çalışır.
@@ -500,7 +530,7 @@ Projede mevcut olan güvenlik pratikleri:
 
 - Otomatik test altyapısı bulunmuyor.
 - Composer bağımlılık yönetimi yok.
-- Arama sonuçları sunucudan JSON payload olarak sayfaya basılıyor ve filtreleme istemci tarafında yapılıyor. Veri büyüdükçe server-side arama/pagination gerekecektir.
+- Parçalı metin araması ve çok ileri sayfalara erişim veri büyüdükçe pahalılaşabilir; sunucuda arama uygulanmıştır, yoğun trafikte tam metin indeksi ve cursor sayfalama ayrıca değerlendirilebilir.
 - Upload dosyaları için gerçek dosya tarama servisi henüz entegre değil.
 - Veritabanı bağlantısı henüz `.env` üzerinden yönetilmiyor.
 - `database.sql` basit migration ifadeleri içeriyor; sürümlü migration aracı yok.

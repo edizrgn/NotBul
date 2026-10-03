@@ -161,6 +161,9 @@ CREATE INDEX IF NOT EXISTS idx_notes_course ON notes(course);
 CREATE INDEX IF NOT EXISTS idx_notes_sha256 ON notes(sha256);
 CREATE INDEX IF NOT EXISTS idx_notes_deleted_at ON notes(deleted_at);
 CREATE INDEX IF NOT EXISTS idx_notes_user_deleted_at ON notes(user_id, deleted_at, created_at);
+CREATE INDEX IF NOT EXISTS idx_notes_public_latest ON notes(upload_status, scan_status, deleted_at, created_at, id);
+CREATE INDEX IF NOT EXISTS idx_notes_public_downloads ON notes(upload_status, scan_status, deleted_at, download_count, created_at, id);
+CREATE INDEX IF NOT EXISTS idx_notes_public_hierarchy ON notes(upload_status, scan_status, deleted_at, university_id, department_type, department_id, class_id);
 
 CREATE TABLE IF NOT EXISTS note_comments (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -175,3 +178,4 @@ CREATE TABLE IF NOT EXISTS note_comments (
 CREATE INDEX IF NOT EXISTS idx_note_comments_note_id ON note_comments(note_id);
 CREATE INDEX IF NOT EXISTS idx_note_comments_user_id ON note_comments(user_id);
 CREATE INDEX IF NOT EXISTS idx_note_comments_created_at ON note_comments(created_at);
+CREATE INDEX IF NOT EXISTS idx_note_comments_note_user_latest ON note_comments(note_id, user_id, id);

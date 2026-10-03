@@ -122,25 +122,6 @@
         form.dispatchEvent(new Event('hierarchy:restore'));
     }
 
-    function sortNotes(notes, sort = 'relevance', query = '') {
-        const words = normalizeSearch(query).split(/\s+/).filter(Boolean);
-        const relevance = (note) => {
-            const title = normalizeSearch(note.title);
-            const course = normalizeSearch(resolveCourseName(note));
-            const tags = normalizeSearch((note.tags || []).join(' '));
-            return words.reduce((score, word) => score + (title.includes(word) ? 5 : 0)
-                + (course.includes(word) ? 3 : 0) + (tags.includes(word) ? 2 : 0), 0);
-        };
-        return [...notes].sort((left, right) => {
-            let difference = 0;
-            if (sort === 'downloads') difference = (right.downloads || 0) - (left.downloads || 0);
-            if (sort === 'rating') difference = (Number(right.ratingAverage) || 0) - (Number(left.ratingAverage) || 0)
-                || (right.ratingCount || 0) - (left.ratingCount || 0);
-            if (sort === 'relevance' && words.length) difference = relevance(right) - relevance(left);
-            return difference || new Date(right.createdAt) - new Date(left.createdAt) || right.id - left.id;
-        });
-    }
-
     function escapeHtml(value) {
         return (value || '').toString()
             .replace(/&/g, '&amp;')
@@ -280,7 +261,7 @@
     }
     function initHierarchyGroups() {
         document.querySelectorAll('[data-hierarchy-group]').forEach((group) => {
-            initHierarchyGroup(group);
+            if (!group.hasAttribute('data-server-filters')) initHierarchyGroup(group);
         });
     }
 
@@ -534,211 +515,6 @@
             refreshTopic();
         });
 
-    }
-
-    function collectFilters(form) {
-        const formData = new FormData(form);
-        return {
-            query: normalize(formData.get('query')),
-            universityId: normalize(formData.get('university_id')),
-            facultyId: normalize(formData.get('faculty_id')),
-            departmentType: normalize(formData.get('department_type')),
-            departmentId: normalize(formData.get('department_id')),
-            classId: normalize(formData.get('class_id')),
-            course: normalize(formData.get('course') || formData.get('course_id')),
-            topic: normalize(formData.get('topic') || formData.get('topic_id')),
-            fileType: normalize(formData.get('file_type'))
-        };
-    }
-
-    function matchesFilters(note, filters) {
-        if (filters.universityId && note.universityId !== filters.universityId) {
-            return false;
-        }
-        if (filters.facultyId && note.facultyId !== filters.facultyId) {
-            return false;
-        }
-        if (filters.departmentType && note.departmentType !== filters.departmentType) {
-            return false;
-        }
-        if (filters.departmentId && note.departmentId !== filters.departmentId) {
-            return false;
-        }
-        if (filters.classId && note.classId !== filters.classId) {
-            return false;
-        }
-        if (filters.course && normalize(resolveCourseName(note)) !== filters.course) {
-            return false;
-        }
-        if (filters.topic && normalize(resolveTopicName(note)) !== filters.topic) {
-            return false;
-        }
-        if (filters.fileType && note.fileType !== filters.fileType) {
-            return false;
-        }
-
-        if (filters.query) {
-            const searchable = normalizeSearch([
-                note.title,
-                note.description,
-                (note.tags || []).join(' '),
-                resolveCourseName(note),
-                resolveTopicName(note),
-                resolveDepartmentName(note.departmentId),
-                resolveUniversityName(note.universityId)
-            ].join(' '));
-
-            if (!normalizeSearch(filters.query).split(/\s+/).filter(Boolean).every((word) => searchable.includes(word))) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    function filterNotes(filters, notes = getAllNotes()) {
-        return notes.filter((note) => matchesFilters(note, filters));
-    }
-
-    function shortenText(value, maxLength = 80) {
-        const text = (value || '').toString().trim();
-        if (!text) {
-            return 'Açıklama eklenmemiş.';
-        }
-        if (text.length <= maxLength) {
-            return text;
-        }
-        return `${text.slice(0, maxLength)}...`;
-    }
-
-    function noteCardTemplate(note) {
-        const tagHtml = (note.tags || [])
-            .slice(0, 2)
-            .map((tag) => `<span class="badge bg-light text-secondary fw-normal">#${escapeHtml(tag)}</span>`)
-            .join('');
-        const course = resolveCourseName(note) || '-';
-        const ratingHtml = ratingSummaryTemplate(note);
-        const returnTo = `${window.location.pathname.split('/').pop() || 'index.php'}${window.location.search}`;
-
-        return `
-            <article class="col-sm-6 col-xl-4">
-                <div class="note-card card shadow-sm border-0">
-                    <div class="card-body">
-                        <h3 class="h6 mb-2">${escapeHtml(note.title)}</h3>
-                        <p class="text-secondary mb-3 small" style="height: 3em; overflow: hidden;">
-                            ${escapeHtml(shortenText(note.description))}
-                        </p>
-                        <p class="note-card-context small text-secondary mb-2">${escapeHtml(resolveUniversityName(note.universityId))} · ${escapeHtml(resolveDepartmentName(note.departmentId))} · ${escapeHtml(note.fileType === 'image' ? 'Görsel' : (note.fileType || '').toUpperCase())}</p>
-                        <div class="note-tags mb-3">${tagHtml}</div>
-                        <div class="note-card-footer d-flex justify-content-between align-items-center gap-3">
-                            <div class="small">
-                                <div class="fw-bold text-dark">${escapeHtml(note.uploader || '-')}</div>
-                                <div class="text-secondary">${escapeHtml(course)}</div>
-                            </div>
-                            <div class="note-card-actions d-flex align-items-center gap-2 ms-auto">
-                                ${ratingHtml}
-                                <a href="note-detail.php?id=${note.id}&amp;return_to=${escapeHtml(encodeURIComponent(returnTo))}" class="btn btn-sm btn-primary" aria-label="${escapeHtml(note.title)} notunu incele">Detay</a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </article>
-        `;
-    }
-
-    function renderGrid(gridElement, notes, emptyMessage) {
-        if (!gridElement) {
-            return;
-        }
-
-        if (!notes.length) {
-            gridElement.innerHTML = `<div class="col-12"><div class="empty-state">${escapeHtml(emptyMessage)}</div></div>`;
-            return;
-        }
-
-        gridElement.innerHTML = notes.map((note) => noteCardTemplate(note)).join('');
-    }
-    function initHomePage() {
-        const form = document.getElementById('homeFilterForm');
-        if (!form) {
-            return;
-        }
-
-        const popularGrid = document.getElementById('popularNotesGrid');
-        const latestGrid = document.getElementById('latestNotesGrid');
-        const latestSection = latestGrid?.closest('section');
-        const primaryTitle = document.getElementById('homePrimaryPanelTitle');
-        const resultCount = document.getElementById('homeResultCount');
-        const resultHint = document.getElementById('homeResultHint');
-        const queryInput = document.getElementById('homeQuery');
-
-        const hasActiveSearch = (filters) => Object.values(filters).some((value) => value !== '');
-
-        const render = () => {
-            const filters = collectFilters(form);
-            const filtered = filterNotes(filters);
-            const searchActive = hasActiveSearch(filters);
-            const params = filterParams(form, queryInput);
-            syncUrl(params);
-
-            const notesToShow = searchActive
-                ? sortNotes(filtered, 'relevance', filters.query).slice(0, 6)
-                : [...getAllNotes()]
-                    .sort((a, b) => {
-                        const downloadDiff = (b.downloads || 0) - (a.downloads || 0);
-                        if (downloadDiff !== 0) {
-                            return downloadDiff;
-                        }
-                        return new Date(b.createdAt) - new Date(a.createdAt);
-                    })
-                    .slice(0, 6);
-
-            renderGrid(
-                popularGrid,
-                notesToShow,
-                searchActive ? 'Arama kriterlerine uygun not bulunamadı.' : 'Henüz popüler not bulunmuyor.'
-            );
-
-            if (latestSection) latestSection.hidden = searchActive;
-            if (!searchActive) renderGrid(latestGrid, sortNotes(getAllNotes(), 'newest').slice(0, 6), 'Henüz not yüklenmemiş.');
-            document.querySelectorAll('[data-home-results-link]').forEach((link) => {
-                const linkParams = new URLSearchParams(params);
-                linkParams.set('sort', searchActive ? 'relevance' : (link.dataset.sort || 'newest'));
-                link.href = searchLink(linkParams);
-            });
-
-            if (primaryTitle) {
-                primaryTitle.textContent = searchActive ? 'Arama Sonuçları' : 'Popüler Notlar';
-            }
-
-            if (resultCount) {
-                resultCount.textContent = formatNumber(filtered.length);
-            }
-            if (resultHint) resultHint.textContent = searchActive && filtered.length > 6
-                ? ' · İlk 6 not gösteriliyor. Tüm sonuçları açabilirsiniz.' : '';
-            if (searchActive && !filtered.length && popularGrid) {
-                popularGrid.innerHTML = '<div class="col-12"><div class="empty-state">Aramanıza uygun not bulunamadı. Daha az kelimeyle aramayı veya filtreleri temizlemeyi deneyin. <button type="button" class="btn btn-sm btn-outline-primary mt-2" data-reset-search>Filtreleri temizle</button></div></div>';
-            }
-        };
-
-        form.addEventListener('input', render);
-        form.addEventListener('change', render);
-        form.addEventListener('hierarchy:changed', render);
-        form.addEventListener('submit', (event) => {
-            event.preventDefault();
-            window.location.assign(searchLink(filterParams(form, queryInput)));
-        });
-        const clear = () => { resetFilters(form, queryInput); render(); };
-        form.querySelector('[data-reset-search]')?.addEventListener('click', clear);
-        popularGrid?.addEventListener('click', (event) => {
-            if (event.target instanceof Element && event.target.closest('[data-reset-search]')) clear();
-        });
-        window.addEventListener('popstate', () => {
-            restoreFilterParams(form, queryInput);
-            form.dispatchEvent(new Event('hierarchy:restore'));
-            render();
-        });
-        render();
     }
 
     function initTagInputs() {
@@ -1025,149 +801,187 @@
         });
     }
 
+    function initHomePage() {
+        initServerNoteSearch(true);
+    }
+
     function initSearchPage() {
-        const form = document.getElementById('searchFilterForm');
-        const queryInput = document.getElementById('searchQuery');
-        const sortSelect = document.getElementById('searchSort');
-        const resultsContainer = document.getElementById('searchResults');
+        initServerNoteSearch(false);
+    }
+
+    function initServerNoteSearch(home) {
+        const form = document.getElementById(home ? 'homeFilterForm' : 'searchFilterForm');
+        if (!form) return;
+        const queryInput = document.getElementById(home ? 'homeQuery' : 'searchQuery');
+        const sortSelect = home ? null : document.getElementById('searchSort');
+        const results = document.getElementById(home ? 'popularNotesGrid' : 'searchResults');
         const pagination = document.getElementById('searchPagination');
-        const countElement = document.getElementById('searchResultCount');
-        const status = document.getElementById('searchStatus');
-        const resultsPanel = document.getElementById('searchResultsPanel');
-        const filterPanel = document.getElementById('searchFilterPanel');
-        if (!form || !resultsContainer || !pagination || !countElement) return;
+        const count = document.getElementById(home ? 'homeResultCount' : 'searchResultCount');
+        const status = document.getElementById(home ? 'homeSearchStatus' : 'searchStatus');
+        const panel = home ? results?.closest('.panel-card') : document.getElementById('searchResultsPanel');
+        const hierarchy = ['university_id', 'department_type', 'department_id', 'class_id', 'course', 'topic'];
+        let page = home ? 1 : Number(panel?.dataset.page || 1);
+        let similarTo = form.elements.namedItem('similar_to')?.value || '';
+        let timer;
+        let controller;
+        let generation = 0;
+        let pendingOptions = false;
+        if (!results || !count) return;
 
-        const params = new URLSearchParams(window.location.search);
-        let similarTo = params.get('similar_to') || '';
-        const validSorts = new Set(['relevance', 'newest', 'rating', 'downloads']);
-        if (sortSelect) sortSelect.value = validSorts.has(params.get('sort')) ? params.get('sort') : 'relevance';
-        const state = {
-            currentPage: Math.max(1, parseInt(params.get('page'), 10) || 1),
-            pageSize: 10,
-            filtered: []
-        };
-        const desktop = window.matchMedia('(min-width: 992px)');
-        const syncFilterPanel = () => { if (filterPanel) filterPanel.open = desktop.matches; };
-        syncFilterPanel();
-        desktop.addEventListener?.('change', syncFilterPanel);
-
-        const currentParams = () => filterParams(form, queryInput, sortSelect?.value || 'relevance', state.currentPage, similarTo);
-        const drawPagination = () => {
-            const totalPages = Math.ceil(state.filtered.length / state.pageSize);
-            if (totalPages <= 1) { pagination.innerHTML = ''; return; }
-            const pages = [...new Set([1, totalPages, state.currentPage - 1, state.currentPage, state.currentPage + 1])]
-                .filter((page) => page >= 1 && page <= totalPages).sort((a, b) => a - b);
-            const button = (page, label, disabled = false) => `<li class="page-item ${page === state.currentPage && !disabled ? 'active' : ''} ${disabled ? 'disabled' : ''}"><button type="button" class="page-link" data-page="${page}" ${disabled ? 'disabled' : ''} ${page === state.currentPage && !disabled ? 'aria-current="page"' : ''} aria-label="${typeof label === 'number' ? `Sayfa ${page}` : label}">${label}</button></li>`;
-            const items = [button(state.currentPage - 1, 'Önceki', state.currentPage === 1)];
-            let previous = 0;
-            pages.forEach((page) => {
-                if (previous && page - previous > 1) items.push('<li class="page-item disabled"><span class="page-link" aria-hidden="true">…</span></li>');
-                items.push(button(page, page));
-                previous = page;
+        if (!home) {
+            const filters = document.getElementById('searchFilterPanel');
+            const desktop = window.matchMedia('(min-width: 992px)');
+            const syncPanel = () => { if (filters) filters.open = desktop.matches; };
+            syncPanel();
+            desktop.addEventListener?.('change', syncPanel);
+        }
+        const params = () => filterParams(form, queryInput, sortSelect?.value || '', page, similarTo === '0' ? '' : similarTo);
+        const updateHomeLinks = (current, active) => {
+            document.querySelectorAll('[data-home-results-link]').forEach((link) => {
+                const linkParams = new URLSearchParams(current);
+                linkParams.set('sort', active ? 'relevance' : link.dataset.sort);
+                link.href = searchLink(linkParams);
             });
-            items.push(button(state.currentPage + 1, 'Sonraki', state.currentPage === totalPages));
-            pagination.innerHTML = items.join('');
         };
-        const drawResults = (push = false) => {
-            const totalPages = Math.max(1, Math.ceil(state.filtered.length / state.pageSize));
-            state.currentPage = Math.min(state.currentPage, totalPages);
-            syncUrl(currentParams(), push);
-            const start = (state.currentPage - 1) * state.pageSize;
-            const pageItems = state.filtered.slice(start, start + state.pageSize);
-            const returnTo = `search.php${window.location.search}`;
-            countElement.textContent = formatNumber(state.filtered.length);
-            if (status) status.textContent = pageItems.length
-                ? `${formatNumber(state.filtered.length)} not bulundu. ${start + 1}–${start + pageItems.length} arası gösteriliyor.${similarTo ? ' Benzer notlar listeleniyor.' : ''}`
-                : 'Sonuç bulunamadı. Daha az kelime veya daha geniş filtrelerle aramayı deneyin.';
-            if (!pageItems.length) {
-                resultsContainer.innerHTML = '<div class="empty-state">Aramanıza uygun not bulunamadı. Farklı kelimeler kullanabilir veya filtreleri temizleyebilirsiniz.<br><button type="button" class="btn btn-sm btn-outline-primary mt-2" data-reset-search>Aramayı ve filtreleri temizle</button></div>';
-            } else {
-                resultsContainer.innerHTML = pageItems.map((note) => {
-                    const context = [resolveUniversityName(note.universityId), resolveDepartmentName(note.departmentId), resolveCourseName(note), resolveTopicName(note)]
-                        .filter((value) => value && value !== '-');
-                    const fileType = note.fileType === 'image' ? 'Görsel' : (note.fileType || '').toUpperCase();
-                    return `<article class="result-item">
-                        <div class="d-flex justify-content-between align-items-start gap-3">
-                            <div class="flex-grow-1" style="min-width: 0">
-                                <h3 class="h5 mb-1">${escapeHtml(note.title)}</h3>
-                                <p class="mb-2 text-secondary">${escapeHtml(shortenText(note.description, 240))}</p>
-                            </div>
-                            <a href="note-detail.php?id=${note.id}&amp;return_to=${escapeHtml(encodeURIComponent(returnTo))}" class="btn btn-sm btn-outline-primary flex-shrink-0" aria-label="${escapeHtml(note.title)} notunu incele">Detay</a>
-                        </div>
-                        <div class="result-footer">
-                            <div class="d-flex flex-wrap gap-2">${context.map((value) => `<span class="note-tag">${escapeHtml(value)}</span>`).join('')}<span class="note-tag">${escapeHtml(fileType)}</span></div>
-                            <div class="result-stats text-secondary small">${ratingSummaryTemplate(note, true)}<span>${formatDate(note.createdAt)} · ${formatNumber(note.downloads)} indirme</span></div>
-                        </div>
-                    </article>`;
-                }).join('');
+        const stop = () => {
+            window.clearTimeout(timer);
+            controller?.abort();
+            generation += 1;
+        };
+        const apply = async (push = false, focus = false) => {
+            stop();
+            const currentGeneration = generation;
+            const current = params();
+            const fetchParams = new URLSearchParams(current);
+            fetchParams.set('format', home ? 'home' : 'json');
+            if (pendingOptions) fetchParams.set('include_options', '1');
+            controller = new AbortController();
+            results.setAttribute('aria-busy', 'true');
+            if (status) status.textContent = 'Notlar aranıyor…';
+            try {
+                const response = await fetch(searchLink(fetchParams), { signal: controller.signal, headers: { Accept: 'application/json' } });
+                const data = await response.json();
+                if (!response.ok) {
+                    const error = new Error(data.error || 'Sonuçlar alınamadı. Lütfen tekrar deneyin.');
+                    error.userMessage = true;
+                    throw error;
+                }
+                if (currentGeneration !== generation) return;
+                results.innerHTML = data.resultsHtml;
+                if (pagination) pagination.innerHTML = data.paginationHtml;
+                count.textContent = data.countLabel;
+                if (status) status.textContent = home && !data.searchActive ? '' : data.status;
+                page = data.page;
+                const canonical = new URLSearchParams(data.queryString);
+                similarTo = canonical.get('similar_to') || '';
+                const similarField = form.elements.namedItem('similar_to');
+                if (similarField) similarField.value = similarTo;
+                Object.entries(data.options).forEach(([name, html]) => {
+                    const field = form.elements.namedItem(name);
+                    if (field instanceof HTMLSelectElement) field.innerHTML = html;
+                });
+                if (fetchParams.has('include_options')) pendingOptions = false;
+                syncUrl(canonical, push);
+                if (home) {
+                    const title = document.getElementById('homePrimaryPanelTitle');
+                    if (title) title.textContent = data.searchActive ? 'Arama Sonuçları' : 'Popüler Notlar';
+                    const latest = document.getElementById('homeLatestSection');
+                    if (latest) latest.hidden = data.searchActive;
+                    const latestGrid = document.getElementById('latestNotesGrid');
+                    if (!data.searchActive && latestGrid) latestGrid.innerHTML = data.latestHtml;
+                    const hint = document.getElementById('homeResultHint');
+                    if (hint) hint.textContent = data.searchActive && data.total > 6 ? ' · İlk 6 not gösteriliyor. Tüm sonuçları açabilirsiniz.' : '';
+                    updateHomeLinks(canonical, data.searchActive);
+                }
+                if (focus) {
+                    panel?.scrollIntoView({ block: 'start' });
+                    panel?.focus({ preventScroll: true });
+                }
+            } catch (error) {
+                if (error.name !== 'AbortError' && currentGeneration === generation && status) {
+                    status.textContent = error.userMessage ? error.message : 'Sonuçlar alınamadı. Lütfen tekrar deneyin.';
+                }
+            } finally {
+                if (currentGeneration === generation) results.removeAttribute('aria-busy');
             }
-            drawPagination();
         };
-        const apply = (resetPage = true) => {
-            if (resetPage) state.currentPage = 1;
-            const filters = collectFilters(form);
-            filters.query = normalize(queryInput?.value);
-            let notes = filterNotes(filters);
-            const similarNote = getAllNotes().find((note) => String(note.id) === similarTo);
-            if (similarNote) {
-                const tags = (similarNote.tags || []).map(normalizeSearch);
-                const words = normalizeSearch(similarNote.title).split(/\s+/).filter((word) => word.length > 2);
-                const score = (note) => (note.tags || []).map(normalizeSearch).filter((tag) => tags.includes(tag)).length * 10
-                    + normalizeSearch(note.title).split(/\s+/).filter((word) => word.length > 2 && words.includes(word)).length * 2
-                    + (similarNote.course && normalizeSearch(note.course) === normalizeSearch(similarNote.course) ? 5 : 0);
-                notes = notes.filter((note) => note.id !== similarNote.id && score(note) > 0);
-                state.filtered = (sortSelect?.value || 'relevance') === 'relevance'
-                    ? [...notes].sort((a, b) => score(b) - score(a) || new Date(b.createdAt) - new Date(a.createdAt))
-                    : sortNotes(notes, sortSelect.value, filters.query);
-            } else {
-                similarTo = '';
-                state.filtered = sortNotes(notes, sortSelect?.value || 'relevance', filters.query);
+        const changed = (event) => {
+            const name = event.target.name;
+            const level = hierarchy.indexOf(name);
+            if (level >= 0) {
+                hierarchy.slice(level + 1).forEach((field) => {
+                    const input = form.elements.namedItem(field);
+                    if (input) input.value = '';
+                });
+                pendingOptions = true;
             }
-            drawResults();
+            page = 1;
+            apply();
         };
+        form.addEventListener('change', (event) => { if (event.target !== queryInput) changed(event); });
+        sortSelect?.addEventListener('change', changed);
+        queryInput?.addEventListener('input', () => {
+            stop();
+            results.removeAttribute('aria-busy');
+            page = 1;
+            timer = window.setTimeout(() => apply(), 500);
+        });
+        form.addEventListener('submit', (event) => {
+            event.preventDefault();
+            stop();
+            page = 1;
+            if (home) window.location.assign(searchLink(params()));
+            else apply(true);
+        });
         const clear = () => {
-            similarTo = '';
-            resetFilters(form, queryInput);
+            stop();
+            FILTER_NAMES.forEach((name) => {
+                const field = form.elements.namedItem(name);
+                if (field) field.value = '';
+            });
+            if (queryInput) queryInput.value = '';
             if (sortSelect) sortSelect.value = 'relevance';
+            similarTo = '';
+            page = 1;
+            pendingOptions = true;
             apply();
             queryInput?.focus();
         };
-        let timer;
-        const schedule = () => {
-            window.clearTimeout(timer);
-            timer = window.setTimeout(() => apply(), 150);
-        };
-        form.addEventListener('change', () => apply());
-        form.addEventListener('hierarchy:changed', () => apply());
-        form.addEventListener('submit', (event) => { event.preventDefault(); apply(); });
-        queryInput?.addEventListener('input', schedule);
-        sortSelect?.addEventListener('change', () => apply());
-        form.querySelector('[data-reset-search]')?.addEventListener('click', clear);
-        resultsContainer.addEventListener('click', (event) => {
-            if (event.target instanceof Element && event.target.closest('[data-reset-search]')) clear();
-        });
-        pagination.addEventListener('click', (event) => {
-            const target = event.target instanceof Element ? event.target.closest('button[data-page]') : null;
-            if (!target || target.disabled) return;
-            const page = Number(target.dataset.page);
-            if (!Number.isInteger(page) || page < 1 || page > Math.ceil(state.filtered.length / state.pageSize)) return;
-            window.clearTimeout(timer);
-            state.currentPage = page;
-            drawResults(true);
-            resultsPanel?.scrollIntoView({ block: 'start' });
-            resultsPanel?.focus({ preventScroll: true });
+        document.addEventListener('click', (event) => {
+            const target = event.target instanceof Element ? event.target.closest('[data-reset-search], a[data-page]') : null;
+            if (!target || event.button !== 0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
+            if (target.hasAttribute('data-reset-search')) {
+                event.preventDefault();
+                clear();
+            } else if (pagination?.contains(target)) {
+                event.preventDefault();
+                page = Number(target.dataset.page);
+                apply(true, true);
+            }
         });
         window.addEventListener('popstate', () => {
-            window.clearTimeout(timer);
-            restoreFilterParams(form, queryInput);
-            form.dispatchEvent(new Event('hierarchy:restore'));
+            stop();
             const restored = new URLSearchParams(window.location.search);
+            FILTER_NAMES.forEach((name) => {
+                const field = form.elements.namedItem(name);
+                if (!field) return;
+                const value = restored.get(name) || '';
+                if (field instanceof HTMLSelectElement && value && !Array.from(field.options).some((option) => option.value === value)) {
+                    const option = document.createElement('option');
+                    option.value = value;
+                    option.textContent = value;
+                    field.appendChild(option);
+                }
+                field.value = value;
+            });
+            if (queryInput) queryInput.value = restored.get('q') || restored.get('query') || '';
+            if (sortSelect) sortSelect.value = restored.get('sort') || 'relevance';
             similarTo = restored.get('similar_to') || '';
-            if (sortSelect) sortSelect.value = validSorts.has(restored.get('sort')) ? restored.get('sort') : 'relevance';
-            state.currentPage = Math.max(1, parseInt(restored.get('page'), 10) || 1);
-            apply(false);
+            page = Math.max(1, Number(restored.get('page')) || 1);
+            pendingOptions = true;
+            apply();
         });
-        apply(false);
+        syncUrl(params());
     }
 
     function copyTextToClipboard(text) {
@@ -1286,9 +1100,9 @@
 
     document.addEventListener('DOMContentLoaded', async () => {
         initNoteFileForms();
-        await loadRemoteFilterData();
+        if (document.querySelector('[data-hierarchy-group]:not([data-server-filters])')) await loadRemoteFilterData();
         const filterForm = document.getElementById('homeFilterForm') || document.getElementById('searchFilterForm');
-        if (filterForm) restoreFilterParams(filterForm, document.getElementById('homeQuery') || document.getElementById('searchQuery'));
+        if (filterForm && !filterForm.hasAttribute('data-server-filters')) restoreFilterParams(filterForm, document.getElementById('homeQuery') || document.getElementById('searchQuery'));
         initHierarchyGroups();
         initTagInputs();
 
