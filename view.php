@@ -30,14 +30,8 @@ if (!$note) {
     die('Not bulunamadı.');
 }
 
-$storagePath = resolveNoteStoragePath($note);
-if ($storagePath === null) {
-    die('Dosya yolu geçersiz.');
-}
-
-$filePath = buildNoteAbsolutePath($storagePath);
-
-if (!file_exists($filePath)) {
+$filePath = resolveNoteAbsolutePath($note);
+if ($filePath === null) {
     die('Dosya sunucuda bulunamadı.');
 }
 
@@ -59,6 +53,7 @@ if ($filename === '') {
 // Tarayıcıya dosya tipini bildir
 header('Content-Type: ' . $note['mime_type']);
 header('X-Content-Type-Options: nosniff');
+header('Cache-Control: private, no-store');
 header('Content-Length: ' . filesize($filePath));
 if ($isDownload) {
     header('Content-Disposition: attachment; filename="' . addcslashes($filename, "\\\"") . '"; filename*=UTF-8\'\'' . rawurlencode($filename));

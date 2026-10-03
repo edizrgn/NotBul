@@ -39,7 +39,7 @@ function authSafeReturnTo(mixed $value): string
     }
 
     $path = ltrim((string)($parts['path'] ?? ''), '/');
-    $allowedPages = ['index.php', 'search.php', 'upload.php', 'note-detail.php', 'note-edit.php', 'profile.php', 'profile_edit.php', 'comment-edit.php'];
+    $allowedPages = ['index.php', 'search.php', 'upload.php', 'note-detail.php', 'note-edit.php', 'note-file-download.php', 'profile.php', 'profile_edit.php', 'comment-edit.php'];
     if (!in_array($path, $allowedPages, true)) {
         return '';
     }

@@ -4,7 +4,7 @@ declare(strict_types=1);
 @session_start();
 require_once __DIR__ . '/includes/auth_redirect.php';
 
-$requestId = $_SERVER['REQUEST_METHOD'] === 'POST' ? ($_POST['id'] ?? 0) : ($_GET['id'] ?? 0);
+$requestId = $_SERVER['REQUEST_METHOD'] === 'POST' ? ($_POST['id'] ?? $_GET['id'] ?? 0) : ($_GET['id'] ?? 0);
 $noteId = is_scalar($requestId) ? (int)$requestId : 0;
 if (!isset($_SESSION['user_id'])) {
     header('Location: ' . authLoginUrl('note-edit.php?id=' . $noteId));
@@ -13,11 +13,11 @@ if (!isset($_SESSION['user_id'])) {
 
 require_once __DIR__ . '/includes/db.php';
 require_once __DIR__ . '/includes/note_form.php';
+require_once __DIR__ . '/includes/note_file_panel.php';
 
 $userId = (int)$_SESSION['user_id'];
 $stmt = $pdo->prepare("
-    SELECT id, title, description, university_id, department_type, department_id, class_id,
-           course, topic, tags, original_filename, deleted_at, upload_status, scan_status
+    SELECT *
     FROM notes
     WHERE id = :id AND user_id = :user_id
     LIMIT 1
@@ -39,8 +39,37 @@ $universities = json_decode((string)file_get_contents(__DIR__ . '/assets/data/un
 $departmentsByType = json_decode((string)file_get_contents(__DIR__ . '/assets/data/bolumler.json'), true) ?: [];
 $formValues = noteFormValues($note);
 $error = '';
+$fileAction = is_string($_POST['action'] ?? null) ? $_POST['action'] : '';
+$oversizedPost = $_SERVER['REQUEST_METHOD'] === 'POST' && $_POST === []
+    && (int)($_SERVER['CONTENT_LENGTH'] ?? 0) > getMaxUploadBytes();
+$fileFlash = $_SESSION['note_file_flash'][$noteId] ?? null;
+unset($_SESSION['note_file_flash'][$noteId]);
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+if ($oversizedPost) {
+    $error = 'Dosya boyutu ' . getMaxUploadMb() . ' MB sınırını aşıyor. Mevcut dosyanız korundu.';
+} elseif ($_SERVER['REQUEST_METHOD'] === 'POST' && in_array($fileAction, ['replace_file', 'undo_file'], true)) {
+    try {
+        $requestToken = is_string($_POST['csrf_token'] ?? null) ? $_POST['csrf_token'] : '';
+        if ($requestToken === '' || !hash_equals($editToken, $requestToken)) {
+            throw new NoteFileException('Güvenlik doğrulaması başarısız oldu. Sayfayı yenileyip tekrar deneyin.');
+        }
+        changeNoteFile($pdo, $noteId, $userId, false,
+            is_string($_POST['file_identity'] ?? null) ? $_POST['file_identity'] : '',
+            $fileAction === 'replace_file' ? ($_FILES['note_file'] ?? []) : null,
+            is_string($_POST['undo_token'] ?? null) ? $_POST['undo_token'] : '');
+        $_SESSION['note_file_flash'][$noteId] = $fileAction === 'replace_file'
+            ? 'Dosya değiştirildi. Son değişikliği 24 saat içinde geri alabilirsiniz.' : 'Önceki dosya geri yüklendi.';
+        header('Location: note-edit.php?id=' . $noteId . '#noteFileHeading', true, 303);
+        exit;
+    } catch (NoteFileException $e) {
+        $error = $e->getMessage();
+    } catch (Throwable $e) {
+        error_log('note file change error: ' . $e->getMessage());
+        $error = 'Dosya değişikliği tamamlanamadı. Sayfayı yenileyip tekrar deneyin.';
+    }
+}
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$oversizedPost && !in_array($fileAction, ['replace_file', 'undo_file'], true)) {
     $formValues = noteFormValues($_POST);
     $requestToken = is_string($_POST['csrf_token'] ?? null) ? $_POST['csrf_token'] : '';
     $errors = noteFormErrors($formValues);
@@ -86,6 +115,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
+$undoInfo = null;
+$historyError = '';
+try {
+    $undoInfo = noteFileUndoInfo($pdo, $note, $userId);
+} catch (Throwable $e) {
+    error_log('note file undo info: ' . $e->getMessage());
+    $historyError = 'Geri alma bilgileri şu anda alınamıyor. Lütfen daha sonra tekrar deneyin.';
+}
 $notesPayload = noteFormSuggestions($pdo);
 $pageTitle = 'Not Bul | Not Düzenle';
 $pageKey = 'profile';
@@ -95,10 +132,10 @@ require __DIR__ . '/includes/header.php';
     <section class="container section-block">
         <div class="row justify-content-center">
             <div class="col-lg-8">
-                <div class="panel-card">
+                <div class="panel-card mb-4">
                     <div class="d-flex justify-content-between align-items-start flex-wrap gap-3 mb-4">
                         <div>
-                            <h1 class="h3 mb-1">Not Bilgilerini Düzenle</h1>
+                            <h1 class="h3 mb-1">Not Düzenle</h1>
                             <p class="mb-0 text-secondary"><?= htmlspecialchars((string)$note['original_filename'], ENT_QUOTES, 'UTF-8') ?></p>
                             <?php if (!empty($note['deleted_at'])): ?>
                                 <span class="badge bg-secondary mt-2">Arşivde</span>
@@ -110,7 +147,15 @@ require __DIR__ . '/includes/header.php';
                     <?php if ($error !== ''): ?>
                         <div class="alert alert-danger" role="alert"><?= htmlspecialchars($error, ENT_QUOTES, 'UTF-8') ?></div>
                     <?php endif; ?>
+                    <?php if (is_string($fileFlash) && $fileFlash !== ''): ?>
+                        <div class="alert alert-success" role="status"><?= htmlspecialchars($fileFlash, ENT_QUOTES, 'UTF-8') ?></div>
+                    <?php endif; ?>
+                </div>
 
+                <?php renderNoteFilePanel($note, $editToken, 'note-edit.php?id=' . $noteId, $undoInfo, $historyError); ?>
+
+                <div class="panel-card">
+                    <h2 class="h4 mb-3">Not Bilgileri</h2>
                     <form method="POST" action="note-edit.php?id=<?= $noteId ?>" data-hierarchy-group data-filter-source="public">
                         <input type="hidden" name="id" value="<?= $noteId ?>">
                         <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($editToken, ENT_QUOTES, 'UTF-8') ?>">

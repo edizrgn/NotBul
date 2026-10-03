@@ -348,7 +348,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 adminRedirect('users');
             }
 
-            $notesStmt = $pdo->prepare("SELECT * FROM notes WHERE user_id = :uid");
+            $pdo->beginTransaction();
+            $notesStmt = $pdo->prepare("SELECT * FROM notes WHERE user_id = :uid FOR UPDATE");
             $notesStmt->execute(['uid' => $targetUserId]);
             $notesToDelete = $notesStmt->fetchAll();
 
@@ -356,7 +357,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $commentCountStmt->execute(['uid' => $targetUserId]);
             $commentCount = (int)$commentCountStmt->fetchColumn();
 
-            $pdo->beginTransaction();
             $deleteStmt = $pdo->prepare("DELETE FROM users WHERE id = :id LIMIT 1");
             $deleteStmt->execute(['id' => $targetUserId]);
 
@@ -415,23 +415,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 adminRedirect('notes');
             }
 
+            $pdo->beginTransaction();
             $noteStmt = $pdo->prepare("
                 SELECT n.*, u.first_name, u.last_name, u.email
                 FROM notes n
                 JOIN users u ON u.id = n.user_id
                 WHERE n.id = :id
-                LIMIT 1
+                LIMIT 1 FOR UPDATE
             ");
             $noteStmt->execute(['id' => $noteId]);
             $note = $noteStmt->fetch();
 
             if (!$note) {
+                $pdo->rollBack();
                 adminSetFlash('danger', 'Silinecek not bulunamadı.');
                 adminRedirect('notes');
             }
 
             $deleteStmt = $pdo->prepare("DELETE FROM notes WHERE id = :id LIMIT 1");
             $deleteStmt->execute(['id' => $noteId]);
+            $pdo->commit();
 
             $fileWarning = deleteNoteStorageFile($note);
             if ($fileWarning !== null) {

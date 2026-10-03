@@ -1237,7 +1237,55 @@
         });
     }
 
+    function initNoteFileForms() {
+        const forms = document.querySelectorAll('[data-note-file-form]');
+        forms.forEach((form) => {
+            const input = form.querySelector('input[type="file"]');
+            const button = form.querySelector('button[type="submit"]');
+            const status = form.querySelector('[data-file-form-status]');
+            const originalLabel = button.textContent;
+            let pending = false;
+            const reset = () => {
+                pending = false;
+                button.disabled = false;
+                button.textContent = originalLabel;
+                form.removeAttribute('aria-busy');
+                status.textContent = '';
+            };
+            const validate = () => {
+                if (!input) return;
+                input.setCustomValidity('');
+                const file = input.files[0];
+                if (!file) return;
+                if (file.size < 1 || file.size > Number(form.dataset.maxBytes)) {
+                    input.setCustomValidity('Dosya boş olmamalı ve 25 MB sınırını aşmamalı.');
+                } else if (!/\.(pdf|docx|pptx|png|jpe?g|webp)$/i.test(file.name)) {
+                    input.setCustomValidity('PDF, DOCX, PPTX, PNG, JPG veya WEBP seçin.');
+                }
+            };
+            input?.addEventListener('change', validate);
+            form.addEventListener('submit', (event) => {
+                if (pending) {
+                    event.preventDefault();
+                    return;
+                }
+                validate();
+                if (!form.reportValidity()) {
+                    event.preventDefault();
+                    return;
+                }
+                pending = true;
+                button.disabled = true;
+                button.textContent = form.dataset.pendingLabel;
+                form.setAttribute('aria-busy', 'true');
+                status.textContent = 'İşlem tamamlanana kadar bekleyin.';
+            });
+            window.addEventListener('pageshow', reset);
+        });
+    }
+
     document.addEventListener('DOMContentLoaded', async () => {
+        initNoteFileForms();
         await loadRemoteFilterData();
         const filterForm = document.getElementById('homeFilterForm') || document.getElementById('searchFilterForm');
         if (filterForm) restoreFilterParams(filterForm, document.getElementById('homeQuery') || document.getElementById('searchQuery'));

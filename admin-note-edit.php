@@ -5,6 +5,7 @@ require_once __DIR__ . '/includes/db.php';
 require_once __DIR__ . '/includes/admin_auth.php';
 require_once __DIR__ . '/includes/admin_notifications.php';
 require_once __DIR__ . '/includes/user_notifications.php';
+require_once __DIR__ . '/includes/note_file_panel.php';
 
 $adminUser = requireAdminUser($pdo);
 $csrfToken = adminCsrfToken('admin_note_edit');
@@ -17,7 +18,7 @@ function adminEditRedirectToList(): void
 
 function adminEditRedirectToNote(int $noteId): void
 {
-    header('Location: admin-note-edit.php?id=' . $noteId);
+    header('Location: admin-note-edit.php?id=' . $noteId, true, 303);
     exit;
 }
 
@@ -77,7 +78,7 @@ function adminEditDepartmentExists(array $departmentsByType, string $value): boo
 }
 
 $noteId = $_SERVER['REQUEST_METHOD'] === 'POST'
-    ? (int)($_POST['id'] ?? 0)
+    ? (int)($_POST['id'] ?? $_GET['id'] ?? 0)
     : (int)($_GET['id'] ?? 0);
 
 if ($noteId <= 0) {
@@ -86,8 +87,34 @@ if ($noteId <= 0) {
 }
 
 $localFlash = null;
+$fileAction = is_string($_POST['action'] ?? null) ? $_POST['action'] : '';
+$oversizedPost = $_SERVER['REQUEST_METHOD'] === 'POST' && $_POST === []
+    && (int)($_SERVER['CONTENT_LENGTH'] ?? 0) > getMaxUploadBytes();
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+if ($oversizedPost) {
+    $localFlash = ['type' => 'danger', 'message' => 'Dosya boyutu ' . getMaxUploadMb() . ' MB sınırını aşıyor. Mevcut dosyanız korundu.'];
+} elseif ($_SERVER['REQUEST_METHOD'] === 'POST' && in_array($fileAction, ['replace_file', 'undo_file'], true)) {
+    try {
+        $requestToken = is_string($_POST['csrf_token'] ?? null) ? $_POST['csrf_token'] : '';
+        if (!adminValidateCsrfToken('admin_note_edit', $requestToken)) {
+            throw new NoteFileException('Güvenlik doğrulaması başarısız oldu. Sayfayı yenileyip tekrar deneyin.');
+        }
+        changeNoteFile($pdo, $noteId, (int)$adminUser['id'], true,
+            is_string($_POST['file_identity'] ?? null) ? $_POST['file_identity'] : '',
+            $fileAction === 'replace_file' ? ($_FILES['note_file'] ?? []) : null,
+            is_string($_POST['undo_token'] ?? null) ? $_POST['undo_token'] : '');
+        adminSetFlash('success', $fileAction === 'replace_file'
+            ? 'Dosya değiştirildi. Son değişikliği 24 saat içinde geri alabilirsiniz.' : 'Önceki dosya geri yüklendi.');
+        adminEditRedirectToNote($noteId);
+    } catch (NoteFileException $e) {
+        $localFlash = ['type' => 'danger', 'message' => $e->getMessage()];
+    } catch (Throwable $e) {
+        error_log('admin note file change error: ' . $e->getMessage());
+        $localFlash = ['type' => 'danger', 'message' => 'Dosya değişikliği tamamlanamadı. Sayfayı yenileyip tekrar deneyin.'];
+    }
+}
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$oversizedPost && !in_array($fileAction, ['replace_file', 'undo_file'], true)) {
     $requestToken = (string)($_POST['csrf_token'] ?? '');
     $errors = [];
 
@@ -175,19 +202,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if (empty($errors)) {
         try {
+            $pdo->beginTransaction();
             $beforeStmt = $pdo->prepare("
                 SELECT n.*, u.first_name, u.last_name, u.email
                 FROM notes n
                 JOIN users u ON u.id = n.user_id
                 WHERE n.id = :id
-                LIMIT 1
+                LIMIT 1 FOR UPDATE
             ");
             $beforeStmt->execute(['id' => $noteId]);
             $noteBefore = $beforeStmt->fetch();
 
             if (!$noteBefore) {
+                $pdo->rollBack();
                 adminSetFlash('danger', 'Düzenlenecek not bulunamadı.');
                 adminEditRedirectToList();
+            }
+
+            $identity = is_string($_POST['file_identity'] ?? null) ? $_POST['file_identity'] : '';
+            if ($identity === '' || !hash_equals(noteFileIdentity($noteBefore), $identity)) {
+                throw new NoteFileException('Dosya siz sayfayı açtıktan sonra değişmiş. Sayfayı yenileyip tekrar deneyin.');
             }
 
             $updateStmt = $pdo->prepare("
@@ -228,6 +262,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 'download_count' => $downloadCount,
                 'id' => $noteId,
             ]);
+            $pdo->commit();
 
             sendAdminNotification($pdo, 'Not düzenlendi', 'Admin panelinden bir notun detayları güncellendi.', [
                 'İşlem yapan admin' => adminNotificationAdminLabel($adminUser),
@@ -254,10 +289,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             adminSetFlash('success', 'Not detayları güncellendi.');
             adminEditRedirectToNote($noteId);
         } catch (Throwable $e) {
+            if ($pdo->inTransaction()) {
+                $pdo->rollBack();
+            }
             error_log('admin note edit update error: ' . $e->getMessage());
             $localFlash = [
                 'type' => 'danger',
-                'message' => 'Not güncellenirken beklenmeyen bir hata oluştu.',
+                'message' => $e instanceof NoteFileException ? $e->getMessage() : 'Not güncellenirken beklenmeyen bir hata oluştu.',
             ];
         }
     } else {
@@ -281,6 +319,15 @@ $note = $noteStmt->fetch();
 if (!$note) {
     adminSetFlash('danger', 'Düzenlenecek not bulunamadı.');
     adminEditRedirectToList();
+}
+
+$undoInfo = null;
+$historyError = '';
+try {
+    $undoInfo = noteFileUndoInfo($pdo, $note, (int)$adminUser['id'], true);
+} catch (Throwable $e) {
+    error_log('admin note file undo info: ' . $e->getMessage());
+    $historyError = 'Geri alma bilgileri şu anda alınamıyor. Lütfen daha sonra tekrar deneyin.';
 }
 
 $universities = adminEditLoadJson(__DIR__ . '/assets/data/universiteler.json');
@@ -321,9 +368,12 @@ require __DIR__ . '/includes/header.php';
             </div>
         <?php endif; ?>
 
+        <?php renderNoteFilePanel($note, $csrfToken, 'admin-note-edit.php?id=' . $noteId, $undoInfo, $historyError); ?>
+
         <form method="POST" action="admin-note-edit.php?id=<?= (int)$note['id'] ?>">
             <input type="hidden" name="id" value="<?= (int)$note['id'] ?>">
             <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrfToken, ENT_QUOTES, 'UTF-8') ?>">
+            <input type="hidden" name="file_identity" value="<?= noteFileIdentity($note) ?>">
 
             <div class="row g-4 align-items-start">
                 <div class="col-lg-8">

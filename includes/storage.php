@@ -33,7 +33,22 @@ function buildNoteAbsolutePath(string $storagePath): string
     return rtrim(getNoteStorageDir(), "/\\") . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, $storagePath);
 }
 
-function deleteNoteStorageFile(array $note): ?string
+function resolveNoteAbsolutePath(array $note): ?string
+{
+    if (!in_array(trim((string)($note['storage_disk'] ?? 'local')), ['', 'local'], true)) {
+        return null;
+    }
+    $path = resolveNoteStoragePath($note);
+    $root = realpath(getNoteStorageDir());
+    $file = $path === null ? false : realpath(buildNoteAbsolutePath($path));
+    if ($root === false || $file === false || !is_file($file)) {
+        return null;
+    }
+    $root = rtrim($root, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
+    return strncmp($file, $root, strlen($root)) === 0 ? $file : null;
+}
+
+function deleteNotePhysicalFile(array $note): ?string
 {
     $storageDisk = trim((string)($note['storage_disk'] ?? 'local'));
     if ($storageDisk !== '' && $storageDisk !== 'local') {
@@ -67,6 +82,18 @@ function deleteNoteStorageFile(array $note): ?string
     }
 
     return null;
+}
+
+function deleteNoteStorageFile(array $note): ?string
+{
+    // Kalıcı not/hesap silme işlemleri geri alma kopyalarını da kaldırır.
+    require_once __DIR__ . '/note_files.php';
+    $warnings = deleteNoteFileHistory($note);
+    $warning = deleteNotePhysicalFile($note);
+    if ($warning !== null) {
+        $warnings[] = $warning;
+    }
+    return $warnings === [] ? null : implode(' ', array_unique($warnings));
 }
 
 function deleteNotesStorageFiles(array $notes): array

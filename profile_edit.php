@@ -142,11 +142,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $error = 'Hesabı silmek için onay alanına HESABIMI SİL yazmalısınız.';
         } else {
             try {
-                $notesStmt = $pdo->prepare("SELECT * FROM notes WHERE user_id = :uid");
+                $pdo->beginTransaction();
+                $notesStmt = $pdo->prepare("SELECT * FROM notes WHERE user_id = :uid FOR UPDATE");
                 $notesStmt->execute(['uid' => $userId]);
                 $notesToDelete = $notesStmt->fetchAll();
 
-                $pdo->beginTransaction();
                 $deleteStmt = $pdo->prepare("DELETE FROM users WHERE id = :uid LIMIT 1");
                 $deleteStmt->execute(['uid' => $userId]);
 

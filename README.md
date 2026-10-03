@@ -369,6 +369,16 @@ Dosyalar varsayılan olarak `/var/lib/notbul/notes/YYYY/MM/` altında saklanır.
 
 Kullanıcı dosyaya doğrudan storage yolundan erişmez. `view.php?id=...` dosyayı inline sunar, `view.php?id=...&download=1` indirme olarak gönderir ve indirme sayısını artırır.
 
+Not sahibi `note-edit.php`, admin ise `admin-note-edit.php` üzerinden mevcut dosyayı değiştirebilir. Aynı formatlar ve 25 MB sınırı geçerlidir. Dosya adı, boyutu, MIME bilgisi ve SHA-256 yeni dosyadan hesaplanır; notun ID'si, bilgileri, yorumları, yayın/arşiv durumu ve indirme sayısı korunur. Eski bir sekmeden gönderilen dosya değişikliği, arada dosya değişmişse reddedilir.
+
+Her dosya değişikliği **24 saat içinde geri alınabilir**. Bu süre `includes/note_files.php` içindeki `noteFileUndoSeconds()` ile belirlenir. Birden fazla değişiklik yapılırsa, süresi dolmamış değişiklikler sondan başlayarak geri alınabilir. Geri alma dosyanın önceki halini geri getirir; notun bilgilerini veya yayın durumunu değiştirmez.
+
+Geri alma kayıtları mevcut özel depolama klasörünün `.versions/` alt klasöründe tutulur; bu klasör uygulama tarafından oluşturulur. Ek tablo, migration veya servis gerekmez. Yedeklemeye bu klasörü de dahil edin. Süresi dolan kopyalar notun düzenleme ekranı açıldığında veya dosya işlemi yapıldığında temizlenir; geri alma hakkı erişim olmasa da 24 saat sonunda biter. Kalıcı not/hesap silme işlemi geri alma kopyalarını da siler.
+
+Her iki düzenleme ekranında **Mevcut Notu İndir** düğmesi bulunur. `note-file-download.php?id=...` yalnızca not sahibine veya güncel veritabanı rolü admin olan kişiye indirme izni verir. Arşivlenmiş/yayından kaldırılmış notlar da yönetim ekranından indirilebilir; bu indirme sayacı artırmaz.
+
+Dosya değişimi testleri `php tests/note_files_test.php` komutuyla çalıştırılır. Gerçek multipart HTTP istekleri geçici bir localhost PHP sunucusunda işlenir; veritabanı fixture ile taklit edilir, dosyalar geçici klasörde tutulur ve e-posta gönderilmez. Test çalıştırıcısı PHP CLI, cURL, DOM ve ZIP uzantılarını kullanır.
+
 ## Admin Hesabı
 
 İlk admin hesabı için önerilen akış:
